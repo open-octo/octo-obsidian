@@ -350,7 +350,7 @@ export class MessageRenderer {
     textEl.appendText(' ');
     textEl.createSpan({
       cls: 'claudian-interrupted-hint',
-      text: '\u00B7 What should Claudian do instead?',
+      text: '\u00B7 What should Octo do instead?',
     });
   }
 

@@ -4,6 +4,10 @@ export const MCP_ICON_SVG = `<svg fill="currentColor" fill-rule="evenodd" height
 
 export const CHECK_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 
+export const OCTO_APP_ICON_ID = 'octo-app-icon';
+
+export const OCTO_APP_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13v-2a7 6 0 0 1 14 0v2"/><circle cx="9" cy="10" r="0.75" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="0.75" fill="currentColor" stroke="none"/><path d="M5 13c-2 1 -3 3 -2 4c1 1 2 3 1 4"/><path d="M7.8 13c-1 1 -1.5 3 -1 4c0.5 1 1.5 3 1 4"/><path d="M10.6 13c-0.5 1 0.5 3 0 4c-0.5 1 0.5 3 0 4"/><path d="M13.4 13c0.5 1 -0.5 3 0 4c0.5 1 -0.5 3 0 4"/><path d="M16.2 13c1 1 1.5 3 1 4c-0.5 1 -1.5 3 -1 4"/><path d="M19 13c2 1 3 3 2 4c-1 1 -2 3 -1 4"/></svg>`;
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const MCP_ICON_PATHS = [
   'M15.688 2.343a2.588 2.588 0 00-3.61 0l-9.626 9.44a.863.863 0 01-1.203 0 .823.823 0 010-1.18l9.626-9.44a4.313 4.313 0 016.016 0 4.116 4.116 0 011.204 3.54 4.3 4.3 0 013.609 1.18l.05.05a4.115 4.115 0 010 5.9l-8.706 8.537a.274.274 0 000 .393l1.788 1.754a.823.823 0 010 1.18.863.863 0 01-1.203 0l-1.788-1.753a1.92 1.92 0 010-2.754l8.706-8.538a2.47 2.47 0 000-3.54l-.05-.049a2.588 2.588 0 00-3.607-.003l-7.172 7.034-.002.002-.098.097a.863.863 0 01-1.204 0 .823.823 0 010-1.18l7.273-7.133a2.47 2.47 0 00-.003-3.537z',

@@ -66,7 +66,7 @@ export const octoAgentSettingsTabRenderer: ProviderSettingsTabRenderer = {
 
     new Setting(container)
       .setName('Auto-start server')
-      .setDesc('Run `octo serve` automatically when Claudian needs a connection.')
+      .setDesc('Run `octo serve` automatically when Octo needs a connection.')
       .addToggle((toggle) =>
         toggle
           .setValue(settings.autoStartServer)

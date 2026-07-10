@@ -70,7 +70,7 @@
     }
   },
   "settings": {
-    "title": "Claudian 设置",
+    "title": "Octo 设置",
     "tabs": {
       "general": "通用",
       "claude": "Claude",
@@ -84,7 +84,7 @@
     "models": "模型",
     "experimental": "实验性功能",
     "userName": {
-      "name": "Claudian 应该如何称呼你？",
+      "name": "Octo 应该如何称呼你？",
       "desc": "用于个性化问候的用户名（留空使用通用问候）"
     },
     "excludedTags": {
@@ -158,7 +158,7 @@
     },
     "hiddenSlashCommands": {
       "name": "隐藏命令与技能",
-      "desc": "从下拉菜单中隐藏特定的命令与技能。适用于隐藏与 Claudian 无关的 Claude Code 条目。每行输入一个名称，无需前导斜杠。",
+      "desc": "从下拉菜单中隐藏特定的命令与技能。适用于隐藏与 Octo 无关的 Claude Code 条目。每行输入一个名称，无需前导斜杠。",
       "placeholder": "commit\nbuild\ntest"
     },
     "mcpServers": {
@@ -298,7 +298,7 @@
       "desc": "Write 和 Edit diff 首次出现时以展开状态显示。"
     },
     "chatViewPlacement": {
-      "name": "Claudian 打开位置",
+      "name": "Octo 打开位置",
       "desc": "选择新建聊天面板时的打开位置",
       "rightSidebar": "右侧边栏",
       "leftSidebar": "左侧边栏",
@@ -325,7 +325,7 @@
       },
       "installationMethod": {
         "name": "安装方式",
-        "desc": "Claudian 在 Windows 上启动 Codex 的方式。原生 Windows 使用 Windows 可执行文件路径；WSL 会在所选发行版内启动 Linux CLI。",
+        "desc": "Octo 在 Windows 上启动 Codex 的方式。原生 Windows 使用 Windows 可执行文件路径；WSL 会在所选发行版内启动 Linux CLI。",
         "nativeWindows": "原生 Windows",
         "wsl": "WSL"
       },
@@ -372,7 +372,7 @@
       },
       "mcp": {
         "descBeforeCommand": "Codex 通过自己的 CLI 管理 MCP 服务器。请使用 ",
-        "descAfterCommand": " 进行配置，它们会在 Claudian 中可用。",
+        "descAfterCommand": " 进行配置，它们会在 Octo 中可用。",
         "learnMore": "了解更多"
       },
       "environment": {

@@ -11,7 +11,7 @@ import { ProviderSettingsCoordinator } from '../../core/providers/ProviderSettin
 import { type AppTabManagerState, DEFAULT_CHAT_PROVIDER_ID, type ProviderId } from '../../core/providers/types';
 import { VIEW_TYPE_CLAUDIAN } from '../../core/types';
 import type ClaudianPlugin from '../../main';
-import { createProviderIconSvg } from '../../shared/icons';
+import { createProviderIconSvg, OCTO_APP_ICON_ID } from '../../shared/icons';
 import {
   cancelScheduledAnimationFrame,
   scheduleAnimationFrame,
@@ -97,11 +97,11 @@ export class ClaudianView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Claudian';
+    return 'Octo';
   }
 
   getIcon(): string {
-    return 'bot';
+    return OCTO_APP_ICON_ID;
   }
 
   /** Refreshes model-dependent UI across all tabs (used after settings/env changes). */
@@ -284,7 +284,7 @@ export class ClaudianView extends ItemView {
     this.logoEl = titleEl.createSpan({ cls: 'claudian-logo' });
     this.syncHeaderLogo(DEFAULT_CHAT_PROVIDER_ID);
 
-    titleEl.createEl('h4', { text: 'Claudian', cls: 'claudian-title-text' });
+    titleEl.createEl('h4', { text: 'Octo', cls: 'claudian-title-text' });
   }
 
   /**

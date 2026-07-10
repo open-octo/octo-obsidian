@@ -1,6 +1,7 @@
 
 import { DEFAULT_CLAUDIAN_SETTINGS as DEFAULT_SETTINGS } from '@/app/settings/defaultSettings';
 import { VIEW_TYPE_CLAUDIAN } from '@/core/types';
+import { OCTO_APP_ICON_ID } from '@/shared/icons';
 
 // Mock fs for ClaudianService
 jest.mock('fs');
@@ -94,8 +95,8 @@ describe('ClaudianPlugin', () => {
       await plugin.onload();
 
       expect((plugin.addRibbonIcon as jest.Mock)).toHaveBeenCalledWith(
-        'bot',
-        'Open Claudian',
+        OCTO_APP_ICON_ID,
+        'Open Octo',
         expect.any(Function)
       );
     });
