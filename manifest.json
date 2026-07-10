@@ -1,0 +1,10 @@
+{
+  "id": "octo-agent",
+  "name": "Octo Agent",
+  "version": "0.1.0",
+  "minAppVersion": "1.7.2",
+  "description": "Embeds the Octo Agent coding assistant in your vault. Your vault becomes its working directory, giving it capabilities for file reads and writes, search, bash commands, and multi-step workflows.",
+  "author": "open-octo",
+  "authorUrl": "https://github.com/open-octo",
+  "isDesktopOnly": true
+}
