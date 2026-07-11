@@ -6,7 +6,11 @@ export const CHECK_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12
 
 export const OCTO_APP_ICON_ID = 'octo-app-icon';
 
-export const OCTO_APP_ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13v-2a7 6 0 0 1 14 0v2"/><circle cx="9" cy="10" r="0.75" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="0.75" fill="currentColor" stroke="none"/><path d="M5 13c-2 1 -3 3 -2 4c1 1 2 3 1 4"/><path d="M7.8 13c-1 1 -1.5 3 -1 4c0.5 1 1.5 3 1 4"/><path d="M10.6 13c-0.5 1 0.5 3 0 4c-0.5 1 0.5 3 0 4"/><path d="M13.4 13c0.5 1 -0.5 3 0 4c0.5 1 -0.5 3 0 4"/><path d="M16.2 13c1 1 1.5 3 1 4c-0.5 1 -1.5 3 -1 4"/><path d="M19 13c2 1 3 3 2 4c-1 1 -2 3 -1 4"/></svg>`;
+// Octo brand mark (octopus head), rendered monochrome for Obsidian's ribbon and
+// view icons: the octopus is filled with currentColor and the eyes are punched
+// out via fill-rule="evenodd" so they read against any theme background. Mirrors
+// web/public/favicon.svg from the octo-agent repo, minus its colored backdrop.
+export const OCTO_APP_ICON_SVG = `<svg viewBox="0 0 100 100" fill="currentColor" fill-rule="evenodd" stroke="none"><path d="M50 18 C34 18 26 30 26 44 C26 54 32 60 36 62 C34 70 28 78 20 82 C18 83 18 86 20 88 C22 89 25 89 27 87 C33 83 39 76 42 68 C44 69 47 70 50 70 L50 82 C50 85 53 87 56 86 C58 85 59 83 58 81 L56 70 C59 70 62 69 64 68 C67 76 73 83 79 87 C81 89 84 89 86 88 C88 86 88 83 86 82 C78 78 72 70 70 62 C74 60 80 54 80 44 C80 30 72 18 56 18 Z M35 42 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z M55 42 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z"/></svg>`;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const MCP_ICON_PATHS = [
@@ -122,9 +126,21 @@ export const PI_PROVIDER_ICON: ProviderIconSvg = {
   ],
 };
 
+// Same octopus brand mark as the app icon, as a composite so the path can carry
+// fill-rule="evenodd" (the simple path form can't) to punch out the eyes.
 export const OCTO_AGENT_PROVIDER_ICON: ProviderIconSvg = {
+  kind: 'composite',
   viewBox: '0 0 100 100',
-  path: 'M20 25 h60 v55 h-60 z M28 38 h44 M28 50 h30 M28 62 h20 M25 22 v-8 h50 v8 M50 12 v6',
+  children: [
+    {
+      tag: 'path',
+      attributes: {
+        d: 'M50 18 C34 18 26 30 26 44 C26 54 32 60 36 62 C34 70 28 78 20 82 C18 83 18 86 20 88 C22 89 25 89 27 87 C33 83 39 76 42 68 C44 69 47 70 50 70 L50 82 C50 85 53 87 56 86 C58 85 59 83 58 81 L56 70 C59 70 62 69 64 68 C67 76 73 83 79 87 C81 89 84 89 86 88 C88 86 88 83 86 82 C78 78 72 70 70 62 C74 60 80 54 80 44 C80 30 72 18 56 18 Z M35 42 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z M55 42 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z',
+        fill: 'currentColor',
+        'fill-rule': 'evenodd',
+      },
+    },
+  ],
 };
 
 export interface CreateProviderIconSvgOptions {
