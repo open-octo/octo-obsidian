@@ -89,7 +89,11 @@ dev
 .context/
 CLAUDE.local.md
 
-# Lock files (uncomment based on package manager)
+# Lock files: this project standardizes on npm (package-lock.json is tracked;
+# CI uses `npm ci`). Ignore other package managers' lockfiles so they don't
+# drift against package.json.
+bun.lock
+bun.lockb
 # yarn.lock
 # package-lock.json
 
