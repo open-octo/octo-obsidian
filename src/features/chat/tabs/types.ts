@@ -1,6 +1,6 @@
 import type { Component, WorkspaceLeaf } from 'obsidian';
 
-import type { InstructionRefineService, ProviderId, TitleGenerationService } from '../../../core/providers/types';
+import type { InstructionRefineService, ProviderId } from '../../../core/providers/types';
 import type { ChatRuntime } from '../../../core/runtime/ChatRuntime';
 import type { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
 import type { BrowserSelectionController } from '../controllers/BrowserSelectionController';
@@ -107,7 +107,6 @@ export interface TabControllers {
 export interface TabServices {
   subagentManager: SubagentManager;
   instructionRefineService: InstructionRefineService | null;
-  titleGenerationService: TitleGenerationService | null;
 }
 
 /**

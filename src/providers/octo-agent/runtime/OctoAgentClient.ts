@@ -80,6 +80,7 @@ export type OctoAgentEvent =
   | { type: 'send_rejected'; session_id: string; message: string }
   | { type: 'session_deleted'; session_id: string }
   | { type: 'session_activity'; session_id: string; kind: string }
+  | { type: 'session_renamed'; session_id: string; name: string }
   | { type: 'unknown'; session_id?: string; raw: any };
 
 export interface OctoAgentClientCallbacks {
@@ -524,6 +525,12 @@ export class OctoAgentClient {
           question_id: asString(record.question_id) ?? '',
           session_id: sessionId,
           type: 'dismiss_user_question',
+        };
+      case 'session_renamed':
+        return {
+          name: asString(record.name) ?? '',
+          session_id: sessionId,
+          type: 'session_renamed',
         };
       default:
         return { raw: record as any, session_id: sessionId, type: 'unknown' };

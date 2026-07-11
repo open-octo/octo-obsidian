@@ -1,5 +1,4 @@
 import type { Conversation } from '../types';
-import { toProviderRuntimeModelId } from './modelSelection';
 import { ProviderRegistry } from './ProviderRegistry';
 import type { ProviderChatUIConfig, ProviderId } from './types';
 
@@ -112,42 +111,6 @@ export class ProviderSettingsCoordinator {
       }
     }
     return anyChanged;
-  }
-
-  static reconcileTitleGenerationModelSelection(settings: Record<string, unknown>): boolean {
-    const currentModel = typeof settings.titleGenerationModel === 'string'
-      ? settings.titleGenerationModel
-      : '';
-    if (!currentModel) {
-      return false;
-    }
-
-    for (const providerId of ProviderRegistry.getRegisteredProviderIds()) {
-      const uiConfig = ProviderRegistry.getChatUIConfig(providerId);
-      if (!uiConfig.ownsModel(currentModel, settings)) {
-        continue;
-      }
-
-      const normalizedModel = normalizeProviderModel(uiConfig, settings, currentModel);
-      const currentRuntimeModel = toProviderRuntimeModelId(providerId, currentModel);
-      const isValid = normalizedModel !== undefined
-        && uiConfig.getModelOptions(settings).some((option) =>
-          option.value === normalizedModel
-          && toProviderRuntimeModelId(providerId, option.value) === currentRuntimeModel
-        );
-      if (!isValid) {
-        continue;
-      }
-
-      if (normalizedModel !== currentModel) {
-        settings.titleGenerationModel = normalizedModel;
-        return true;
-      }
-      return false;
-    }
-
-    settings.titleGenerationModel = '';
-    return true;
   }
 
   static normalizeProviderSelection(settings: Record<string, unknown>): boolean {
@@ -387,10 +350,6 @@ export class ProviderSettingsCoordinator {
       allInvalidated.push(...invalidatedConversations);
     }
 
-    if (this.reconcileTitleGenerationModelSelection(settings)) {
-      anyChanged = true;
-    }
-
     return { changed: anyChanged, invalidatedConversations: allInvalidated };
   }
 
@@ -416,10 +375,6 @@ export class ProviderSettingsCoordinator {
           mergeProviderSettings(settings, targetSettings);
         }
       }
-    }
-
-    if (this.reconcileTitleGenerationModelSelection(settings)) {
-      anyChanged = true;
     }
     return anyChanged;
   }

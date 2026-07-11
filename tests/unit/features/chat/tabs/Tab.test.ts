@@ -379,11 +379,6 @@ jest.mock('@/providers/octo-agent/auxiliary/OctoAgentInstructionRefineService', 
   })),
 }));
 
-jest.mock('@/providers/octo-agent/auxiliary/OctoAgentTitleGenerationService', () => ({
-  OctoAgentTitleGenerationService: jest.fn().mockImplementation(() => ({
-    cancel: jest.fn(),
-  })),
-}));
 
 // Mock path util
 jest.mock('@/utils/path', () => ({
@@ -683,7 +678,6 @@ describe('Tab - Service Initialization', () => {
       const getChatUIConfigSpy = jest.spyOn(ProviderRegistry, 'getChatUIConfig');
       const getCapabilitiesSpy = jest.spyOn(ProviderRegistry, 'getCapabilities');
       jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-      jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
       jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
       getChatUIConfigSpy.mockReturnValue({
         getModelOptions: jest.fn().mockReturnValue([]),
@@ -741,7 +735,6 @@ describe('Tab - Service Initialization', () => {
 
     it('resolves the agent mention service through the provider-specific lookup', () => {
       jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-      jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
       jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
       const agentMentionProvider = { searchAgents: jest.fn().mockReturnValue([]) };
@@ -769,7 +762,6 @@ describe('Tab - Service Initialization', () => {
 
     it('resets to blank state when the new-conversation callback fires', () => {
       jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-      jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
       jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
       const plugin = createMockPlugin();
@@ -799,7 +791,6 @@ describe('Tab - Service Initialization', () => {
 
     it('cleans up the active runtime when resetting to a new blank session', () => {
       jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-      jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
       jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
       const plugin = createMockPlugin();
@@ -1000,7 +991,6 @@ describe('Tab - Destruction', () => {
       const destroySlashDropdown = jest.fn();
       const destroyInstructionMode = jest.fn();
       const cancelInstructionRefine = jest.fn();
-      const cancelTitleGeneration = jest.fn();
       const destroyTodoPanel = jest.fn();
       const destroyResumeDropdown = jest.fn();
 
@@ -1009,7 +999,6 @@ describe('Tab - Destruction', () => {
       tab.ui.slashCommandDropdown = { destroy: destroySlashDropdown } as any;
       tab.ui.instructionModeManager = { destroy: destroyInstructionMode } as any;
       tab.services.instructionRefineService = { cancel: cancelInstructionRefine, resetConversation: jest.fn() } as any;
-      tab.services.titleGenerationService = { cancel: cancelTitleGeneration } as any;
       tab.ui.statusPanel = { destroy: destroyTodoPanel } as any;
 
       await destroyTab(tab);
@@ -1019,7 +1008,6 @@ describe('Tab - Destruction', () => {
       expect(destroySlashDropdown).toHaveBeenCalled();
       expect(destroyInstructionMode).toHaveBeenCalled();
       expect(cancelInstructionRefine).toHaveBeenCalled();
-      expect(cancelTitleGeneration).toHaveBeenCalled();
       expect(destroyTodoPanel).toHaveBeenCalled();
     });
   });
@@ -1076,6 +1064,7 @@ describe('Tab - Service Callbacks', () => {
         setExitPlanModeCallback: jest.fn(),
         setSubagentHookProvider: jest.fn(),
         setAutoTurnCallback: jest.fn(),
+        setSessionRenamedCallback: jest.fn(),
         setPermissionModeSyncCallback: jest.fn(),
       };
       tab.service = service as any;
@@ -1264,15 +1253,6 @@ describe('Tab - UI Initialization', () => {
       initializeTabUI(tab, options.plugin);
 
       expect(tab.services.instructionRefineService).toBeDefined();
-    });
-
-    it('should create TitleGenerationService', () => {
-      const options = createMockOptions();
-      const tab = createTab(options);
-
-      initializeTabUI(tab, options.plugin);
-
-      expect(tab.services.titleGenerationService).toBeDefined();
     });
 
     it('should create InstructionModeManager', () => {
@@ -2356,7 +2336,6 @@ describe('Tab - Controller Configuration', () => {
       expect(config.getExternalContextSelector()).toBe(tab.ui.externalContextSelector);
       expect(config.getInstructionModeManager()).toBe(tab.ui.instructionModeManager);
       expect(config.getInstructionRefineService()).toBe(tab.services.instructionRefineService);
-      expect(config.getTitleGenerationService()).toBe(tab.services.titleGenerationService);
     });
 
   });
@@ -3056,7 +3035,6 @@ describe('Tab - Same-Provider Model Change', () => {
   it('allows same-provider model change on bound tab', async () => {
     (Notice as unknown as jest.Mock).mockClear();
     jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-    jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
     jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
     jest.spyOn(ProviderRegistry, 'getChatUIConfig').mockReturnValue({
       getModelOptions: jest.fn().mockReturnValue([]),
@@ -3099,7 +3077,6 @@ describe('Tab - Same-Provider Model Change', () => {
 describe('Tab - Blank Tab Draft Model Change', () => {
   it('updates draft model without creating a runtime', async () => {
     jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-    jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
     jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
     jest.spyOn(ProviderRegistry, 'getChatUIConfig').mockReturnValue({
       getModelOptions: jest.fn().mockReturnValue([]),
@@ -3138,7 +3115,6 @@ describe('Tab - Blank Tab Draft Model Change', () => {
 
   it('refreshes the service-tier toggle when the model changes on a blank tab', async () => {
     jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-    jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
     jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
     jest.spyOn(ProviderRegistry, 'getChatUIConfig').mockReturnValue({
       getModelOptions: jest.fn().mockReturnValue([]),
@@ -3197,7 +3173,6 @@ describe('Tab - First Send Binding', () => {
 describe('Tab - History Bind Without Runtime', () => {
   it('ensureServiceForConversation binds to bound_cold without starting runtime', async () => {
     jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-    jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
     jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
     const plugin = createMockPlugin();
@@ -3229,7 +3204,6 @@ describe('Tab - History Bind Without Runtime', () => {
 
   it('ensureServiceForConversation wires the provider catalog and hidden commands', async () => {
     jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-    jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
     jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
     const octoAgentCatalog = {
@@ -3393,7 +3367,6 @@ describe('Tab - Destroy Lifecycle Transition', () => {
 describe('Tab - InputController getTabProviderId wiring', () => {
   it('wires getTabProviderId to InputController deps', () => {
     jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-    jest.spyOn(ProviderRegistry, 'createTitleGenerationService').mockReturnValue({ cancel: jest.fn() } as any);
     jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
     const plugin = createMockPlugin();

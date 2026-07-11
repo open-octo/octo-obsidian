@@ -11,8 +11,6 @@ export const DEFAULT_CLAUDIAN_SETTINGS: ClaudianSettings = {
   thinkingBudget: 'off',
   effortLevel: 'high',
   serviceTier: 'default',
-  enableAutoTitleGeneration: true,
-  titleGenerationModel: '',
 
   excludedTags: [],
   mediaFolder: '',

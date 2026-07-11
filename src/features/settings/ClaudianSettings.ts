@@ -287,51 +287,6 @@ export class ClaudianSettingTab extends PluginSettingTab {
           })
       );
 
-    // --- Conversations ---
-
-    new Setting(container).setName(t('settings.conversations')).setHeading();
-
-    new Setting(container)
-      .setName(t('settings.autoTitle.name'))
-      .setDesc(t('settings.autoTitle.desc'))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.enableAutoTitleGeneration)
-          .onChange(async (value) => {
-            this.plugin.settings.enableAutoTitleGeneration = value;
-            await this.plugin.saveSettings();
-            this.display();
-          })
-      );
-
-    if (this.plugin.settings.enableAutoTitleGeneration) {
-      new Setting(container)
-        .setName(t('settings.titleModel.name'))
-        .setDesc(t('settings.titleModel.desc'))
-        .addDropdown((dropdown) => {
-          dropdown.addOption('', t('settings.titleModel.auto'));
-
-          const settingsBag = this.plugin.settings as unknown as Record<string, unknown>;
-          const seenValues = new Set<string>();
-          for (const providerId of ProviderRegistry.getRegisteredProviderIds()) {
-            const uiConfig = ProviderRegistry.getChatUIConfig(providerId);
-            for (const model of uiConfig.getModelOptions(settingsBag)) {
-              if (!seenValues.has(model.value)) {
-                seenValues.add(model.value);
-                dropdown.addOption(model.value, model.label);
-              }
-            }
-          }
-
-          dropdown
-            .setValue(this.plugin.settings.titleGenerationModel || '')
-            .onChange(async (value) => {
-              this.plugin.settings.titleGenerationModel = value;
-              await this.plugin.saveSettings();
-            });
-        });
-    }
-
     // --- Content ---
 
     new Setting(container).setName(t('settings.content')).setHeading();

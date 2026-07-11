@@ -93,41 +93,6 @@ describe('ProviderSettingsCoordinator', () => {
     });
   });
 
-  describe('reconcileTitleGenerationModelSelection', () => {
-    it('clears titleGenerationModel when no provider owns the saved model', () => {
-      const settings: Record<string, unknown> = {
-        titleGenerationModel: 'legacy-model-id',
-      };
-
-      expect(
-        ProviderSettingsCoordinator.reconcileTitleGenerationModelSelection(settings),
-      ).toBe(true);
-      expect(settings.titleGenerationModel).toBe('');
-    });
-
-    it('clears a stale provider-qualified octo-agent title model instead of retargeting to a fallback', () => {
-      const settings: Record<string, unknown> = {
-        titleGenerationModel: 'octo-agent/stale-model',
-      };
-
-      expect(
-        ProviderSettingsCoordinator.reconcileTitleGenerationModelSelection(settings),
-      ).toBe(true);
-      expect(settings.titleGenerationModel).toBe('');
-    });
-
-    it('leaves a valid provider-qualified octo-agent title model unchanged', () => {
-      const settings: Record<string, unknown> = {
-        titleGenerationModel: 'octo-agent/kimi-for-coding',
-      };
-
-      expect(
-        ProviderSettingsCoordinator.reconcileTitleGenerationModelSelection(settings),
-      ).toBe(false);
-      expect(settings.titleGenerationModel).toBe('octo-agent/kimi-for-coding');
-    });
-  });
-
   describe('projectActiveProviderState', () => {
     it('projects saved model and effort for the settings provider', () => {
       const settings: Record<string, unknown> = {

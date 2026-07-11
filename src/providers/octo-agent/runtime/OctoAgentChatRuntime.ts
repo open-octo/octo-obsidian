@@ -72,6 +72,7 @@ export class OctoAgentChatRuntime implements ChatRuntime {
   private askUserQuestionCallback: AskUserQuestionCallback | null = null;
   private exitPlanModeCallback: ExitPlanModeCallback | null = null;
   private permissionModeSyncCallback: ((sdkMode: string) => void) | null = null;
+  private sessionRenamedCallback: ((name: string) => void) | null = null;
   private autoTurnCallback: AutoTurnCallback | null = null;
   private subagentHookProvider: (() => SubagentRuntimeState) | null = null;
   private toolIndex = 0;
@@ -449,6 +450,10 @@ export class OctoAgentChatRuntime implements ChatRuntime {
     this.permissionModeSyncCallback = callback;
   }
 
+  setSessionRenamedCallback(callback: ((name: string) => void) | null): void {
+    this.sessionRenamedCallback = callback;
+  }
+
   async setPermissionMode(mode: string): Promise<void> {
     if (!this.client || !this.sessionId) {
       return;
@@ -749,10 +754,26 @@ export class OctoAgentChatRuntime implements ChatRuntime {
       void this.handleUserQuestion(event);
     } else if (event.type === 'session_deleted') {
       this.handleSessionDeleted(event);
+    } else if (event.type === 'session_renamed') {
+      this.handleSessionRenamed(event);
     } else if (event.type === 'send_rejected' || event.type === 'error') {
       if (this.isSessionNotFoundEvent(event)) {
         this.handleSessionNotFound((event as { session_id?: string }).session_id);
       }
+    }
+  }
+
+  /**
+   * Applies a server-generated session title. `session_renamed` is broadcast
+   * globally, so filter to this runtime's session before notifying the tab.
+   */
+  private handleSessionRenamed(event: Extract<OctoAgentEvent, { type: 'session_renamed' }>): void {
+    if (!event.session_id || event.session_id !== this.sessionId) {
+      return;
+    }
+    const name = event.name.trim();
+    if (name) {
+      this.sessionRenamedCallback?.(name);
     }
   }
 
@@ -858,6 +879,10 @@ export class OctoAgentChatRuntime implements ChatRuntime {
       case 'session_deleted': {
         this.handleSessionDeleted(event);
         yield { type: 'notice', content: 'Session was deleted from another client.', level: 'warning' };
+        break;
+      }
+      case 'session_renamed': {
+        this.handleSessionRenamed(event);
         break;
       }
       case 'send_rejected':

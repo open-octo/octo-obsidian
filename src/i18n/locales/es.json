@@ -77,7 +77,6 @@
       "codex": "Codex"
     },
     "display": "Pantalla",
-    "conversations": "Conversaciones",
     "content": "Contenido",
     "input": "Entrada",
     "setup": "Configuración",
@@ -98,15 +97,6 @@
     "systemPrompt": {
       "name": "Prompt de sistema personalizado",
       "desc": "Instrucciones adicionales añadidas al prompt de sistema por defecto"
-    },
-    "autoTitle": {
-      "name": "Generar automáticamente títulos de conversación",
-      "desc": "Genera automáticamente títulos de conversación después del primer mensaje del usuario."
-    },
-    "titleModel": {
-      "name": "Modelo de generación de títulos",
-      "desc": "Modelo utilizado para generar automáticamente títulos de conversación.",
-      "auto": "Automático (Haiku)"
     },
     "navMappings": {
       "name": "Mapeos de navegación estilo Vim",

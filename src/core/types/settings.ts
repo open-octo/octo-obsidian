@@ -101,8 +101,6 @@ export interface ClaudianSettings {
   thinkingBudget: string;
   effortLevel: string;
   serviceTier: string;
-  enableAutoTitleGeneration: boolean;
-  titleGenerationModel: string;
 
   // Content settings
   excludedTags: string[];

@@ -61,7 +61,6 @@ export interface ProviderRegistration {
   chatUIConfig: ProviderChatUIConfig;
   settingsReconciler: ProviderSettingsReconciler;
   createRuntime: (options: Omit<CreateChatRuntimeOptions, 'providerId'>) => ChatRuntime;
-  createTitleGenerationService: (plugin: ClaudianPlugin) => TitleGenerationService;
   createInstructionRefineService: (plugin: ClaudianPlugin) => InstructionRefineService;
   createInlineEditService: (plugin: ClaudianPlugin) => InlineEditService;
   historyService: ProviderConversationHistoryService;
@@ -471,26 +470,6 @@ export interface ProviderSubagentLifecycleAdapter {
 // ---------------------------------------------------------------------------
 // Auxiliary service contracts
 // ---------------------------------------------------------------------------
-
-// -- Title generation --
-
-export type TitleGenerationResult =
-  | { success: true; title: string }
-  | { success: false; error: string };
-
-export type TitleGenerationCallback = (
-  conversationId: string,
-  result: TitleGenerationResult
-) => Promise<void>;
-
-export interface TitleGenerationService {
-  generateTitle(
-    conversationId: string,
-    userMessage: string,
-    callback: TitleGenerationCallback
-  ): Promise<void>;
-  cancel(): void;
-}
 
 // -- Instruction refinement --
 

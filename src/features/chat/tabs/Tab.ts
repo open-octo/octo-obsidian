@@ -417,12 +417,6 @@ function syncTabProviderServices(
   );
 }
 
-function ensureTitleGenerationService(tab: TabData, plugin: ClaudianPlugin): void {
-  if (!tab.services.titleGenerationService) {
-    tab.services.titleGenerationService = ProviderRegistry.createTitleGenerationService(plugin);
-  }
-}
-
 function cleanupTabRuntime(tab: TabData): void {
   if (tab.service && typeof tab.service.cleanup === 'function') {
     tab.service.cleanup();
@@ -544,7 +538,6 @@ export function createTab(options: TabCreateOptions): TabData {
     services: {
       subagentManager,
       instructionRefineService: null,
-      titleGenerationService: null,
     },
     ui: {
       fileContextManager: null,
@@ -793,7 +786,6 @@ function initializeInstructionAndTodo(tab: TabData, plugin: ClaudianPlugin): voi
   const { dom } = tab;
 
   syncTabProviderServices(tab, plugin);
-  ensureTitleGenerationService(tab, plugin);
   tab.ui.instructionModeManager = new InstructionModeManagerClass(
     dom.inputEl,
     {
@@ -1436,7 +1428,6 @@ export function initializeTabControllers(
       getMcpServerSelector: () => ui.mcpServerSelector,
       getExternalContextSelector: () => ui.externalContextSelector,
       clearQueuedMessage: () => tab.controllers.inputController?.clearQueuedMessage(),
-      getTitleGenerationService: () => services.titleGenerationService,
       getStatusPanel: () => ui.statusPanel,
       getAgentService: () => tab.service, // Use tab's service instead of plugin's
       getSelectedModel: () => getTabSelectedModel(tab, plugin),
@@ -1511,7 +1502,6 @@ export function initializeTabControllers(
     getExternalContextSelector: () => ui.externalContextSelector,
     getInstructionModeManager: () => ui.instructionModeManager,
     getInstructionRefineService: () => services.instructionRefineService,
-    getTitleGenerationService: () => services.titleGenerationService,
     getStatusPanel: () => ui.statusPanel,
     generateId: generateMessageId,
     resetInputHeight: () => {
@@ -1736,8 +1726,6 @@ export async function destroyTab(tab: TabData): Promise<void> {
   tab.services.instructionRefineService?.cancel();
   tab.services.instructionRefineService?.resetConversation();
   tab.services.instructionRefineService = null;
-  tab.services.titleGenerationService?.cancel();
-  tab.services.titleGenerationService = null;
   tab.ui.statusPanel?.destroy();
   tab.ui.statusPanel = null;
   tab.ui.navigationSidebar?.destroy();
@@ -1812,6 +1800,11 @@ export function setupServiceCallbacks(tab: TabData, plugin: ClaudianPlugin): voi
       })
     );
     tab.service.setAutoTurnCallback((result: AutoTurnResult) => renderAutoTriggeredTurn(tab, result));
+    tab.service.setSessionRenamedCallback((name) => {
+      if (tab.conversationId) {
+        void plugin.applyServerGeneratedTitle(tab.conversationId, name);
+      }
+    });
     tab.service.setPermissionModeSyncCallback((sdkMode) => {
       const mode = sdkMode === 'bypassPermissions' || sdkMode === 'yolo'
         ? 'yolo'

@@ -81,8 +81,6 @@ export interface Conversation {
   externalContextPaths?: string[];
   /** Context window usage information. */
   usage?: UsageInfo;
-  /** Status of AI title generation. */
-  titleGenerationStatus?: 'pending' | 'success' | 'failed';
   /** UI-enabled MCP servers for this session (context-saving servers activated via selector). */
   enabledMcpServers?: string[];
   /** Assistant checkpoint identifier for resumeAtMessageId after rewind. */
@@ -100,8 +98,6 @@ export interface ConversationMeta {
   lastResponseAt?: number;
   messageCount: number;
   preview: string;
-  /** Status of AI title generation. */
-  titleGenerationStatus?: 'pending' | 'success' | 'failed';
 }
 
 /**
@@ -112,7 +108,6 @@ export interface SessionMetadata {
   id: string;
   providerId?: ProviderId;
   title: string;
-  titleGenerationStatus?: 'pending' | 'success' | 'failed';
   createdAt: number;
   updatedAt: number;
   lastResponseAt?: number;

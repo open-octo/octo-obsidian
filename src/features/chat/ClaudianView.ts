@@ -414,6 +414,12 @@ export class ClaudianView extends ItemView {
     this.updateTabBarVisibility();
   }
 
+  /** Re-renders tab titles and the history dropdown after conversation metadata changes. */
+  refreshConversationMetadata(): void {
+    this.updateTabBar();
+    this.updateHistoryDropdown();
+  }
+
   // ============================================
   // Tab Management
   // ============================================

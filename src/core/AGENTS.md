@@ -40,7 +40,7 @@ for await (const chunk of runtime.query(preparedTurn, history)) {
 }
 ```
 
-Title generation is provider-routed by the global `titleGenerationModel` setting and is independent from the active chat tab provider.
+Conversation titles are owned by the provider. The runtime surfaces a provider-generated title through `setSessionRenamedCallback`; the feature layer applies it unconditionally via `plugin.applyServerGeneratedTitle()`. The plugin does not generate or set titles locally.
 
 Workspace services are resolved through `ProviderWorkspaceRegistry`:
 

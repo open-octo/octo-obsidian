@@ -1,13 +1,11 @@
 import { Menu, Notice, setIcon } from 'obsidian';
 
-import type { TitleGenerationService } from '../../../core/providers/types';
 import type { ChatRuntime } from '../../../core/runtime/ChatRuntime';
 import type { ChatRewindMode } from '../../../core/runtime/types';
 import type { Conversation } from '../../../core/types';
 import { t } from '../../../i18n/i18n';
 import type ClaudianPlugin from '../../../main';
 import { confirm } from '../../../shared/modals/ConfirmModal';
-import { extractUserDisplayContent } from '../../../utils/context';
 import type { MessageRenderer } from '../rendering/MessageRenderer';
 import { cleanupThinkingBlock } from '../rendering/ThinkingBlockRenderer';
 import { findRewindContext } from '../rewind';
@@ -45,7 +43,6 @@ export interface ConversationControllerDeps {
   getMcpServerSelector: () => McpServerSelector | null;
   getExternalContextSelector: () => ExternalContextSelector | null;
   clearQueuedMessage: () => void;
-  getTitleGenerationService: () => TitleGenerationService | null;
   getStatusPanel: () => StatusPanel | null;
   getAgentService?: () => ChatRuntime | null;
   getSelectedModel?: () => string | null;
@@ -457,18 +454,6 @@ export class ConversationController {
 
     await plugin.updateConversation(state.currentConversationId!, updates);
     state.hasPendingConversationSave = false;
-
-    // Sync the final conversation title to the provider session when supported.
-    // Title generation runs before query() and therefore before the session id
-    // exists; this is the earliest point where the session id is guaranteed to be
-    // persisted.
-    if (conversation?.title) {
-      try {
-        await agentService?.renameSession?.(conversation.title);
-      } catch (error) {
-        console.error('Failed to sync conversation title to provider session:', error);
-      }
-    }
   }
 
   /**
@@ -700,24 +685,6 @@ export class ConversationController {
       });
 
       const actions = item.createDiv({ cls: 'claudian-history-item-actions' });
-
-      // Show regenerate button if title generation failed, or loading indicator if pending
-      if (conv.titleGenerationStatus === 'pending') {
-        const loadingEl = actions.createEl('span', { cls: 'claudian-action-btn claudian-action-loading' });
-        setIcon(loadingEl, 'loader-2');
-        loadingEl.setAttribute('aria-label', 'Generating title...');
-      } else if (conv.titleGenerationStatus === 'failed') {
-        const regenerateBtn = actions.createEl('button', { cls: 'claudian-action-btn' });
-        setIcon(regenerateBtn, 'refresh-cw');
-        regenerateBtn.setAttribute('aria-label', 'Regenerate title');
-        regenerateBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          runConversationAction(
-            () => this.regenerateTitle(conv.id),
-            'Failed to regenerate response',
-          );
-        });
-      }
 
       if (openState === 'closed' && options.onOpenConversationInNewTab) {
         const openInNewTabBtn = actions.createEl('button', {
@@ -1060,68 +1027,6 @@ export class ConversationController {
   // ============================================
   // Utilities
   // ============================================
-
-  /** Generates a fallback title from the first message (used when AI fails). */
-  generateFallbackTitle(firstMessage: string): string {
-    const firstSentence = firstMessage.split(/[.!?\n]/)[0].trim();
-    const autoTitle = firstSentence.substring(0, 50);
-    const suffix = firstSentence.length > 50 ? '...' : '';
-    return `${autoTitle}${suffix}`;
-  }
-
-  /** Regenerates AI title for a conversation. */
-  async regenerateTitle(conversationId: string): Promise<void> {
-    const { plugin } = this.deps;
-    if (!plugin.settings.enableAutoTitleGeneration) return;
-
-    // Title generation is delegated to the active provider service
-    const fullConv = await plugin.getConversationById(conversationId);
-    if (!fullConv || fullConv.messages.length < 1) return;
-
-    const titleService = this.deps.getTitleGenerationService();
-    if (!titleService) return;
-
-    // Find first user message by role (not by index)
-    const firstUserMsg = fullConv.messages.find(m => m.role === 'user');
-    if (!firstUserMsg) return;
-
-    const userContent = firstUserMsg.displayContent
-      ?? extractUserDisplayContent(firstUserMsg.content)
-      ?? firstUserMsg.content;
-
-    // Store current title to check if user renames during generation
-    const expectedTitle = fullConv.title;
-
-    // Set pending status before starting generation
-    await plugin.updateConversation(conversationId, { titleGenerationStatus: 'pending' });
-    this.updateHistoryDropdown();
-
-    // Fire async AI title generation
-    await titleService.generateTitle(
-      conversationId,
-      userContent,
-      async (convId, result) => {
-        // Check if conversation still exists and user hasn't manually renamed
-        const currentConv = await plugin.getConversationById(convId);
-        if (!currentConv) return;
-
-        // Only apply AI title if user hasn't manually renamed (title still matches expected)
-        const userManuallyRenamed = currentConv.title !== expectedTitle;
-
-        if (result.success && !userManuallyRenamed) {
-          await plugin.renameConversation(convId, result.title);
-          await plugin.updateConversation(convId, { titleGenerationStatus: 'success' });
-        } else if (!userManuallyRenamed) {
-          // Keep existing title, mark as failed (only if user hasn't renamed)
-          await plugin.updateConversation(convId, { titleGenerationStatus: 'failed' });
-        } else {
-          // User manually renamed, clear the status (user's choice takes precedence)
-          await plugin.updateConversation(convId, { titleGenerationStatus: undefined });
-        }
-        this.updateHistoryDropdown();
-      }
-    );
-  }
 
   /** Formats a timestamp for display. */
   formatDate(timestamp: number): string {

@@ -11,7 +11,6 @@ import {
   type InstructionRefineService,
   type ProviderCapabilities,
   type ProviderId,
-  type TitleGenerationService,
 } from '../../../core/providers/types';
 import type { ChatRuntime } from '../../../core/runtime/ChatRuntime';
 import {
@@ -32,7 +31,6 @@ import { ResumeSessionDropdown } from '../../../shared/components/ResumeSessionD
 import { InstructionModal } from '../../../shared/modals/InstructionConfirmModal';
 import type { BrowserSelectionContext } from '../../../utils/browser';
 import type { CanvasSelectionContext } from '../../../utils/canvas';
-import { extractUserDisplayContent } from '../../../utils/context';
 import { formatDurationMmSs } from '../../../utils/date';
 import type { EditorSelectionContext } from '../../../utils/editor';
 import { appendMarkdownSnippet } from '../../../utils/markdown';
@@ -94,7 +92,6 @@ export interface InputControllerDeps {
   } | null;
   getInstructionModeManager: () => InstructionModeManager | null;
   getInstructionRefineService: () => InstructionRefineService | null;
-  getTitleGenerationService: () => TitleGenerationService | null;
   getStatusPanel: () => StatusPanel | null;
   getInputContainerEl: () => HTMLElement;
   generateId: () => string;
@@ -325,7 +322,7 @@ export class InputController {
     state.hasPendingConversationSave = true;
     renderer.addMessage(userMsg);
 
-    await this.triggerTitleGeneration();
+    await this.ensureConversationForFirstMessage();
 
     const assistantMsg: ChatMessage = {
       id: this.deps.generateId(),
@@ -1110,90 +1107,29 @@ export class InputController {
   }
 
   // ============================================
-  // Title Generation
+  // Conversation Creation
   // ============================================
 
   /**
-   * Triggers AI title generation after first user message.
-   * Handles setting fallback title, firing async generation, and updating UI.
+   * Creates the conversation on the first user message so it has an id (and a
+   * server session) before streaming begins. The title is owned by the provider
+   * and applied later via the rename broadcast (see applyServerGeneratedTitle).
    */
-  private async triggerTitleGeneration(): Promise<void> {
-    const { plugin, state, conversationController } = this.deps;
+  private async ensureConversationForFirstMessage(): Promise<void> {
+    const { plugin, state } = this.deps;
 
-    if (state.messages.length !== 1) {
+    if (state.messages.length !== 1 || state.currentConversationId) {
       return;
     }
 
-    if (!state.currentConversationId) {
-      const sessionId = this.getAgentService()?.getSessionId() ?? undefined;
-      const selectedModel = this.getAuxiliaryModel() ?? undefined;
-      const conversation = await plugin.createConversation({
-        providerId: this.getActiveProviderId(),
-        sessionId,
-        ...(selectedModel ? { selectedModel } : {}),
-      });
-      state.currentConversationId = conversation.id;
-    }
-
-    // Find first user message by role (not by index)
-    const firstUserMsg = state.messages.find(m => m.role === 'user');
-
-    if (!firstUserMsg) {
-      return;
-    }
-
-    const userContent = firstUserMsg.displayContent
-      ?? extractUserDisplayContent(firstUserMsg.content)
-      ?? firstUserMsg.content;
-
-    // Set immediate fallback title
-    const fallbackTitle = conversationController.generateFallbackTitle(userContent);
-    await plugin.renameConversation(state.currentConversationId, fallbackTitle);
-
-    if (!plugin.settings.enableAutoTitleGeneration) {
-      return;
-    }
-
-    // Fire async AI title generation only if service available
-    const titleService = this.deps.getTitleGenerationService();
-    if (!titleService) {
-      // No titleService, just keep the fallback title with no status
-      return;
-    }
-
-    // Mark as pending only when we're actually starting generation
-    await plugin.updateConversation(state.currentConversationId, { titleGenerationStatus: 'pending' });
-    conversationController.updateHistoryDropdown();
-
-    const convId = state.currentConversationId;
-    const expectedTitle = fallbackTitle; // Store to check if user renamed during generation
-
-    titleService.generateTitle(
-      convId,
-      userContent,
-      async (conversationId, result) => {
-        // Check if conversation still exists and user hasn't manually renamed
-        const currentConv = await plugin.getConversationById(conversationId);
-        if (!currentConv) return;
-
-        // Only apply AI title if user hasn't manually renamed (title still matches fallback)
-        const userManuallyRenamed = currentConv.title !== expectedTitle;
-
-        if (result.success && !userManuallyRenamed) {
-          await plugin.renameConversation(conversationId, result.title);
-          await plugin.updateConversation(conversationId, { titleGenerationStatus: 'success' });
-        } else if (!userManuallyRenamed) {
-          // Keep fallback title, mark as failed (only if user hasn't renamed)
-          await plugin.updateConversation(conversationId, { titleGenerationStatus: 'failed' });
-        } else {
-          // User manually renamed, clear the status (user's choice takes precedence)
-          await plugin.updateConversation(conversationId, { titleGenerationStatus: undefined });
-        }
-        conversationController.updateHistoryDropdown();
-      }
-    ).catch(() => {
-      // Silently ignore title generation errors
+    const sessionId = this.getAgentService()?.getSessionId() ?? undefined;
+    const selectedModel = this.getAuxiliaryModel() ?? undefined;
+    const conversation = await plugin.createConversation({
+      providerId: this.getActiveProviderId(),
+      sessionId,
+      ...(selectedModel ? { selectedModel } : {}),
     });
+    state.currentConversationId = conversation.id;
   }
 
   // ============================================

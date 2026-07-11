@@ -77,7 +77,6 @@
       "codex": "Codex"
     },
     "display": "表示",
-    "conversations": "会話",
     "content": "コンテンツ",
     "input": "入力",
     "setup": "セットアップ",
@@ -98,15 +97,6 @@
     "systemPrompt": {
       "name": "カスタムシステムプロンプト",
       "desc": "デフォルトのシステムプロンプトに追加される追加指示"
-    },
-    "autoTitle": {
-      "name": "会話タイトルを自動生成",
-      "desc": "最初のユーザーメッセージ送信後に会話タイトルを自動的に生成します。"
-    },
-    "titleModel": {
-      "name": "タイトル生成モデル",
-      "desc": "会話タイトルを自動生成するために使用されるモデル。",
-      "auto": "自動 (Haiku)"
     },
     "navMappings": {
       "name": "Vimスタイルナビゲーションマッピング",

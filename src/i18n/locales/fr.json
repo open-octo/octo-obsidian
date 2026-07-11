@@ -77,7 +77,6 @@
       "codex": "Codex"
     },
     "display": "Affichage",
-    "conversations": "Conversations",
     "content": "Contenu",
     "input": "Saisie",
     "setup": "Configuration",
@@ -98,15 +97,6 @@
     "systemPrompt": {
       "name": "Prompt système personnalisé",
       "desc": "Instructions supplémentaires ajoutées au prompt système par défaut"
-    },
-    "autoTitle": {
-      "name": "Générer automatiquement les titres de conversation",
-      "desc": "Génère automatiquement les titres de conversation après le premier message de l'utilisateur."
-    },
-    "titleModel": {
-      "name": "Modèle de génération de titre",
-      "desc": "Modèle utilisé pour générer automatiquement les titres de conversation.",
-      "auto": "Automatique (Haiku)"
     },
     "navMappings": {
       "name": "Mappages de navigation style Vim",

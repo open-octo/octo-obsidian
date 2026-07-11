@@ -69,7 +69,6 @@ export class SessionStorage {
       lastResponseAt: meta.lastResponseAt,
       messageCount: 0,
       preview: 'SDK session',
-      titleGenerationStatus: meta.titleGenerationStatus,
     }));
 
     return metas.sort((a, b) =>
@@ -87,7 +86,6 @@ export class SessionStorage {
       id: conversation.id,
       providerId: conversation.providerId,
       title: conversation.title,
-      titleGenerationStatus: conversation.titleGenerationStatus,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
       lastResponseAt: conversation.lastResponseAt,

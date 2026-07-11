@@ -329,7 +329,6 @@ export default class ClaudianPlugin extends Plugin {
         externalContextPaths: meta.externalContextPaths,
         enabledMcpServers: meta.enabledMcpServers,
         usage: meta.usage,
-        titleGenerationStatus: meta.titleGenerationStatus,
         resumeAtMessageId: meta.resumeAtMessageId,
       };
     }).sort(
@@ -700,6 +699,30 @@ export default class ClaudianPlugin extends Plugin {
     );
   }
 
+  /**
+   * Applies a title the provider generated server-side (delivered over the
+   * runtime's rename broadcast). Refreshes any views showing the conversation
+   * so the new title appears immediately.
+   */
+  async applyServerGeneratedTitle(conversationId: string, name: string): Promise<void> {
+    const conversation = this.conversations.find(c => c.id === conversationId);
+    if (!conversation) return;
+
+    const trimmed = name.trim();
+    if (!trimmed || conversation.title === trimmed) return;
+
+    conversation.title = trimmed;
+    conversation.updatedAt = Date.now();
+
+    await this.storage.sessions.saveMetadata(
+      this.storage.sessions.toSessionMetadata(conversation)
+    );
+
+    for (const view of this.getAllViews()) {
+      view.refreshConversationMetadata();
+    }
+  }
+
   async updateConversation(id: string, updates: Partial<Conversation>): Promise<void> {
     const conversation = this.conversations.find(c => c.id === id);
     if (!conversation) return;
@@ -755,7 +778,6 @@ export default class ClaudianPlugin extends Plugin {
       lastResponseAt: c.lastResponseAt,
       messageCount: c.messages.length,
       preview: this.getConversationPreview(c),
-      titleGenerationStatus: c.titleGenerationStatus,
     }));
   }
 

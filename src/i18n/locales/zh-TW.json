@@ -77,7 +77,6 @@
       "codex": "Codex"
     },
     "display": "顯示",
-    "conversations": "對話",
     "content": "內容",
     "input": "輸入",
     "setup": "設定",
@@ -98,15 +97,6 @@
     "systemPrompt": {
       "name": "自訂系統提示詞",
       "desc": "附加到預設系統提示詞的額外指令"
-    },
-    "autoTitle": {
-      "name": "自動生成對話標題",
-      "desc": "在使用者送出第一則訊息後自動生成對話標題。"
-    },
-    "titleModel": {
-      "name": "標題生成模型",
-      "desc": "用於自動生成對話標題的模型。",
-      "auto": "自動 (Haiku)"
     },
     "navMappings": {
       "name": "Vim 風格導航映射",

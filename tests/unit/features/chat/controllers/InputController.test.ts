@@ -157,7 +157,6 @@ function createMockDeps(overrides: Partial<InputControllerDeps> = {}): InputCont
       saveSettings: jest.fn(),
       settings: {
         permissionMode: 'yolo',
-        enableAutoTitleGeneration: true,
       },
       mcpManager: {
         extractMentions: jest.fn().mockReturnValue(new Set()),
@@ -194,7 +193,6 @@ function createMockDeps(overrides: Partial<InputControllerDeps> = {}): InputCont
     } as any,
     conversationController: {
       save: jest.fn(),
-      generateFallbackTitle: jest.fn().mockReturnValue('Test Title'),
       updateHistoryDropdown: jest.fn(),
       clearTerminalSubagentsFromMessages: jest.fn(),
     } as any,
@@ -214,7 +212,6 @@ function createMockDeps(overrides: Partial<InputControllerDeps> = {}): InputCont
     getExternalContextSelector: () => null,
     getInstructionModeManager: () => null,
     getInstructionRefineService: () => null,
-    getTitleGenerationService: () => null,
     getStatusPanel: () => null,
     generateId: () => `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     resetInputHeight: jest.fn(),
@@ -982,7 +979,6 @@ describe('InputController - Message Queue', () => {
       expect(deps.state.messages[0].displayContent).toBe('See ![[image.png]]');
       expect(deps.state.messages[0].images).toBeUndefined();
       expect(imageContextManager.clearImages).toHaveBeenCalled();
-      expect(deps.plugin.renameConversation).toHaveBeenCalledWith('conv-1', 'Test Title');
       // No user_message_sent in stream → save without clearing resumeAtMessageId
       expect(deps.conversationController.save).toHaveBeenCalledWith(true, undefined);
       expect((deps as any).mockAgentService.query).toHaveBeenCalled();
@@ -1190,17 +1186,10 @@ describe('InputController - Message Queue', () => {
     });
   });
 
-  describe('Title generation', () => {
-    it('should set pending status and fallback title after first user message', async () => {
-      const mockTitleService = {
-        generateTitle: jest.fn().mockResolvedValue(undefined),
-        cancel: jest.fn(),
-      };
-
+  describe('Conversation creation', () => {
+    it('should create the conversation on the first user message', async () => {
       // conversationId=null to test the conversation creation path
-      deps = createSendableDeps({
-        getTitleGenerationService: () => mockTitleService as any,
-      }, null);
+      deps = createSendableDeps({}, null);
 
       ((deps as any).mockAgentService.query as jest.Mock).mockReturnValue(
         createMockStream([
@@ -1222,8 +1211,6 @@ describe('InputController - Message Queue', () => {
       await controller.sendMessage();
 
       expect(deps.plugin.createConversation).toHaveBeenCalled();
-      expect(deps.plugin.updateConversation).toHaveBeenCalledWith('conv-1', { titleGenerationStatus: 'pending' });
-      expect(deps.plugin.renameConversation).toHaveBeenCalledWith('conv-1', 'Test Title');
     });
 
     it('should find messages by role, not by index', async () => {
@@ -1243,41 +1230,6 @@ describe('InputController - Message Queue', () => {
       const assistantMsg = deps.state.messages.find(m => m.role === 'assistant');
       expect(userMsg).toBeDefined();
       expect(assistantMsg).toBeDefined();
-    });
-
-    it('should call title generation service when available', async () => {
-      const mockTitleService = {
-        generateTitle: jest.fn().mockResolvedValue(undefined),
-        cancel: jest.fn(),
-      };
-
-      deps = createSendableDeps({
-        getTitleGenerationService: () => mockTitleService as any,
-      });
-
-      ((deps as any).mockAgentService.query as jest.Mock).mockReturnValue(
-        createMockStream([
-          { type: 'text', content: 'Response text' },
-          { type: 'done' },
-        ])
-      );
-
-      (deps.streamController.handleStreamChunk as jest.Mock).mockImplementation(async (chunk, msg) => {
-        if (chunk.type === 'text') {
-          msg.content = chunk.content;
-        }
-      });
-
-      inputEl = deps.getInputEl() as ReturnType<typeof createMockInputEl>;
-      inputEl.value = 'Hello world';
-      controller = new InputController(deps);
-
-      await controller.sendMessage();
-
-      expect(mockTitleService.generateTitle).toHaveBeenCalled();
-      const callArgs = mockTitleService.generateTitle.mock.calls[0];
-      expect(callArgs[0]).toBe('conv-1');
-      expect(callArgs[1]).toContain('Hello world');
     });
 
     it('should lazily create the conversation with the active runtime provider', async () => {
@@ -1344,119 +1296,6 @@ describe('InputController - Message Queue', () => {
       });
     });
 
-    it('should not overwrite user-renamed title in callback', async () => {
-      const mockTitleService = {
-        generateTitle: jest.fn().mockResolvedValue(undefined),
-        cancel: jest.fn(),
-      };
-
-      deps = createSendableDeps({
-        getTitleGenerationService: () => mockTitleService as any,
-      });
-
-      ((deps as any).mockAgentService.query as jest.Mock).mockReturnValue(
-        createMockStream([
-          { type: 'text', content: 'Response' },
-          { type: 'done' },
-        ])
-      );
-
-      (deps.streamController.handleStreamChunk as jest.Mock).mockImplementation(async (chunk, msg) => {
-        if (chunk.type === 'text') {
-          msg.content = chunk.content;
-        }
-      });
-
-      // Simulate user having renamed the conversation
-      (deps.plugin.getConversationById as jest.Mock).mockResolvedValue({
-        id: 'conv-1',
-        title: 'User Custom Title',
-      });
-
-      inputEl = deps.getInputEl() as ReturnType<typeof createMockInputEl>;
-      inputEl.value = 'Test';
-      controller = new InputController(deps);
-
-      await controller.sendMessage();
-
-      const callback = mockTitleService.generateTitle.mock.calls[0][2];
-      await callback('conv-1', { success: true, title: 'AI Generated Title' });
-
-      // Should clear status since user manually renamed (not apply AI title)
-      expect(deps.plugin.updateConversation).toHaveBeenCalledWith('conv-1', { titleGenerationStatus: undefined });
-    });
-
-    it('should not set pending status when titleService is null', async () => {
-      deps = createSendableDeps({
-        getTitleGenerationService: () => null,
-      });
-
-      ((deps as any).mockAgentService.query as jest.Mock).mockReturnValue(
-        createMockStream([
-          { type: 'text', content: 'Response' },
-          { type: 'done' },
-        ])
-      );
-
-      (deps.streamController.handleStreamChunk as jest.Mock).mockImplementation(async (chunk, msg) => {
-        if (chunk.type === 'text') {
-          msg.content = chunk.content;
-        }
-      });
-
-      inputEl = deps.getInputEl() as ReturnType<typeof createMockInputEl>;
-      inputEl.value = 'Test message';
-      controller = new InputController(deps);
-
-      await controller.sendMessage();
-
-      const updateCalls = (deps.plugin.updateConversation as jest.Mock).mock.calls;
-      const pendingCall = updateCalls.find((call: [string, { titleGenerationStatus?: string }]) =>
-        call[1]?.titleGenerationStatus === 'pending'
-      );
-      expect(pendingCall).toBeUndefined();
-    });
-
-    it('should NOT call title generation service when enableAutoTitleGeneration is false', async () => {
-      const mockTitleService = {
-        generateTitle: jest.fn().mockResolvedValue(undefined),
-        cancel: jest.fn(),
-      };
-
-      deps = createSendableDeps({
-        getTitleGenerationService: () => mockTitleService as any,
-      });
-      deps.plugin.settings.enableAutoTitleGeneration = false;
-
-      ((deps as any).mockAgentService.query as jest.Mock).mockReturnValue(
-        createMockStream([
-          { type: 'text', content: 'Response text' },
-          { type: 'done' },
-        ])
-      );
-
-      (deps.streamController.handleStreamChunk as jest.Mock).mockImplementation(async (chunk, msg) => {
-        if (chunk.type === 'text') {
-          msg.content = chunk.content;
-        }
-      });
-
-      inputEl = deps.getInputEl() as ReturnType<typeof createMockInputEl>;
-      inputEl.value = 'Hello world';
-      controller = new InputController(deps);
-
-      await controller.sendMessage();
-
-      expect(mockTitleService.generateTitle).not.toHaveBeenCalled();
-
-      const updateCalls = (deps.plugin.updateConversation as jest.Mock).mock.calls;
-      const pendingCall = updateCalls.find((call: [string, { titleGenerationStatus?: string }]) =>
-        call[1]?.titleGenerationStatus === 'pending'
-      );
-      expect(pendingCall).toBeUndefined();
-
-      expect(deps.plugin.renameConversation).toHaveBeenCalledWith('conv-1', 'Test Title');
-    });
   });
 
   describe('Auto-hide status panels on response end', () => {
@@ -2233,85 +2072,6 @@ describe('InputController - Message Queue', () => {
       await (controller as any).executeBuiltInCommand({ action: 'nonexistent-command', name: 'nonexistent-command' }, '');
 
       expect(mockNotice).toHaveBeenCalledWith('Unknown command: nonexistent-command');
-    });
-  });
-
-  describe('Title generation callback branches', () => {
-    it('should rename conversation when title generation callback succeeds', async () => {
-      const mockTitleService = {
-        generateTitle: jest.fn().mockImplementation(
-          async (convId: string, _user: string, callback: any) => {
-            (deps.plugin.getConversationById as jest.Mock).mockResolvedValue({
-              id: convId,
-              title: 'Test Title',
-            });
-            await callback(convId, { success: true, title: 'AI Generated Title' });
-          }
-        ),
-        cancel: jest.fn(),
-      };
-
-      deps = createSendableDeps({
-        getTitleGenerationService: () => mockTitleService as any,
-      });
-
-      ((deps as any).mockAgentService.query as jest.Mock).mockReturnValue(
-        createMockStream([{ type: 'text', content: 'Response' }, { type: 'done' }])
-      );
-
-      (deps.streamController.handleStreamChunk as jest.Mock).mockImplementation(async (chunk, msg) => {
-        if (chunk.type === 'text') msg.content = chunk.content;
-      });
-
-      inputEl = deps.getInputEl() as ReturnType<typeof createMockInputEl>;
-      inputEl.value = 'Hello world';
-      controller = new InputController(deps);
-
-      await controller.sendMessage();
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(deps.plugin.renameConversation).toHaveBeenCalledWith('conv-1', 'AI Generated Title');
-      expect(deps.plugin.updateConversation).toHaveBeenCalledWith('conv-1', {
-        titleGenerationStatus: 'success',
-      });
-    });
-
-    it('should mark as failed when title generation callback fails', async () => {
-      const mockTitleService = {
-        generateTitle: jest.fn().mockImplementation(
-          async (convId: string, _user: string, callback: any) => {
-            (deps.plugin.getConversationById as jest.Mock).mockResolvedValue({
-              id: convId,
-              title: 'Test Title',
-            });
-            await callback(convId, { success: false, title: '' });
-          }
-        ),
-        cancel: jest.fn(),
-      };
-
-      deps = createSendableDeps({
-        getTitleGenerationService: () => mockTitleService as any,
-      });
-
-      ((deps as any).mockAgentService.query as jest.Mock).mockReturnValue(
-        createMockStream([{ type: 'text', content: 'Response' }, { type: 'done' }])
-      );
-
-      (deps.streamController.handleStreamChunk as jest.Mock).mockImplementation(async (chunk, msg) => {
-        if (chunk.type === 'text') msg.content = chunk.content;
-      });
-
-      inputEl = deps.getInputEl() as ReturnType<typeof createMockInputEl>;
-      inputEl.value = 'Hello world';
-      controller = new InputController(deps);
-
-      await controller.sendMessage();
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(deps.plugin.updateConversation).toHaveBeenCalledWith('conv-1', {
-        titleGenerationStatus: 'failed',
-      });
     });
   });
 
