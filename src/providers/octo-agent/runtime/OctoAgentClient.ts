@@ -1,4 +1,5 @@
- 
+import { requestUrl } from 'obsidian';
+
 export interface OctoAgentClientOptions {
   baseUrl: string;
   accessKey?: string;
@@ -369,20 +370,25 @@ export class OctoAgentClient {
 
   private async fetchJson(path: string, init?: RequestInit): Promise<unknown> {
     const url = `${this.baseUrl}${path}${this.buildAuthSuffix(path.includes('?') ? '&' : '?')}`;
-    const response = await fetch(url, {
-      ...init,
+    // Obsidian's requestUrl is preferred over fetch: it runs outside the
+    // renderer's CORS sandbox. `throw: false` keeps the original HTTP-status
+    // error message instead of requestUrl's generic throw.
+    const response = await requestUrl({
+      url,
+      method: typeof init?.method === 'string' ? init.method : 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...(init?.headers ?? {}),
+        ...(init?.headers as Record<string, string> | undefined),
       },
+      body: typeof init?.body === 'string' ? init.body : undefined,
+      throw: false,
     });
 
-    if (!response.ok) {
-      const text = await response.text().catch(() => 'Unknown error');
-      throw new Error(`HTTP ${response.status}: ${text}`);
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`HTTP ${response.status}: ${response.text || 'Unknown error'}`);
     }
 
-    return response.json();
+    return response.text ? JSON.parse(response.text) : undefined;
   }
 
   private buildWebSocketUrl(path: string): string {

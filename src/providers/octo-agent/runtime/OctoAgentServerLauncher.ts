@@ -1,5 +1,7 @@
 import { spawn } from 'node:child_process';
 
+import { requestUrl } from 'obsidian';
+
 import type ClaudianPlugin from '../../../main';
 import { getEnhancedPath, parseEnvironmentVariables } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
@@ -21,10 +23,12 @@ export interface OctoAgentServerProbeResult {
 export async function probeOctoAgentServer(baseUrl: string, accessKey?: string): Promise<OctoAgentServerProbeResult> {
   try {
     const suffix = accessKey ? `?access_key=${encodeURIComponent(accessKey)}` : '';
-    const response = await fetch(`${baseUrl}/api/health${suffix}`, {
+    const response = await requestUrl({
+      url: `${baseUrl}/api/health${suffix}`,
       method: 'GET',
+      throw: false,
     });
-    return { running: response.ok };
+    return { running: response.status >= 200 && response.status < 300 };
   } catch {
     return { running: false };
   }

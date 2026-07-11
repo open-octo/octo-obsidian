@@ -265,6 +265,15 @@ export const setIcon = jest.fn();
 
 export const addIcon = jest.fn();
 
+// Defaults to an empty-JSON 200 response; tests override per case.
+export const requestUrl = jest.fn(async () => ({
+  status: 200,
+  text: '{}',
+  json: {},
+  arrayBuffer: new ArrayBuffer(0),
+  headers: {},
+}));
+
 // Notice mock that tracks constructor calls
 export const Notice = jest.fn().mockImplementation((_message: string, _timeout?: number) => {});
 

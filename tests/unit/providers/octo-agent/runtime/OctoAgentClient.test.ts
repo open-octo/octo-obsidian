@@ -1,26 +1,23 @@
+import { requestUrl } from 'obsidian';
+
 import { OctoAgentClient } from '@/providers/octo-agent/runtime/OctoAgentClient';
 
+const requestUrlMock = requestUrl as jest.Mock;
+
 describe('OctoAgentClient', () => {
-  let fetchSpy: jest.SpyInstance;
-
   beforeEach(() => {
-    fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(() =>
-      Promise.resolve(new Response('{}', { status: 200 })),
-    );
-  });
-
-  afterEach(() => {
-    fetchSpy.mockRestore();
+    requestUrlMock.mockReset();
+    requestUrlMock.mockResolvedValue({ status: 200, text: '{}', json: {} });
   });
 
   describe('REST calls', () => {
-    it('includes the access key on every fetch when configured', async () => {
+    it('includes the access key on every request when configured', async () => {
       const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088', accessKey: 'Octo_secret' });
       await (client as any).fetchJson('/api/config');
 
-      expect(fetchSpy).toHaveBeenCalledWith(
-        'http://127.0.0.1:8088/api/config?access_key=Octo_secret',
+      expect(requestUrlMock).toHaveBeenCalledWith(
         expect.objectContaining({
+          url: 'http://127.0.0.1:8088/api/config?access_key=Octo_secret',
           headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
         }),
       );
@@ -30,9 +27,8 @@ describe('OctoAgentClient', () => {
       const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
       await (client as any).fetchJson('/api/config');
 
-      expect(fetchSpy).toHaveBeenCalledWith(
-        'http://127.0.0.1:8088/api/config',
-        expect.anything(),
+      expect(requestUrlMock).toHaveBeenCalledWith(
+        expect.objectContaining({ url: 'http://127.0.0.1:8088/api/config' }),
       );
     });
   });
