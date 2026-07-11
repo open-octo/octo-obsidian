@@ -1,9 +1,7 @@
 import {
-  CLAUDIAN_SETTINGS_PATH,
-  LEGACY_CLAUDIAN_SETTINGS_PATH,
+  SETTINGS_PATH,
 } from '../../core/bootstrap/StoragePaths';
 import {
-  normalizeHiddenCommandList,
   normalizeHiddenProviderCommands,
 } from '../../core/providers/commands/hiddenCommands';
 import {
@@ -18,88 +16,23 @@ import {
   type ClaudianSettings,
   type EnvironmentScope,
   type EnvSnippet,
-  type HiddenProviderCommands,
   type ProviderConfigMap,
 } from '../../core/types/settings';
 import { DEFAULT_CLAUDIAN_SETTINGS } from './defaultSettings';
 
 export {
-  CLAUDIAN_SETTINGS_PATH,
-  LEGACY_CLAUDIAN_SETTINGS_PATH,
+  SETTINGS_PATH,
 };
 
 export type StoredClaudianSettings = ClaudianSettings;
-
-const LEGACY_TOP_LEVEL_PROVIDER_FIELDS = [
-  'claudeSafeMode',
-  'codexSafeMode',
-  'claudeCliPath',
-  'claudeCliPathsByHost',
-  'codexCliPath',
-  'codexCliPathsByHost',
-  'codexReasoningSummary',
-  'loadUserClaudeSettings',
-  'codexEnabled',
-  'lastClaudeModel',
-  'enableChrome',
-  'enableBangBash',
-  'enableOpus1M',
-  'enableSonnet1M',
-  'environmentVariables',
-  'lastEnvHash',
-  'lastCodexEnvHash',
-] as const;
-
-const LEGACY_STRIPPED_SETTING_FIELDS = [
-  'activeConversationId',
-  'show1MModel',
-  'hiddenSlashCommands',
-  'slashCommands',
-  'allowExternalAccess',
-  'allowedExportPaths',
-  'enableBlocklist',
-  'blockedCommands',
-  ...LEGACY_TOP_LEVEL_PROVIDER_FIELDS,
-  'openInMainTab',
-] as const;
-
-function stripLegacyFields(settings: Record<string, unknown>): Record<string, unknown> {
-  const cleaned = { ...settings };
-  for (const key of LEGACY_STRIPPED_SETTING_FIELDS) {
-    delete cleaned[key];
-  }
-  return cleaned;
-}
 
 function isChatViewPlacement(value: unknown): value is ChatViewPlacement {
   return typeof value === 'string'
     && (CHAT_VIEW_PLACEMENTS as readonly string[]).includes(value);
 }
 
-function normalizeChatViewPlacement(
-  value: unknown,
-  legacyOpenInMainTab: unknown,
-): ChatViewPlacement {
-  if (isChatViewPlacement(value)) {
-    return value;
-  }
-
-  if (typeof legacyOpenInMainTab === 'boolean') {
-    return legacyOpenInMainTab ? 'main-tab' : 'right-sidebar';
-  }
-
-  return DEFAULT_CLAUDIAN_SETTINGS.chatViewPlacement;
-}
-
-function shouldPersistChatViewPlacementMigration(
-  stored: Record<string, unknown>,
-  normalized: ChatViewPlacement,
-): boolean {
-  return 'openInMainTab' in stored
-    || (
-      'chatViewPlacement' in stored
-      && stored.chatViewPlacement !== normalized
-    );
+function normalizeChatViewPlacement(value: unknown): ChatViewPlacement {
+  return isChatViewPlacement(value) ? value : DEFAULT_CLAUDIAN_SETTINGS.chatViewPlacement;
 }
 
 function normalizeProviderConfigs(value: unknown): ProviderConfigMap {
@@ -114,37 +47,6 @@ function normalizeProviderConfigs(value: unknown): ProviderConfigMap {
     }
   }
   return result;
-}
-
-const HOST_SCOPED_PROVIDER_CONFIG_FIELDS: Record<string, string[]> = {};
-
-function hasHostScopedProviderConfigNormalization(
-  original: ProviderConfigMap,
-  normalized: unknown,
-): boolean {
-  if (!normalized || typeof normalized !== 'object' || Array.isArray(normalized)) {
-    return false;
-  }
-
-  const normalizedConfigs = normalized as ProviderConfigMap;
-  for (const [providerId, fields] of Object.entries(HOST_SCOPED_PROVIDER_CONFIG_FIELDS)) {
-    const originalConfig = original[providerId];
-    const normalizedConfig = normalizedConfigs[providerId];
-    if (!originalConfig || !normalizedConfig) {
-      continue;
-    }
-
-    for (const field of fields) {
-      if (
-        field in originalConfig
-        && JSON.stringify(originalConfig[field]) !== JSON.stringify(normalizedConfig[field])
-      ) {
-        return true;
-      }
-    }
-  }
-
-  return false;
 }
 
 function isEnvironmentScope(value: unknown): value is EnvironmentScope {
@@ -231,119 +133,35 @@ function normalizeEnvSnippets(value: unknown): EnvSnippet[] {
   return snippets;
 }
 
-function hasLegacyTopLevelProviderFields(stored: Record<string, unknown>): boolean {
-  return LEGACY_TOP_LEVEL_PROVIDER_FIELDS.some((key) => key in stored);
-}
-
-function mergeLegacyClaudeHiddenCommands(
-  hiddenProviderCommands: HiddenProviderCommands,
-  legacyHiddenSlashCommands: unknown,
-): HiddenProviderCommands {
-  const legacyCommands = normalizeHiddenCommandList(legacyHiddenSlashCommands);
-  if (legacyCommands.length === 0 || hiddenProviderCommands.claude) {
-    return hiddenProviderCommands;
-  }
-
-  return {
-    ...hiddenProviderCommands,
-    claude: legacyCommands,
-  };
-}
-
 export class ClaudianSettingsStorage {
   constructor(private adapter: VaultFileAdapter) {}
 
   async load(): Promise<StoredClaudianSettings> {
-    const settingsPath = await this.getLoadPath();
-    if (!settingsPath) {
+    if (!(await this.adapter.exists(SETTINGS_PATH))) {
       return this.getDefaults();
     }
 
-    const content = await this.adapter.read(settingsPath);
+    const content = await this.adapter.read(SETTINGS_PATH);
     const stored = JSON.parse(content) as Record<string, unknown>;
-    const hiddenProviderCommands = mergeLegacyClaudeHiddenCommands(
-      normalizeHiddenProviderCommands(stored.hiddenProviderCommands),
-      stored.hiddenSlashCommands,
-    );
-    const envSnippets = normalizeEnvSnippets(stored.envSnippets);
-    const customModelAliases = normalizeModelAliases(stored.customModelAliases);
-    const providerConfigs = normalizeProviderConfigs(stored.providerConfigs);
-    const chatViewPlacement = normalizeChatViewPlacement(
-      stored.chatViewPlacement,
-      stored.openInMainTab,
-    );
-    const legacyProviderSettings = {
-      ...stored,
-      hiddenProviderCommands,
-      providerConfigs,
-    };
-    const storedWithoutLegacy = stripLegacyFields({
-      ...legacyProviderSettings,
-    });
 
-    const legacyNormalized = {
-      ...storedWithoutLegacy,
-      sharedEnvironmentVariables: getSharedEnvironmentVariables(legacyProviderSettings),
-      envSnippets,
-      customModelAliases,
-      hiddenProviderCommands,
-      providerConfigs,
-      chatViewPlacement,
-    };
-
-    const merged = {
+    return {
       ...this.getDefaults(),
-      ...legacyNormalized,
+      ...stored,
+      sharedEnvironmentVariables: getSharedEnvironmentVariables(stored),
+      envSnippets: normalizeEnvSnippets(stored.envSnippets),
+      customModelAliases: normalizeModelAliases(stored.customModelAliases),
+      hiddenProviderCommands: normalizeHiddenProviderCommands(stored.hiddenProviderCommands),
+      providerConfigs: normalizeProviderConfigs(stored.providerConfigs),
+      chatViewPlacement: normalizeChatViewPlacement(stored.chatViewPlacement),
     };
-
-    const didNormalizeHostScopedProviderConfigs = hasHostScopedProviderConfigNormalization(
-      providerConfigs,
-      merged.providerConfigs,
-    );
-
-    if (
-      settingsPath !== CLAUDIAN_SETTINGS_PATH
-      || (
-      hasLegacyTopLevelProviderFields(stored)
-      || 'show1MModel' in stored
-      || 'slashCommands' in stored
-      || 'hiddenSlashCommands' in stored
-      || 'activeConversationId' in stored
-      || 'allowExternalAccess' in stored
-      || 'allowedExportPaths' in stored
-      || 'enableBlocklist' in stored
-      || 'blockedCommands' in stored
-      || shouldPersistChatViewPlacementMigration(stored, chatViewPlacement)
-      || JSON.stringify(envSnippets) !== JSON.stringify(stored.envSnippets ?? [])
-      || (
-        'customModelAliases' in stored
-        && JSON.stringify(customModelAliases) !== JSON.stringify(stored.customModelAliases ?? {})
-      )
-      || didNormalizeHostScopedProviderConfigs
-      )
-    ) {
-      await this.save(merged);
-    }
-
-    return merged;
   }
 
   async save(settings: StoredClaudianSettings): Promise<void> {
-    const content = JSON.stringify(
-      stripLegacyFields(settings),
-      null,
-      2,
-    );
-    await this.adapter.write(CLAUDIAN_SETTINGS_PATH, content);
-    await this.deleteLegacyFileIfPresent();
+    await this.adapter.write(SETTINGS_PATH, JSON.stringify(settings, null, 2));
   }
 
   async exists(): Promise<boolean> {
-    if (await this.adapter.exists(CLAUDIAN_SETTINGS_PATH)) {
-      return true;
-    }
-
-    return this.adapter.exists(LEGACY_CLAUDIAN_SETTINGS_PATH);
+    return this.adapter.exists(SETTINGS_PATH);
   }
 
   async update(updates: Partial<StoredClaudianSettings>): Promise<void> {
@@ -353,23 +171,5 @@ export class ClaudianSettingsStorage {
 
   private getDefaults(): StoredClaudianSettings {
     return DEFAULT_CLAUDIAN_SETTINGS;
-  }
-
-  private async getLoadPath(): Promise<string | null> {
-    if (await this.adapter.exists(CLAUDIAN_SETTINGS_PATH)) {
-      return CLAUDIAN_SETTINGS_PATH;
-    }
-
-    if (await this.adapter.exists(LEGACY_CLAUDIAN_SETTINGS_PATH)) {
-      return LEGACY_CLAUDIAN_SETTINGS_PATH;
-    }
-
-    return null;
-  }
-
-  private async deleteLegacyFileIfPresent(): Promise<void> {
-    if (await this.adapter.exists(LEGACY_CLAUDIAN_SETTINGS_PATH)) {
-      await this.adapter.delete(LEGACY_CLAUDIAN_SETTINGS_PATH);
-    }
   }
 }

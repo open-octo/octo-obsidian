@@ -64,8 +64,8 @@ The feature layer depends on `core/` contracts, not provider internals. Provider
 
 | Path | Contents |
 | --- | --- |
-| `.claudian/claudian-settings.json` | Shared plugin settings and provider-specific configuration |
-| `.claudian/sessions/*.meta.json` | Provider-neutral session metadata |
+| `.octo-agent/settings.json` | Shared plugin settings and provider-specific configuration |
+| `.octo-agent/sessions/*.meta.json` | Provider-neutral session metadata |
 
 Octo Agent's own conversation/session state is server-resident, owned by the Octo server process rather than vault- or home-directory-backed files — see `src/providers/octo-agent/AGENTS.md`.
 

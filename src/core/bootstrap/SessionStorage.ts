@@ -6,10 +6,9 @@ import type {
   ConversationMeta,
   SessionMetadata,
 } from '../types';
-import { LEGACY_SESSIONS_PATH, SESSIONS_PATH } from './StoragePaths';
+import { SESSIONS_PATH } from './StoragePaths';
 
 export {
-  LEGACY_SESSIONS_PATH,
   SESSIONS_PATH,
 };
 
@@ -20,33 +19,20 @@ export class SessionStorage {
     return `${SESSIONS_PATH}/${id}.meta.json`;
   }
 
-  getLegacyMetadataPath(id: string): string {
-    return `${LEGACY_SESSIONS_PATH}/${id}.meta.json`;
-  }
-
   async saveMetadata(metadata: SessionMetadata): Promise<void> {
-    const filePath = this.getMetadataPath(metadata.id);
     const content = JSON.stringify(metadata, null, 2);
-    await this.adapter.write(filePath, content);
-    await this.deleteLegacyMetadataIfPresent(metadata.id);
+    await this.adapter.write(this.getMetadataPath(metadata.id), content);
   }
 
   async loadMetadata(id: string): Promise<SessionMetadata | null> {
-    const filePath = await this.getLoadPath(id);
+    const filePath = this.getMetadataPath(id);
+    if (!(await this.adapter.exists(filePath))) {
+      return null;
+    }
 
     try {
-      if (!filePath) {
-        return null;
-      }
-
       const content = await this.adapter.read(filePath);
-      const metadata = JSON.parse(content) as SessionMetadata;
-
-      if (filePath !== this.getMetadataPath(id)) {
-        await this.saveMetadata(metadata);
-      }
-
-      return metadata;
+      return JSON.parse(content) as SessionMetadata;
     } catch {
       return null;
     }
@@ -54,23 +40,15 @@ export class SessionStorage {
 
   async deleteMetadata(id: string): Promise<void> {
     await this.adapter.delete(this.getMetadataPath(id));
-    await this.deleteLegacyMetadataIfPresent(id);
   }
 
   async listMetadata(): Promise<SessionMetadata[]> {
     const metas: SessionMetadata[] = [];
 
-    const files = await this.listUniqueMetadataFiles();
-
-    for (const filePath of files) {
+    for (const filePath of await this.listMetadataFiles(SESSIONS_PATH)) {
       try {
         const content = await this.adapter.read(filePath);
-        const raw = JSON.parse(content) as SessionMetadata;
-        metas.push(raw);
-
-        if (filePath.startsWith(`${LEGACY_SESSIONS_PATH}/`)) {
-          await this.saveMetadata(raw);
-        }
+        metas.push(JSON.parse(content) as SessionMetadata);
       } catch {
         // Skip files that fail to load.
       }
@@ -124,46 +102,6 @@ export class SessionStorage {
     };
   }
 
-  private async getLoadPath(id: string): Promise<string | null> {
-    const filePath = this.getMetadataPath(id);
-    if (await this.adapter.exists(filePath)) {
-      return filePath;
-    }
-
-    const legacyFilePath = this.getLegacyMetadataPath(id);
-    if (await this.adapter.exists(legacyFilePath)) {
-      return legacyFilePath;
-    }
-
-    return null;
-  }
-
-  private async deleteLegacyMetadataIfPresent(id: string): Promise<void> {
-    const legacyFilePath = this.getLegacyMetadataPath(id);
-    if (await this.adapter.exists(legacyFilePath)) {
-      await this.adapter.delete(legacyFilePath);
-    }
-  }
-
-  private async listUniqueMetadataFiles(): Promise<string[]> {
-    const preferredFiles = await this.listMetadataFiles(SESSIONS_PATH);
-    const fallbackFiles = await this.listMetadataFiles(LEGACY_SESSIONS_PATH);
-    const filesByName = new Map<string, string>();
-
-    for (const filePath of preferredFiles) {
-      filesByName.set(this.getFileName(filePath), filePath);
-    }
-
-    for (const filePath of fallbackFiles) {
-      const fileName = this.getFileName(filePath);
-      if (!filesByName.has(fileName)) {
-        filesByName.set(fileName, filePath);
-      }
-    }
-
-    return Array.from(filesByName.values());
-  }
-
   private async listMetadataFiles(folderPath: string): Promise<string[]> {
     try {
       const files = await this.adapter.listFiles(folderPath);
@@ -171,10 +109,5 @@ export class SessionStorage {
     } catch {
       return [];
     }
-  }
-
-  private getFileName(filePath: string): string {
-    const parts = filePath.split('/');
-    return parts[parts.length - 1] ?? filePath;
   }
 }

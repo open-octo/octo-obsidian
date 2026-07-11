@@ -215,10 +215,10 @@ describe('ClaudianPlugin', () => {
     it('should merge saved data with defaults', async () => {
       // Mock claudian-settings.json exists with custom values (Claudian-specific settings)
       mockApp.vault.adapter.exists.mockImplementation(async (path: string) => {
-        return path === '.claudian/claudian-settings.json';
+        return path === '.octo-agent/settings.json';
       });
       mockApp.vault.adapter.read.mockImplementation(async (path: string) => {
-        if (path === '.claudian/claudian-settings.json') {
+        if (path === '.octo-agent/settings.json') {
           return JSON.stringify({
             userName: 'TestUser',
           });
@@ -230,37 +230,6 @@ describe('ClaudianPlugin', () => {
 
       expect(plugin.settings.userName).toBe('TestUser');
       expect(plugin.settings.hiddenProviderCommands).toEqual(DEFAULT_SETTINGS.hiddenProviderCommands);
-    });
-
-    it('should strip legacy blocklist fields when loading old settings', async () => {
-      mockApp.vault.adapter.exists.mockImplementation(async (path: string) => {
-        return path === '.claudian/claudian-settings.json';
-      });
-      mockApp.vault.adapter.read.mockImplementation(async (path: string) => {
-        if (path === '.claudian/claudian-settings.json') {
-          return JSON.stringify({
-            enableBlocklist: false,
-            blockedCommands: { unix: ['rm -rf', '  '] },
-          });
-        }
-        return '';
-      });
-
-      await plugin.loadSettings();
-
-      expect('enableBlocklist' in plugin.settings).toBe(false);
-      expect('blockedCommands' in plugin.settings).toBe(false);
-      expect(mockApp.vault.adapter.write).toHaveBeenCalledWith(
-        '.claudian/claudian-settings.json',
-        expect.any(String),
-      );
-      const writeCall = (mockApp.vault.adapter.write as jest.Mock).mock.calls.find(
-        ([path]) => path === '.claudian/claudian-settings.json',
-      );
-      expect(writeCall).toBeDefined();
-      const content = JSON.parse(writeCall[1]);
-      expect(content).not.toHaveProperty('enableBlocklist');
-      expect(content).not.toHaveProperty('blockedCommands');
     });
 
     it('should use defaults when no saved data', async () => {
@@ -283,28 +252,6 @@ describe('ClaudianPlugin', () => {
       expect(plugin.settings).toEqual(DEFAULT_SETTINGS);
     });
 
-    it('should migrate legacy openInMainTab true to main-tab placement', async () => {
-      mockApp.vault.adapter.exists.mockImplementation(async (path: string) => {
-        return path === '.claudian/claudian-settings.json';
-      });
-      mockApp.vault.adapter.read.mockImplementation(async (path: string) => {
-        if (path === '.claudian/claudian-settings.json') {
-          return JSON.stringify({ openInMainTab: true });
-        }
-        return '';
-      });
-
-      await plugin.loadSettings();
-
-      expect(plugin.settings.chatViewPlacement).toBe('main-tab');
-      const writeCall = (mockApp.vault.adapter.write as jest.Mock).mock.calls.find(
-        ([path]) => path === '.claudian/claudian-settings.json',
-      );
-      expect(writeCall).toBeDefined();
-      const content = JSON.parse(writeCall[1]);
-      expect(content.chatViewPlacement).toBe('main-tab');
-      expect(content).not.toHaveProperty('openInMainTab');
-    });
   });
 
   describe('saveSettings', () => {
@@ -313,15 +260,15 @@ describe('ClaudianPlugin', () => {
 
       await plugin.saveSettings();
 
-      // Claudian-specific settings should be written to .claudian/claudian-settings.json
+      // Plugin settings should be written to .octo-agent/settings.json
       expect(mockApp.vault.adapter.write).toHaveBeenCalledWith(
-        '.claudian/claudian-settings.json',
+        '.octo-agent/settings.json',
         expect.any(String)
       );
 
       // The written content should include state fields
       const writeCall = (mockApp.vault.adapter.write as jest.Mock).mock.calls.find(
-        ([path]) => path === '.claudian/claudian-settings.json'
+        ([path]) => path === '.octo-agent/settings.json'
       );
       expect(writeCall).toBeDefined();
       const content = JSON.parse(writeCall[1]);
@@ -877,26 +824,26 @@ describe('ClaudianPlugin', () => {
       // Mock files exist
       mockApp.vault.adapter.exists.mockImplementation(async (path: string) => {
         // Session files
-        if (path === '.claudian/sessions' || path === '.claudian/sessions/conv-saved-1.meta.json') {
+        if (path === '.octo-agent/sessions' || path === '.octo-agent/sessions/conv-saved-1.meta.json') {
           return true;
         }
         // claudian-settings.json exists
-        if (path === '.claudian/claudian-settings.json') {
+        if (path === '.octo-agent/settings.json') {
           return true;
         }
         return false;
       });
       mockApp.vault.adapter.list.mockImplementation(async (path: string) => {
-        if (path === '.claudian/sessions') {
-          return { files: ['.claudian/sessions/conv-saved-1.meta.json'], folders: [] };
+        if (path === '.octo-agent/sessions') {
+          return { files: ['.octo-agent/sessions/conv-saved-1.meta.json'], folders: [] };
         }
         return { files: [], folders: [] };
       });
       mockApp.vault.adapter.read.mockImplementation(async (path: string) => {
-        if (path === '.claudian/sessions/conv-saved-1.meta.json') {
+        if (path === '.octo-agent/sessions/conv-saved-1.meta.json') {
           return sessionMeta;
         }
-        if (path === '.claudian/claudian-settings.json') {
+        if (path === '.octo-agent/settings.json') {
           return JSON.stringify({});
         }
         return '';
@@ -923,25 +870,25 @@ describe('ClaudianPlugin', () => {
       });
 
       mockApp.vault.adapter.exists.mockImplementation(async (path: string) => {
-        return path === '.claudian/claudian-settings.json' ||
-          path === '.claudian/sessions' ||
-          path === '.claudian/sessions/conv-saved-1.meta.json';
+        return path === '.octo-agent/settings.json' ||
+          path === '.octo-agent/sessions' ||
+          path === '.octo-agent/sessions/conv-saved-1.meta.json';
       });
       mockApp.vault.adapter.list.mockImplementation(async (path: string) => {
-        if (path === '.claudian/sessions') {
-          return { files: ['.claudian/sessions/conv-saved-1.meta.json'], folders: [] };
+        if (path === '.octo-agent/sessions') {
+          return { files: ['.octo-agent/sessions/conv-saved-1.meta.json'], folders: [] };
         }
         return { files: [], folders: [] };
       });
       mockApp.vault.adapter.read.mockImplementation(async (path: string) => {
-        if (path === '.claudian/claudian-settings.json') {
+        if (path === '.octo-agent/settings.json') {
           // All these fields are now in claudian-settings.json
           return JSON.stringify({
             lastEnvHash: 'old-hash',
             environmentVariables: 'ANTHROPIC_BASE_URL=https://api.example.com',
           });
         }
-        if (path === '.claudian/sessions/conv-saved-1.meta.json') {
+        if (path === '.octo-agent/sessions/conv-saved-1.meta.json') {
           return sessionMeta;
         }
         return '';
@@ -956,7 +903,7 @@ describe('ClaudianPlugin', () => {
       expect(loaded?.sessionId).toBeNull();
 
       const sessionWrite = (mockApp.vault.adapter.write as jest.Mock).mock.calls.find(
-        ([path]) => path === '.claudian/sessions/conv-saved-1.meta.json'
+        ([path]) => path === '.octo-agent/sessions/conv-saved-1.meta.json'
       );
       expect(sessionWrite).toBeDefined();
       const meta = JSON.parse(sessionWrite?.[1] as string);
