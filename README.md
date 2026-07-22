@@ -114,6 +114,14 @@ src/
 └── style/                       # Modular CSS
 ```
 
+## Contributors
+
+Thanks to everyone who has contributed to Octo Agent!
+
+<a href="https://github.com/open-octo/octo-obsidian/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=open-octo/octo-obsidian" alt="Contributors" />
+</a>
+
 ## License
 
 Licensed under the [MIT License](LICENSE).
