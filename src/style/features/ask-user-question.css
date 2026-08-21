@@ -4,6 +4,9 @@
   font-family: var(--font-monospace);
   font-size: 12px;
   outline: none;
+  /* The preview layout stacks by the pane's width, not the window's — an
+     Obsidian sidebar is narrow while the window is wide. */
+  container-type: inline-size;
 }
 
 .claudian-ask-inline-title {
@@ -312,4 +315,60 @@
   font-size: 12px;
   color: var(--text-normal);
   word-break: break-all;
+}
+
+/* ─── Preview layout ───────────────────────────────────────────────────────
+   A question whose options carry previews swaps the flat list for two
+   columns: labels left, the focused option's artifact right, with the notes
+   field under it. The narrow-pane fallback stacks them, since an Obsidian
+   sidebar is often too tight for two columns. */
+.claudian-ask-preview-body {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.claudian-ask-preview-body > .claudian-ask-list {
+  flex: 0 0 42%;
+  min-width: 0;
+}
+
+.claudian-ask-preview-pane {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.claudian-ask-preview-text {
+  margin: 0;
+  padding: 8px;
+  background: var(--background-primary-alt);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  font-family: var(--font-monospace);
+  font-size: var(--font-smallest);
+  line-height: 1.5;
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre;
+}
+
+.claudian-ask-clarify-item {
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 4px;
+  padding-top: 4px;
+  color: var(--text-muted);
+}
+
+@container (max-width: 460px) {
+  .claudian-ask-preview-body {
+    flex-direction: column;
+  }
+
+  .claudian-ask-preview-body > .claudian-ask-list {
+    flex: 1 1 auto;
+    width: 100%;
+  }
 }

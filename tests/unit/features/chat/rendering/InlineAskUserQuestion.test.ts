@@ -2,6 +2,17 @@ import { createMockEl } from '@test/helpers/mockElement';
 
 import { type InlineAskQuestionConfig, InlineAskUserQuestion } from '@/features/chat/rendering/InlineAskUserQuestion';
 
+/**
+ * The picker resolves with an outcome envelope, not a bare answer map: the
+ * host needs to tell a submitted set from "Chat about this" (clarify) and to
+ * read per-question notes. These tests only submit, so wrap the expected
+ * answers.
+ */
+function submitted(answers: Record<string, string | string[]>) {
+  return { answers, notes: {}, outcome: 'submitted' };
+}
+
+
 beforeAll(() => {
   globalThis.requestAnimationFrame = (cb: FrameRequestCallback) => {
     cb(0);
@@ -269,7 +280,9 @@ describe('InlineAskUserQuestion', () => {
       );
       submitRow?.click();
 
-      expect(resolve).toHaveBeenCalledWith({ 'Pick one': 'A' });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({ 'Pick one': 'A' }),
+      );
       jest.useRealTimers();
     });
 
@@ -350,10 +363,12 @@ describe('InlineAskUserQuestion', () => {
       );
       submitRow?.click();
 
-      expect(resolve).toHaveBeenCalledWith({
-        'Color?': 'Red',
-        'Size?': 'M',
-      });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({
+          'Color?': 'Red',
+          'Size?': 'M',
+        }),
+      );
       jest.useRealTimers();
     });
 
@@ -373,9 +388,11 @@ describe('InlineAskUserQuestion', () => {
       fireKeyDown(root, 'Tab');
       fireKeyDown(root, 'Enter');
 
-      expect(resolve).toHaveBeenCalledWith({
-        'Pick many': ['X', 'Y'],
-      });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({
+          'Pick many': ['X', 'Y'],
+        }),
+      );
     });
   });
 
@@ -444,10 +461,12 @@ describe('InlineAskUserQuestion', () => {
       );
       submitRow?.click();
 
-      expect(resolve).toHaveBeenCalledWith({
-        color_q: 'Red',
-        size_q: 'M',
-      });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({
+          color_q: 'Red',
+          size_q: 'M',
+        }),
+      );
       jest.useRealTimers();
     });
 
@@ -468,7 +487,9 @@ describe('InlineAskUserQuestion', () => {
       );
       submitRow?.click();
 
-      expect(resolve).toHaveBeenCalledWith({ 'Pick one': 'A' });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({ 'Pick one': 'A' }),
+      );
       jest.useRealTimers();
     });
   });
@@ -665,7 +686,9 @@ describe('InlineAskUserQuestion', () => {
       // Now on submit tab, Enter should submit
       fireKeyDown(root, 'Enter');
 
-      expect(resolve).toHaveBeenCalledWith({ Q: 'A' });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({ Q: 'A' }),
+      );
       jest.useRealTimers();
     });
 
@@ -940,7 +963,9 @@ describe('InlineAskUserQuestion - immediateSelect mode', () => {
       );
       items[0]?.click();
 
-      expect(resolve).toHaveBeenCalledWith({ Pick: 'A' });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({ Pick: 'A' }),
+      );
     });
 
     it('resolves with second option on click', () => {
@@ -952,7 +977,9 @@ describe('InlineAskUserQuestion - immediateSelect mode', () => {
       );
       items[1]?.click();
 
-      expect(resolve).toHaveBeenCalledWith({ Pick: 'B' });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({ Pick: 'B' }),
+      );
     });
 
     it('keys immediate-select result by id when provided', () => {
@@ -968,7 +995,9 @@ describe('InlineAskUserQuestion - immediateSelect mode', () => {
       );
       items[0]?.click();
 
-      expect(resolve).toHaveBeenCalledWith({ approval_q: 'Yes' });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({ approval_q: 'Yes' }),
+      );
     });
   });
 
@@ -996,7 +1025,9 @@ describe('InlineAskUserQuestion - immediateSelect mode', () => {
       fireKeyDown(root, 'ArrowDown');
       fireKeyDown(root, 'Enter');
 
-      expect(resolve).toHaveBeenCalledWith({ Pick: 'B' });
+      expect(resolve).toHaveBeenCalledWith(
+        submitted({ Pick: 'B' }),
+      );
     });
 
     it('Escape cancels', () => {

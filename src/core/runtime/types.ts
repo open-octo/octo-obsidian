@@ -37,10 +37,27 @@ export type ApprovalCallback = (
   options?: ApprovalCallbackOptions,
 ) => Promise<ApprovalDecision>;
 
+/**
+ * What the user did with an ask_user_question prompt. `null` from the
+ * callback means the prompt was dismissed; anything else carries the answers
+ * plus how the user left the picker.
+ */
+export interface AskUserQuestionOutcome {
+  /** Answers keyed by question id (or its text when it has no id). */
+  answers: Record<string, string | string[]>;
+  /**
+   * 'clarify' means the user chose "Chat about this": they want to talk it
+   * over instead of picking, and the answers gathered so far ride along.
+   */
+  outcome: 'submitted' | 'clarify';
+  /** Per-question notes, keyed like answers. Preview layout only. */
+  notes?: Record<string, string>;
+}
+
 export type AskUserQuestionCallback = (
   input: Record<string, unknown>,
   signal?: AbortSignal,
-) => Promise<Record<string, string | string[]> | null>;
+) => Promise<AskUserQuestionOutcome | null>;
 
 export interface ChatTurnRequest {
   text: string;
