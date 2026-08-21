@@ -24,6 +24,7 @@ import type {
   ChatRuntimeQueryOptions,
   ChatTurnRequest,
 } from '../../../core/runtime/types';
+import type { AskUserQuestionOutcome } from '../../../core/runtime/types';
 import { TOOL_EXIT_PLAN_MODE } from '../../../core/tools/toolNames';
 import type { ApprovalDecision, ChatMessage, ExitPlanModeDecision, StreamChunk } from '../../../core/types';
 import type ClaudianPlugin from '../../../main';
@@ -1332,7 +1333,7 @@ export class InputController {
     );
 
     if (!result) return 'cancel';
-    const selected = Object.values(result)[0];
+    const selected = Object.values(result.answers)[0];
     const selectedValue = Array.isArray(selected) ? selected[0] : selected;
     if (typeof selectedValue !== 'string') {
       new Notice(`Unexpected approval selection: "${String(selectedValue)}"`);
@@ -1353,7 +1354,7 @@ export class InputController {
   async handleAskUserQuestion(
     input: Record<string, unknown>,
     signal?: AbortSignal,
-  ): Promise<Record<string, string | string[]> | null> {
+  ): Promise<AskUserQuestionOutcome | null> {
     const inputContainerEl = this.deps.getInputContainerEl();
     const parentEl = inputContainerEl.parentElement;
     if (!parentEl) {
@@ -1376,15 +1377,15 @@ export class InputController {
     setPending: (inline: InlineAskUserQuestion | null) => void,
     signal?: AbortSignal,
     config?: InlineAskQuestionConfig,
-  ): Promise<Record<string, string | string[]> | null> {
+  ): Promise<AskUserQuestionOutcome | null> {
     this.deps.streamController.hideThinkingIndicator();
     this.hideInputContainer(inputContainerEl);
 
-    return new Promise<Record<string, string | string[]> | null>((resolve, reject) => {
+    return new Promise<AskUserQuestionOutcome | null>((resolve, reject) => {
       const inline = new InlineAskUserQuestion(
         parentEl,
         input,
-        (result: Record<string, string | string[]> | null) => {
+        (result: AskUserQuestionOutcome | null) => {
           setPending(null);
           this.restoreInputContainer(inputContainerEl);
           resolve(result);

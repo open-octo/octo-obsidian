@@ -54,6 +54,11 @@ interface ActiveQuery {
   turnAborted: boolean;
 }
 
+/** Stable key for one question of a set, used to map answers back by index. */
+function askQuestionKey(questionId: string, index: number): string {
+  return `${questionId}#${index}`;
+}
+
 export class OctoAgentChatRuntime implements ChatRuntime {
   readonly providerId: ProviderId = 'octo-agent';
 
@@ -1017,37 +1022,52 @@ export class OctoAgentChatRuntime implements ChatRuntime {
     }
 
     const callback = this.askUserQuestionCallback;
-    if (!callback) {
-      this.client.answerUserQuestion(event.question_id, [], '', true);
+    if (!callback || event.questions.length === 0) {
+      this.client.answerUserQuestion(event.question_id, 'rejected', []);
       return;
     }
 
     try {
       const result = await callback({
-        header: event.header,
-        questions: [
-          {
-            header: event.header || event.question,
-            id: event.question_id,
-            isOther: true,
-            multiSelect: event.multi_select,
-            options: event.options.map((option) => ({ description: '', label: option })),
-            question: event.question,
-          },
-        ],
+        // The picker keys answers by question id; the wire has no per-question
+        // id, so index-derived ones keep the mapping back unambiguous even
+        // when two questions read alike.
+        allowClarify: true,
+        questions: event.questions.map((question, idx) => ({
+          header: question.header || `Q${idx + 1}`,
+          id: askQuestionKey(event.question_id, idx),
+          // "Other" is a row in the flat layout; the preview layout replaces
+          // it with notes, which the picker decides on its own.
+          isOther: true,
+          isSecret: event.secret === true,
+          multiSelect: question.multi_select === true,
+          options: (question.options ?? []).map((option) => ({
+            description: option.description ?? '',
+            label: option.label,
+            preview: option.preview ?? '',
+          })),
+          question: question.question,
+        })),
       });
 
       if (result === null) {
-        this.client.answerUserQuestion(event.question_id, [], '', true);
+        // Dismissed: the server discards whatever was picked, so a withdrawn
+        // set never reads as a successful answer.
+        this.client.answerUserQuestion(event.question_id, 'rejected', []);
         return;
       }
 
-      const answer = result[event.question_id] ?? result[event.question];
-      const { choices, custom } = this.normalizeAnswer(answer, event.options);
-      this.client.answerUserQuestion(event.question_id, choices, custom, false);
+      const answers = event.questions.map((question, idx) => {
+        const key = askQuestionKey(event.question_id, idx);
+        const labels = (question.options ?? []).map((option) => option.label);
+        const { choices, custom } = this.normalizeAnswer(result.answers[key], labels);
+        return { choices, custom, notes: result.notes?.[key] ?? '' };
+      });
+
+      this.client.answerUserQuestion(event.question_id, result.outcome, answers);
     } catch (error) {
       console.error('Error handling octo-agent user question:', error);
-      this.client.answerUserQuestion(event.question_id, [], '', true);
+      this.client.answerUserQuestion(event.question_id, 'rejected', []);
     }
   }
 

@@ -1,7 +1,10 @@
+import type { AskUserQuestionOutcome } from '../../../core/runtime/types';
 import type { AskUserQuestionItem, AskUserQuestionOption } from '../../../core/types/tools';
 
 const HINTS_TEXT = 'Enter to select \u00B7 Tab/Arrow keys to navigate \u00B7 Esc to cancel';
 const HINTS_TEXT_IMMEDIATE = 'Enter to select \u00B7 Arrow keys to navigate \u00B7 Esc to cancel';
+
+type RowKind = 'option' | 'custom' | 'notes' | 'clarify';
 
 export interface InlineAskQuestionConfig {
   title?: string;
@@ -13,7 +16,7 @@ export interface InlineAskQuestionConfig {
 export class InlineAskUserQuestion {
   private containerEl: HTMLElement;
   private input: Record<string, unknown>;
-  private resolveCallback: (result: Record<string, string | string[]> | null) => void;
+  private resolveCallback: (result: AskUserQuestionOutcome | null) => void;
   private resolved = false;
   private signal?: AbortSignal;
   private config: Required<Omit<InlineAskQuestionConfig, 'headerEl'>> & { headerEl?: HTMLElement };
@@ -21,6 +24,10 @@ export class InlineAskUserQuestion {
   private questions: AskUserQuestionItem[] = [];
   private answers = new Map<number, Set<string>>();
   private customInputs = new Map<number, string>();
+  // Notes are the preview layout's text slot: a remark on the comparison
+  // rather than an answer, echoed back to the model alongside the pick.
+  private notes = new Map<number, string>();
+  private rowKinds: RowKind[] = [];
 
   private activeTabIndex = 0;
   private focusedItemIndex = 0;
@@ -37,7 +44,7 @@ export class InlineAskUserQuestion {
   constructor(
     containerEl: HTMLElement,
     input: Record<string, unknown>,
-    resolve: (result: Record<string, string | string[]> | null) => void,
+    resolve: (result: AskUserQuestionOutcome | null) => void,
     signal?: AbortSignal,
     config?: InlineAskQuestionConfig,
   ) {
@@ -78,6 +85,7 @@ export class InlineAskUserQuestion {
     for (let i = 0; i < this.questions.length; i++) {
       this.answers.set(i, new Set());
       this.customInputs.set(i, '');
+      this.notes.set(i, '');
     }
 
     if (!this.config.immediateSelect) {
@@ -145,8 +153,14 @@ export class InlineAskUserQuestion {
       const obj = opt as Record<string, unknown>;
       const label = this.extractLabel(obj);
       const description = typeof obj.description === 'string' ? obj.description : '';
+      const preview = typeof obj.preview === 'string' ? obj.preview : '';
       const value = this.extractValue(obj, label);
-      return { label, description, ...(value !== label ? { value } : {}) };
+      return {
+        label,
+        description,
+        ...(preview ? { preview } : {}),
+        ...(value !== label ? { value } : {}),
+      };
     }
     return { label: this.stringifyOptionValue(opt), description: '' };
   }
@@ -209,7 +223,11 @@ export class InlineAskUserQuestion {
   }
 
   private isQuestionAnswered(idx: number): boolean {
-    return this.answers.get(idx)!.size > 0 || this.customInputs.get(idx)!.trim().length > 0;
+    return this.answers.get(idx)!.size > 0
+      || this.customInputs.get(idx)!.trim().length > 0
+      // A note alone counts: the model is told "(no option selected)" plus
+      // the note, which is a real answer to a comparison question.
+      || (this.notes.get(idx) ?? '').trim().length > 0;
   }
 
   private switchTab(index: number): void {
@@ -236,17 +254,36 @@ export class InlineAskUserQuestion {
     }
   }
 
+  /**
+   * A question with previews (and single-select) renders in the preview
+   * layout, which REPLACES the flat list rather than adding to it: option
+   * labels only, a preview pane for the focused one, and notes where the
+   * free-text row would be. Same split Claude Code makes.
+   */
+  private usesPreviewLayout(q: AskUserQuestionItem): boolean {
+    return !q.multiSelect && q.options.some((o) => !!o.preview);
+  }
+
+  private allowClarify(): boolean {
+    return this.input.allowClarify === true;
+  }
+
   private renderQuestionTab(idx: number): void {
     const q = this.questions[idx];
     const isMulti = q.multiSelect;
     const selected = this.answers.get(idx)!;
+    const preview = this.usesPreviewLayout(q);
+    this.rowKinds = [];
 
     this.contentArea.createDiv({
       text: q.question,
       cls: 'claudian-ask-question-text',
     });
 
-    const listEl = this.contentArea.createDiv({ cls: 'claudian-ask-list' });
+    const bodyEl = preview
+      ? this.contentArea.createDiv({ cls: 'claudian-ask-preview-body' })
+      : this.contentArea;
+    const listEl = bodyEl.createDiv({ cls: 'claudian-ask-list' });
 
     for (let optIdx = 0; optIdx < q.options.length; optIdx++) {
       const option = q.options[optIdx];
@@ -273,21 +310,29 @@ export class InlineAskUserQuestion {
         labelRow.createSpan({ text: ' \u2713', cls: 'claudian-ask-check-mark' });
       }
 
-      if (option.description) {
+      // The preview stands in for the description in that layout.
+      if (option.description && !preview) {
         labelBlock.createDiv({ text: option.description, cls: 'claudian-ask-item-desc' });
       }
 
       row.addEventListener('click', () => {
         this.focusedItemIndex = optIdx;
         this.updateFocusIndicator();
+        if (preview) {
+          // A click here brings the option's preview up for comparison; the
+          // second click (or Enter) commits it.
+          this.updatePreviewPane();
+          return;
+        }
         this.selectOption(idx, option);
       });
 
       this.currentItems.push(row);
+      this.rowKinds.push('option');
     }
 
     if (this.canShowCustomInputForQuestion(q)) {
-      const customIdx = q.options.length;
+      const customIdx = this.rowKinds.length;
       const customFocused = customIdx === this.focusedItemIndex;
       const customText = this.customInputs.get(idx) ?? '';
       const hasCustomText = customText.trim().length > 0;
@@ -331,12 +376,76 @@ export class InlineAskUserQuestion {
       });
 
       this.currentItems.push(customRow);
+      this.rowKinds.push('custom');
+    }
+
+    if (preview) {
+      const paneEl = bodyEl.createDiv({ cls: 'claudian-ask-preview-pane' });
+      paneEl.createEl('pre', {
+        text: this.previewTextFor(idx),
+        cls: 'claudian-ask-preview-text',
+      });
+
+      const noteIdx = this.rowKinds.length;
+      const noteFocused = noteIdx === this.focusedItemIndex;
+      const noteRow = paneEl.createDiv({ cls: 'claudian-ask-item claudian-ask-custom-item' });
+      if (noteFocused) noteRow.addClass('is-focused');
+      noteRow.createSpan({ text: noteFocused ? '\u203A' : '\u00A0', cls: 'claudian-ask-cursor' });
+
+      const noteEl = noteRow.createEl('input', {
+        cls: 'claudian-ask-custom-text',
+        value: this.notes.get(idx) ?? '',
+      });
+      noteEl.setAttribute('type', 'text');
+      noteEl.setAttribute('placeholder', 'Add notes on this option.');
+      noteEl.addEventListener('input', () => {
+        this.notes.set(idx, noteEl.value);
+        this.updateTabIndicators();
+      });
+      noteEl.addEventListener('focus', () => {
+        this.isInputFocused = true;
+      });
+      noteEl.addEventListener('blur', () => {
+        this.isInputFocused = false;
+      });
+      noteRow.addEventListener('click', () => {
+        this.focusedItemIndex = noteIdx;
+        this.updateFocusIndicator();
+        noteEl.focus();
+      });
+
+      this.currentItems.push(noteRow);
+      this.rowKinds.push('notes');
+    }
+
+    if (this.allowClarify()) {
+      const clarifyIdx = this.rowKinds.length;
+      const clarifyFocused = clarifyIdx === this.focusedItemIndex;
+      const clarifyRow = listEl.createDiv({ cls: 'claudian-ask-item claudian-ask-clarify-item' });
+      if (clarifyFocused) clarifyRow.addClass('is-focused');
+      clarifyRow.createSpan({ text: clarifyFocused ? '\u203A' : '\u00A0', cls: 'claudian-ask-cursor' });
+      clarifyRow.createSpan({ text: 'Chat about this', cls: 'claudian-ask-item-label' });
+      clarifyRow.addEventListener('click', () => this.handleClarify());
+      this.currentItems.push(clarifyRow);
+      this.rowKinds.push('clarify');
     }
 
     this.contentArea.createDiv({
       text: this.config.immediateSelect ? HINTS_TEXT_IMMEDIATE : HINTS_TEXT,
       cls: 'claudian-ask-hints',
     });
+  }
+
+  /** The focused option's preview, or a placeholder when it has none. */
+  private previewTextFor(idx: number): string {
+    const q = this.questions[idx];
+    const option = q.options[this.focusedItemIndex];
+    return option?.preview || 'No preview available';
+  }
+
+  private updatePreviewPane(): void {
+    const textEl = this.contentArea.querySelector('.claudian-ask-preview-text');
+    if (textEl) textEl.textContent = this.previewTextFor(this.activeTabIndex);
   }
 
   private renderSubmitTab(): void {
@@ -431,9 +540,7 @@ export class InlineAskUserQuestion {
 
     if (this.config.immediateSelect) {
       const key = q.id ?? q.question;
-      const result: Record<string, string> = {};
-      result[key] = optionValue;
-      this.handleResolve(result);
+      this.handleResolve({ answers: { [key]: optionValue }, notes: this.collectNotes(), outcome: 'submitted' });
       return;
     }
 
@@ -518,12 +625,14 @@ export class InlineAskUserQuestion {
         e.stopPropagation();
         this.focusedItemIndex = Math.min(this.focusedItemIndex + 1, maxFocusIndex);
         this.updateFocusIndicator();
+        this.updatePreviewPane();
         return true;
       case 'ArrowUp':
         e.preventDefault();
         e.stopPropagation();
         this.focusedItemIndex = Math.max(this.focusedItemIndex - 1, 0);
         this.updateFocusIndicator();
+        this.updatePreviewPane();
         return true;
       case 'ArrowLeft':
         if (this.config.immediateSelect) return false;
@@ -578,8 +687,7 @@ export class InlineAskUserQuestion {
         e.stopPropagation();
         (this.rootEl.ownerDocument.activeElement as HTMLElement | null)?.blur();
         this.isInputFocused = false;
-        const q = this.questions[this.activeTabIndex];
-        const maxIdx = this.canShowCustomInputForQuestion(q) ? q.options.length : q.options.length - 1;
+        const maxIdx = Math.max(0, this.rowKinds.length - 1);
         if (e.key === 'ArrowUp') {
           this.focusedItemIndex = Math.max(this.focusedItemIndex - 1, 0);
         } else {
@@ -608,9 +716,7 @@ export class InlineAskUserQuestion {
 
     const isSubmitTab = this.activeTabIndex === this.questions.length;
     const q = this.questions[this.activeTabIndex];
-    const maxFocusIndex = isSubmitTab
-      ? 1
-      : (this.canShowCustomInputForQuestion(q) ? q.options.length : q.options.length - 1);
+    const maxFocusIndex = isSubmitTab ? 1 : Math.max(0, this.rowKinds.length - 1);
 
     if (this.handleNavigationKey(e, maxFocusIndex)) return;
 
@@ -631,18 +737,22 @@ export class InlineAskUserQuestion {
         e.stopPropagation();
         this.switchTab(this.activeTabIndex + 1);
         break;
-      case 'Enter':
+      case 'Enter': {
         e.preventDefault();
         e.stopPropagation();
-        if (this.focusedItemIndex < q.options.length) {
+        const kind = this.rowKinds[this.focusedItemIndex];
+        if (kind === 'option') {
           this.selectOption(this.activeTabIndex, q.options[this.focusedItemIndex]);
-        } else if (this.canShowCustomInputForQuestion(q)) {
+        } else if (kind === 'custom' || kind === 'notes') {
           this.isInputFocused = true;
-          const customRow = this.currentItems[this.focusedItemIndex];
-          const input = customRow?.querySelector('.claudian-ask-custom-text') as HTMLInputElement;
+          const row = this.currentItems[this.focusedItemIndex];
+          const input = row?.querySelector('.claudian-ask-custom-text') as HTMLInputElement;
           input?.focus();
+        } else if (kind === 'clarify') {
+          this.handleClarify();
         }
         break;
+      }
     }
   }
 
@@ -668,10 +778,46 @@ export class InlineAskUserQuestion {
 
       result[key] = customInput || selectedValues[0] || '';
     }
-    this.handleResolve(result);
+    this.handleResolve({ answers: result, notes: this.collectNotes(), outcome: 'submitted' });
+  }
+
+  /**
+   * "Chat about this": end the prompt without answering it, carrying whatever
+   * was picked so far. The host turns this into a clarify result, so the model
+   * asks what the user meant instead of acting on a half-made decision.
+   */
+  private handleClarify(): void {
+    const answers: Record<string, string | string[]> = {};
+    for (let i = 0; i < this.questions.length; i++) {
+      const question = this.questions[i];
+      const key = question.id ?? question.question;
+      const selectedValues = this.getSelectedLabels(i);
+      const customInput = this.customInputs.get(i)!.trim();
+      if (question.multiSelect) {
+        const picks = [...selectedValues];
+        if (customInput) picks.push(customInput);
+        if (picks.length > 0) answers[key] = picks;
+        continue;
+      }
+      const single = customInput || selectedValues[0] || '';
+      if (single) answers[key] = single;
+    }
+    this.handleResolve({ answers, notes: this.collectNotes(), outcome: 'clarify' });
+  }
+
+  private collectNotes(): Record<string, string> {
+    const notes: Record<string, string> = {};
+    for (let i = 0; i < this.questions.length; i++) {
+      const note = (this.notes.get(i) ?? '').trim();
+      if (!note) continue;
+      const question = this.questions[i];
+      notes[question.id ?? question.question] = note;
+    }
+    return notes;
   }
 
   private canShowCustomInputForQuestion(question: AskUserQuestionItem): boolean {
+    if (this.usesPreviewLayout(question)) return false;
     return this.config.showCustomInput && question.isOther === true;
   }
 
@@ -687,7 +833,7 @@ export class InlineAskUserQuestion {
       .map(option => option.label);
   }
 
-  private handleResolve(result: Record<string, string | string[]> | null): void {
+  private handleResolve(result: AskUserQuestionOutcome | null): void {
     if (!this.resolved) {
       this.resolved = true;
       this.rootEl?.removeEventListener('keydown', this.boundKeyDown);

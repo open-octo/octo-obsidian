@@ -71,7 +71,7 @@ export type OctoAgentEvent =
   | { type: 'session_update'; session_id: string; context_usage?: number; status?: string; working_dir?: string; permission_mode?: string; reasoning_effort?: string; show_reasoning?: boolean }
   | { type: 'request_confirmation'; session_id: string; id: string; message: string; kind: string; tool_name?: string; command?: string; diff?: string; input?: string }
   | { type: 'confirmation_complete'; session_id: string; id: string; result: string }
-  | { type: 'request_user_question'; session_id: string; question_id: string; question: string; options: string[]; multi_select: boolean; header?: string }
+  | { type: 'request_user_question'; session_id: string; question_id: string; questions: OctoAskQuestion[]; secret?: boolean }
   | { type: 'dismiss_user_question'; session_id: string; question_id: string }
   | { type: 'history_user_message'; session_id: string; content: string; created_at?: number }
   | { type: 'history_reload'; session_id: string }
@@ -83,6 +83,32 @@ export type OctoAgentEvent =
   | { type: 'session_activity'; session_id: string; kind: string }
   | { type: 'session_renamed'; session_id: string; name: string }
   | { type: 'unknown'; session_id?: string; raw: any };
+
+/** One choice of an ask_user_question question. */
+export interface OctoAskOption {
+  label: string;
+  description?: string;
+  /** Artifact to compare side by side; switches the picker to its preview layout. */
+  preview?: string;
+}
+
+/** One question of an ask_user_question set (1-4 per call). */
+export interface OctoAskQuestion {
+  question: string;
+  header: string;
+  multi_select?: boolean;
+  options?: OctoAskOption[];
+}
+
+/** How the user left the picker. */
+export type OctoAskOutcome = 'submitted' | 'clarify' | 'rejected';
+
+/** One question's answer on the wire; the server fills the preview itself. */
+export interface OctoAskAnswer {
+  choices: string[];
+  custom: string;
+  notes: string;
+}
 
 export interface OctoAgentClientCallbacks {
   onOpen?: () => void;
@@ -167,18 +193,17 @@ export class OctoAgentClient {
     this.send({ type: 'confirmation', id, result });
   }
 
-  answerUserQuestion(
-    questionId: string,
-    choices: string[],
-    custom: string,
-    cancelled: boolean,
-  ): void {
+  /**
+   * Close a whole ask_user_question set in one frame. 'submitted' stands by
+   * the answers, 'clarify' is "Chat about this" (the server turns it into a
+   * clarify instruction and the turn continues), 'rejected' discards them.
+   */
+  answerUserQuestion(questionId: string, outcome: OctoAskOutcome, answers: OctoAskAnswer[]): void {
     this.send({
-      type: 'user_question_answer',
+      answers,
+      outcome,
       question_id: questionId,
-      choices,
-      custom,
-      cancelled,
+      type: 'user_question_answer',
     });
   }
 
@@ -512,11 +537,9 @@ export class OctoAgentClient {
         };
       case 'request_user_question':
         return {
-          header: asString(record.header) ?? undefined,
-          multi_select: record.multi_select === true,
-          options: Array.isArray(record.options) ? record.options.map(String) : [],
-          question: asString(record.question) ?? '',
           question_id: asString(record.question_id) ?? '',
+          questions: parseAskQuestions(record.questions),
+          secret: record.secret === true,
           session_id: sessionId,
           type: 'request_user_question',
         };
@@ -570,6 +593,47 @@ function readyStateLabel(readyState: number): string {
     default:
       return String(readyState);
   }
+}
+
+/**
+ * Read the question set off the wire. Tolerant on purpose: a malformed entry
+ * is dropped rather than taking the whole prompt down, and a bare string
+ * option is read as its label.
+ */
+function parseAskQuestions(value: unknown): OctoAskQuestion[] {
+  if (!Array.isArray(value)) return [];
+  const questions: OctoAskQuestion[] = [];
+  for (const [idx, raw] of value.entries()) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue;
+    const record = raw as Record<string, unknown>;
+    const question = asString(record.question);
+    if (!question) continue;
+    const options: OctoAskOption[] = [];
+    if (Array.isArray(record.options)) {
+      for (const rawOption of record.options) {
+        if (typeof rawOption === 'string') {
+          options.push({ label: rawOption });
+          continue;
+        }
+        if (!rawOption || typeof rawOption !== 'object') continue;
+        const optionRecord = rawOption as Record<string, unknown>;
+        const label = asString(optionRecord.label);
+        if (!label) continue;
+        options.push({
+          description: asString(optionRecord.description) ?? '',
+          label,
+          preview: asString(optionRecord.preview) ?? '',
+        });
+      }
+    }
+    questions.push({
+      header: asString(record.header) || `Q${idx + 1}`,
+      multi_select: record.multi_select === true,
+      options,
+      question,
+    });
+  }
+  return questions;
 }
 
 function asString(value: unknown): string | undefined {

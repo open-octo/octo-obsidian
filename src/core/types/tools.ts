@@ -12,6 +12,14 @@ export interface AskUserQuestionOption {
   label: string;
   description: string;
   value?: string;
+  /**
+   * A concrete artifact for this option — a mockup, a snippet, a config
+   * variant — shown in a monospace pane beside the choices. A question with
+   * any preview switches to that layout, which replaces the flat list: no
+   * free-text row (notes take its slot) and no descriptions (the preview
+   * stands in for them), matching Claude Code.
+   */
+  preview?: string;
 }
 
 /** Parsed question for AskUserQuestion tool. */
