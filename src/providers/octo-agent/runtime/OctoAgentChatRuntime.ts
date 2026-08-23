@@ -241,7 +241,13 @@ export class OctoAgentChatRuntime implements ChatRuntime {
     this.toolIndex = 0;
     this.currentToolId = null;
     this.emittedText = false;
-    const QUERY_TIMEOUT_MS = 120_000;
+    // Backstop only: the server keeps the WebSocket alive with protocol-level
+    // pings every 54s (60s pong deadline), so a dead server or dropped network
+    // already surfaces via the close listener. This timer covers the one case
+    // the protocol cannot see — the server process alive and pinging but the
+    // turn's goroutine stuck (e.g. a hung LLM stream) — by firing only after
+    // 10 minutes without a single application-level event.
+    const QUERY_TIMEOUT_MS = 600_000;
 
     const eventBuffer = new OctoAgentEventBuffer();
     let inactivityTimer: number | null = null;
