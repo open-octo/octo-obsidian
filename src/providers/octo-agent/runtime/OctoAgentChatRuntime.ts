@@ -244,7 +244,23 @@ export class OctoAgentChatRuntime implements ChatRuntime {
     const QUERY_TIMEOUT_MS = 120_000;
 
     const eventBuffer = new OctoAgentEventBuffer();
+    let inactivityTimer: number | null = null;
+    const armInactivityTimer = (): void => {
+      if (inactivityTimer !== null) {
+        window.clearTimeout(inactivityTimer);
+      }
+      inactivityTimer = window.setTimeout(() => {
+        if (this.activeQuery) {
+          this.activeQuery.turnAborted = true;
+        }
+      }, QUERY_TIMEOUT_MS);
+    };
     const handler = (event: OctoAgentEvent): void => {
+      // Any event from the server means the turn is still alive,
+      // so reset the inactivity timeout instead of timing out mid-turn.
+      if (this.activeQuery) {
+        armInactivityTimer();
+      }
       eventBuffer.push(event);
     };
     this.client.onEvent = handler;
@@ -261,11 +277,7 @@ export class OctoAgentChatRuntime implements ChatRuntime {
         this.buildImageFiles(turn.request.images),
       );
 
-      let timeout = window.setTimeout(() => {
-        if (this.activeQuery) {
-          this.activeQuery.turnAborted = true;
-        }
-      }, QUERY_TIMEOUT_MS);
+      armInactivityTimer();
 
       let retriedAfterSessionNotFound = false;
 
@@ -301,12 +313,7 @@ export class OctoAgentChatRuntime implements ChatRuntime {
                 this.buildImageFiles(turn.request.images),
               );
               // Reset the inactivity timeout for the retried turn.
-              window.clearTimeout(timeout);
-              timeout = window.setTimeout(() => {
-                if (this.activeQuery) {
-                  this.activeQuery.turnAborted = true;
-                }
-              }, QUERY_TIMEOUT_MS);
+              armInactivityTimer();
             } catch (error) {
               yield {
                 type: 'error',
@@ -319,7 +326,10 @@ export class OctoAgentChatRuntime implements ChatRuntime {
         await eventBuffer.wait(50);
       }
 
-      window.clearTimeout(timeout);
+      if (inactivityTimer !== null) {
+        window.clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+      }
 
       if (this.activeQuery.turnAborted && !this.activeQuery.done) {
         if (this.sessionDeletedByRemote) {
@@ -331,6 +341,10 @@ export class OctoAgentChatRuntime implements ChatRuntime {
       this.sessionDeletedByRemote = false;
       this.shouldRetryAfterSessionNotFound = false;
     } finally {
+      if (inactivityTimer !== null) {
+        window.clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+      }
       this.activeQuery = null;
       this.currentTurnMetadata = {};
       this.client?.setCloseListener(null);
