@@ -33,13 +33,6 @@ export const DEFAULT_CLAUDIAN_SETTINGS: ClaudianSettings = {
 
   providerConfigs: getBuiltInProviderDefaultConfigs(),
 
-  settingsProvider: 'octo-agent',
-  savedProviderModel: {},
-  savedProviderEffort: {},
-  savedProviderServiceTier: {},
-  savedProviderThinkingBudget: {},
-  savedProviderPermissionMode: {},
-
   lastCustomModel: '',
 
   maxTabs: 3,
