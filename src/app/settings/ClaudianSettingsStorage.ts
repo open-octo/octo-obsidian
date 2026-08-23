@@ -26,6 +26,15 @@ export {
 
 export type StoredClaudianSettings = ClaudianSettings;
 
+const LEGACY_PROJECTION_KEYS = [
+  'settingsProvider',
+  'savedProviderModel',
+  'savedProviderEffort',
+  'savedProviderServiceTier',
+  'savedProviderThinkingBudget',
+  'savedProviderPermissionMode',
+] as const;
+
 function isChatViewPlacement(value: unknown): value is ChatViewPlacement {
   return typeof value === 'string'
     && (CHAT_VIEW_PLACEMENTS as readonly string[]).includes(value);
@@ -143,6 +152,13 @@ export class ClaudianSettingsStorage {
 
     const content = await this.adapter.read(SETTINGS_PATH);
     const stored = JSON.parse(content) as Record<string, unknown>;
+
+    // Legacy multi-provider projection fields (removed in 0.2.x): with a
+    // single registered provider the top-level model/effort/tier/budget
+    // fields are authoritative, so these saved maps are simply dropped.
+    for (const legacyKey of LEGACY_PROJECTION_KEYS) {
+      delete stored[legacyKey];
+    }
 
     return {
       ...this.getDefaults(),

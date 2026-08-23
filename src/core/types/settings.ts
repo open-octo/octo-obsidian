@@ -124,14 +124,6 @@ export interface ClaudianSettings {
   // Provider-owned settings
   providerConfigs: ProviderConfigMap;
 
-  // Provider selection
-  settingsProvider: string;  // ProviderId — which provider's model/effort/budget is projected to top-level fields
-  savedProviderModel: Partial<Record<string, string>>;
-  savedProviderEffort: Partial<Record<string, string>>;
-  savedProviderServiceTier: Partial<Record<string, string>>;
-  savedProviderThinkingBudget: Partial<Record<string, string>>;
-  savedProviderPermissionMode: Partial<Record<string, string>>;
-
   // State (provider-specific, round-tripped opaquely)
   lastCustomModel?: string;
 

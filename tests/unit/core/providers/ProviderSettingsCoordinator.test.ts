@@ -5,32 +5,6 @@ import { ProviderSettingsCoordinator } from '@/core/providers/ProviderSettingsCo
 import type { Conversation } from '@/core/types';
 
 describe('ProviderSettingsCoordinator', () => {
-  describe('normalizeProviderSelection', () => {
-    it('falls back to octo-agent for unknown providers', () => {
-      const settings: Record<string, unknown> = {
-        settingsProvider: 'mystery-provider',
-        providerConfigs: {
-          'octo-agent': { enabled: true },
-        },
-      };
-
-      const changed = ProviderSettingsCoordinator.normalizeProviderSelection(settings);
-
-      expect(changed).toBe(true);
-      expect(settings.settingsProvider).toBe('octo-agent');
-    });
-
-    it('returns false when already normalized (no-op)', () => {
-      const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
-        providerConfigs: {
-          'octo-agent': { enabled: true },
-        },
-      };
-      expect(ProviderSettingsCoordinator.normalizeProviderSelection(settings)).toBe(false);
-    });
-  });
-
   describe('reconcileAllProviders', () => {
     it('delegates to each registered provider reconciler with its own conversations', () => {
       const settings: Record<string, unknown> = { model: 'octo-agent/kimi-for-coding' };
@@ -74,9 +48,8 @@ describe('ProviderSettingsCoordinator', () => {
       expect(typeof result).toBe('boolean');
     });
 
-    it('migrates the active octo-agent model when the cached model list no longer offers it', () => {
+    it('migrates the active octo-agent model in place when the cached model list no longer offers it', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
         model: 'octo-agent/gpt-legacy',
         providerConfigs: {
           'octo-agent': { enabled: true },
@@ -84,19 +57,16 @@ describe('ProviderSettingsCoordinator', () => {
         octoAgentModels: [
           { label: 'Kimi For Coding', value: 'octo-agent/kimi-for-coding' },
         ],
-        savedProviderModel: { 'octo-agent': 'octo-agent/gpt-legacy' },
       };
 
       expect(ProviderSettingsCoordinator.normalizeAllModelVariants(settings)).toBe(true);
       expect(settings.model).toBe('octo-agent/kimi-for-coding');
-      expect(settings.savedProviderModel).toEqual({ 'octo-agent': 'octo-agent/kimi-for-coding' });
     });
   });
 
   describe('projectActiveProviderState', () => {
-    it('projects saved model and effort for the settings provider', () => {
+    it('keeps valid top-level values, ignoring legacy saved-provider maps', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
         providerConfigs: {
           'octo-agent': { enabled: true },
         },
@@ -105,115 +75,44 @@ describe('ProviderSettingsCoordinator', () => {
         effortLevel: 'high',
         serviceTier: 'default',
         thinkingBudget: 'off',
-        // A leftover key from a removed provider should be ignored, not read from.
-        savedProviderModel: { 'octo-agent': 'octo-agent/kimi-for-coding', 'legacy-provider': 'legacy-model' },
-        savedProviderEffort: { 'octo-agent': 'medium', 'legacy-provider': 'high' },
-        savedProviderServiceTier: { 'octo-agent': 'default', 'legacy-provider': 'fast' },
-        savedProviderThinkingBudget: { 'octo-agent': 'off', 'legacy-provider': '2048' },
-        savedProviderPermissionMode: { 'octo-agent': 'yolo', 'legacy-provider': 'normal' },
+        // Legacy keys from the removed multi-provider projection must not be read.
+        savedProviderModel: { 'octo-agent': 'octo-agent/retired-model' },
+        savedProviderEffort: { 'octo-agent': 'low' },
+        savedProviderThinkingBudget: { 'octo-agent': '2048' },
+        savedProviderPermissionMode: { 'octo-agent': 'yolo' },
       };
 
       ProviderSettingsCoordinator.projectActiveProviderState(settings);
 
       expect(settings.model).toBe('octo-agent/kimi-for-coding');
-      expect(settings.effortLevel).toBe('medium');
+      expect(settings.effortLevel).toBe('high');
       expect(settings.serviceTier).toBe('default');
       expect(settings.thinkingBudget).toBe('off');
-      expect(settings.permissionMode).toBe('yolo');
+      expect(settings.permissionMode).toBe('normal');
     });
 
-    it('migrates a stale saved octo-agent model before projecting provider state', () => {
-      const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
-        model: 'octo-agent/kimi-for-coding',
-        effortLevel: 'high',
-        serviceTier: 'default',
-        thinkingBudget: 'off',
-        providerConfigs: {
-          'octo-agent': { enabled: true },
-        },
-        octoAgentModels: [
-          { label: 'Kimi For Coding', value: 'octo-agent/kimi-for-coding' },
-        ],
-        savedProviderModel: { 'octo-agent': 'octo-agent/retired-model' },
-        savedProviderEffort: { 'octo-agent': 'medium' },
-        savedProviderServiceTier: { 'octo-agent': 'default' },
-        savedProviderThinkingBudget: { 'octo-agent': 'off' },
-      };
-
-      const snapshot = ProviderSettingsCoordinator.getProviderSettingsSnapshot(settings, 'octo-agent');
-
-      expect(snapshot.model).toBe('octo-agent/kimi-for-coding');
-      expect(snapshot.serviceTier).toBe('default');
-    });
-
-    it('defaults to octo-agent when settingsProvider is not set', () => {
+    it('does not require any provider selection fields to exist', () => {
       const settings: Record<string, unknown> = {
         model: 'octo-agent/kimi-for-coding',
         effortLevel: 'low',
         serviceTier: 'default',
-        thinkingBudget: '500',
-        savedProviderModel: { 'octo-agent': 'octo-agent/kimi-for-coding' },
-        savedProviderEffort: { 'octo-agent': 'high' },
-        savedProviderServiceTier: { 'octo-agent': 'default' },
-        savedProviderThinkingBudget: { 'octo-agent': 'off' },
+        thinkingBudget: 'off',
       };
 
       ProviderSettingsCoordinator.projectActiveProviderState(settings);
 
       expect(settings.model).toBe('octo-agent/kimi-for-coding');
-      expect(settings.effortLevel).toBe('high');
+      expect(settings.effortLevel).toBe('low');
       expect(settings.serviceTier).toBe('default');
       expect(settings.thinkingBudget).toBe('off');
     });
 
-    it('does not overwrite when no saved values exist', () => {
+    it('normalizes a top-level thinking budget that octo-agent does not support', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
-        providerConfigs: {
-          'octo-agent': { enabled: true },
-        },
-        model: 'octo-agent/kimi-for-coding',
-        effortLevel: 'high',
-        serviceTier: 'default',
-        thinkingBudget: 'off',
-        savedProviderModel: {},
-        savedProviderEffort: {},
-        savedProviderServiceTier: {},
-        savedProviderThinkingBudget: {},
-      };
-
-      ProviderSettingsCoordinator.projectActiveProviderState(settings);
-
-      expect(settings.model).toBe('octo-agent/kimi-for-coding');
-      expect(settings.effortLevel).toBe('high');
-      expect(settings.thinkingBudget).toBe('off');
-    });
-
-    it('handles missing saved maps gracefully', () => {
-      const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
-        model: 'octo-agent/kimi-for-coding',
-        effortLevel: 'high',
-        serviceTier: 'default',
-        thinkingBudget: 'off',
-      };
-
-      // Should not throw
-      ProviderSettingsCoordinator.projectActiveProviderState(settings);
-
-      expect(settings.model).toBe('octo-agent/kimi-for-coding');
-    });
-
-    it('normalizes a saved thinking budget that octo-agent does not support', () => {
-      const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
         model: 'octo-agent/kimi-for-coding',
         effortLevel: 'high',
         serviceTier: 'default',
         thinkingBudget: '4096',
-        savedProviderModel: { 'octo-agent': 'octo-agent/kimi-for-coding' },
-        savedProviderThinkingBudget: { 'octo-agent': '4096' },
       };
 
       ProviderSettingsCoordinator.projectActiveProviderState(settings);
@@ -223,50 +122,39 @@ describe('ProviderSettingsCoordinator', () => {
     });
   });
 
-  describe('persistProjectedProviderState', () => {
-    it('stores the current top-level projection for the settings provider without clobbering other keys', () => {
+  describe('snapshot round-trip', () => {
+    it('getProviderSettingsSnapshot normalizes a clone without mutating the source', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
-        providerConfigs: {
-          'octo-agent': { enabled: true },
-        },
-        permissionMode: 'normal',
         model: 'octo-agent/kimi-for-coding',
-        effortLevel: 'low',
+        effortLevel: 'high',
         serviceTier: 'default',
-        thinkingBudget: 'off',
-        savedProviderModel: { 'legacy-provider': 'legacy-model' },
-        savedProviderEffort: { 'legacy-provider': 'high' },
-        savedProviderServiceTier: { 'legacy-provider': 'default' },
-        savedProviderThinkingBudget: { 'legacy-provider': 'off' },
-        savedProviderPermissionMode: { 'legacy-provider': 'yolo' },
+        thinkingBudget: '4096',
       };
 
-      ProviderSettingsCoordinator.persistProjectedProviderState(settings);
+      const snapshot = ProviderSettingsCoordinator.getProviderSettingsSnapshot(settings, 'octo-agent');
 
-      expect(settings.savedProviderModel).toEqual({
-        'legacy-provider': 'legacy-model',
-        'octo-agent': 'octo-agent/kimi-for-coding',
-      });
-      expect(settings.savedProviderEffort).toEqual({
-        'legacy-provider': 'high',
-        'octo-agent': 'low',
-      });
-      // octo-agent has no service-tier toggle, so persisting must not add an entry for it.
-      expect(settings.savedProviderServiceTier).toEqual({
-        'legacy-provider': 'default',
-      });
-      expect(settings.savedProviderPermissionMode).toEqual({
-        'legacy-provider': 'yolo',
-        'octo-agent': 'normal',
-      });
+      expect(snapshot.thinkingBudget).toBe('off');
+      expect(settings.thinkingBudget).toBe('4096');
+    });
+
+    it('commitProviderSettingsSnapshot assigns the normalized snapshot back', () => {
+      const settings: Record<string, unknown> = {
+        model: 'octo-agent/kimi-for-coding',
+        effortLevel: 'high',
+        serviceTier: 'default',
+        thinkingBudget: '4096',
+      };
+
+      const snapshot = ProviderSettingsCoordinator.getProviderSettingsSnapshot(settings, 'octo-agent');
+      ProviderSettingsCoordinator.commitProviderSettingsSnapshot(settings, 'octo-agent', snapshot);
+
+      expect(settings.thinkingBudget).toBe('off');
     });
   });
 
   describe('projectProviderState', () => {
-    it('seeds the default octo-agent model when no model or saved state exists yet', () => {
+    it('seeds the default octo-agent model when no model exists yet', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
         providerConfigs: {
           'octo-agent': { enabled: true },
         },
@@ -274,10 +162,6 @@ describe('ProviderSettingsCoordinator', () => {
         effortLevel: 'high',
         serviceTier: 'default',
         thinkingBudget: 'off',
-        savedProviderModel: {},
-        savedProviderEffort: {},
-        savedProviderServiceTier: {},
-        savedProviderThinkingBudget: {},
       };
 
       ProviderSettingsCoordinator.projectProviderState(settings, 'octo-agent');
@@ -287,7 +171,6 @@ describe('ProviderSettingsCoordinator', () => {
 
     it('derives a valid permission mode from a legacy octo-agent permission value', () => {
       const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
         permissionMode: 'auto',
         providerConfigs: {
           'octo-agent': { enabled: true },
@@ -296,11 +179,6 @@ describe('ProviderSettingsCoordinator', () => {
         effortLevel: 'high',
         serviceTier: 'default',
         thinkingBudget: 'off',
-        savedProviderModel: {},
-        savedProviderEffort: {},
-        savedProviderServiceTier: {},
-        savedProviderThinkingBudget: {},
-        savedProviderPermissionMode: {},
       };
 
       ProviderSettingsCoordinator.projectProviderState(settings, 'octo-agent');
@@ -318,7 +196,6 @@ describe('ProviderSettingsCoordinator', () => {
       } as unknown as Conversation;
 
       const settings: Record<string, unknown> = {
-        settingsProvider: 'octo-agent',
         providerConfigs: {
           'octo-agent': { enabled: false },
         },

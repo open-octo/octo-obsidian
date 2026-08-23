@@ -294,20 +294,6 @@ export default class ClaudianPlugin extends Plugin {
     if (this.settings.permissionMode === 'plan') {
       this.settings.permissionMode = 'normal';
     }
-    if (
-      this.settings.savedProviderPermissionMode
-      && typeof this.settings.savedProviderPermissionMode === 'object'
-      && !Array.isArray(this.settings.savedProviderPermissionMode)
-    ) {
-      for (const [providerId, mode] of Object.entries(this.settings.savedProviderPermissionMode)) {
-        if (mode === 'plan') {
-          this.settings.savedProviderPermissionMode[providerId] = 'normal';
-        }
-      }
-    }
-    const didNormalizeProviderSelection = ProviderSettingsCoordinator.normalizeProviderSelection(
-      this.settings,
-    );
     const didNormalizeModelVariants = this.normalizeModelVariantSettings();
 
     const allMetadata = await this.storage.sessions.listMetadata();
@@ -344,7 +330,7 @@ export default class ClaudianPlugin extends Plugin {
       this.settings,
     );
 
-    if (changed || didNormalizeModelVariants || didNormalizeProviderSelection) {
+    if (changed || didNormalizeModelVariants) {
       await this.saveSettings();
     }
 
@@ -381,13 +367,6 @@ export default class ClaudianPlugin extends Plugin {
   }
 
   async saveSettings() {
-    ProviderSettingsCoordinator.normalizeProviderSelection(
-      this.settings,
-    );
-    ProviderSettingsCoordinator.persistProjectedProviderState(
-      this.settings,
-    );
-
     await this.storage.saveClaudianSettings(this.settings);
   }
 
