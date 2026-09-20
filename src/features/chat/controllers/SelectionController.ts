@@ -8,7 +8,7 @@ import { updateContextRowHasContent } from './contextRowVisibility';
 
 const SELECTION_POLL_INTERVAL = 250;
 const INPUT_HANDOFF_GRACE_MS = 1500;
-const HIGHLIGHT_KEY = 'claudian-selection';
+const HIGHLIGHT_KEY = 'octo-selection';
 
 type CustomHighlightRegistry = {
   delete: (name: string) => boolean;
@@ -385,9 +385,9 @@ export class SelectionController {
     if (this.storedSelection) {
       const lineText = this.storedSelection.lineCount === 1 ? 'line' : 'lines';
       this.indicatorEl.textContent = `${this.storedSelection.lineCount} ${lineText} selected`;
-      this.indicatorEl.removeClass('claudian-hidden');
+      this.indicatorEl.removeClass('octo-hidden');
     } else {
-      this.indicatorEl.addClass('claudian-hidden');
+      this.indicatorEl.addClass('octo-hidden');
     }
     this.updateContextRowVisibility();
   }

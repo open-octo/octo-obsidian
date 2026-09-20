@@ -11,7 +11,7 @@ import type {
 import type { ChatRuntime } from '../../../core/runtime/ChatRuntime';
 import type { Conversation, SlashCommand } from '../../../core/types';
 import { t } from '../../../i18n/i18n';
-import type ClaudianPlugin from '../../../main';
+import type OctoPlugin from '../../../main';
 import { chooseForkTarget } from '../../../shared/modals/ForkTargetModal';
 import { revealWorkspaceLeaf } from '../../../utils/obsidianCompat';
 import { getTabProviderId } from './providerResolution';
@@ -84,7 +84,7 @@ type ProviderCommandWarmupEntry = {
  * TabManager coordinates multiple chat tabs.
  */
 export class TabManager implements TabManagerInterface {
-  private plugin: ClaudianPlugin;
+  private plugin: OctoPlugin;
   private containerEl: HTMLElement;
   private view: TabManagerViewHost;
 
@@ -108,20 +108,20 @@ export class TabManager implements TabManagerInterface {
   }
 
   constructor(
-    plugin: ClaudianPlugin,
+    plugin: OctoPlugin,
     containerEl: HTMLElement,
     view: TabManagerViewHost,
     callbacks?: TabManagerCallbacks,
   );
   constructor(
-    plugin: ClaudianPlugin,
+    plugin: OctoPlugin,
     legacyArg: unknown,
     containerEl: HTMLElement,
     view: TabManagerViewHost,
     callbacks?: TabManagerCallbacks,
   );
   constructor(
-    plugin: ClaudianPlugin,
+    plugin: OctoPlugin,
     arg2: unknown,
     arg3: HTMLElement | TabManagerViewHost,
     arg4?: TabManagerViewHost | TabManagerCallbacks,

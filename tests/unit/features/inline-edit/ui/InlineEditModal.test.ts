@@ -73,9 +73,9 @@ function diffToHtml(ops: DiffOp[]): string {
       const escaped = op.text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
       switch (op.type) {
         case 'delete':
-          return `<span class="claudian-diff-del">${escaped}</span>`;
+          return `<span class="octo-diff-del">${escaped}</span>`;
         case 'insert':
-          return `<span class="claudian-diff-ins">${escaped}</span>`;
+          return `<span class="octo-diff-ins">${escaped}</span>`;
         default:
           return escaped;
       }
@@ -308,7 +308,7 @@ describe('InlineEditModal - Word-level Diff', () => {
 
       const html = diffToHtml(ops);
 
-      expect(html).toContain('claudian-diff-del');
+      expect(html).toContain('octo-diff-del');
       expect(html).toContain('removed');
     });
 
@@ -317,7 +317,7 @@ describe('InlineEditModal - Word-level Diff', () => {
 
       const html = diffToHtml(ops);
 
-      expect(html).toContain('claudian-diff-ins');
+      expect(html).toContain('octo-diff-ins');
       expect(html).toContain('added');
     });
 
@@ -340,9 +340,9 @@ describe('InlineEditModal - Word-level Diff', () => {
       const html = diffToHtml(ops);
 
       expect(html).toContain('Hello ');
-      expect(html).toContain('claudian-diff-del');
+      expect(html).toContain('octo-diff-del');
       expect(html).toContain('world');
-      expect(html).toContain('claudian-diff-ins');
+      expect(html).toContain('octo-diff-ins');
       expect(html).toContain('universe');
     });
 
@@ -381,8 +381,8 @@ describe('InlineEditModal - Word-level Diff', () => {
       const html = diffToHtml(ops);
 
       // Should have both del and ins spans
-      expect(html).toContain('claudian-diff-del');
-      expect(html).toContain('claudian-diff-ins');
+      expect(html).toContain('octo-diff-del');
+      expect(html).toContain('octo-diff-ins');
     });
 
     it('should produce plain text for no changes', () => {

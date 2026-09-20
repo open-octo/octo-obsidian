@@ -1,21 +1,21 @@
 /* Brand & semantic color tokens */
-.claudian-container {
-  --claudian-brand: #14B8A6;
-  --claudian-brand-rgb: 20, 184, 166;
-  --claudian-brand-octo-agent: #14B8A6;
-  --claudian-brand-octo-agent-rgb: 20, 184, 166;
-  --claudian-error: #dc3545;
-  --claudian-error-rgb: 220, 53, 69;
-  --claudian-compact: #5bc0de;
+.octo-container {
+  --octo-brand: #14B8A6;
+  --octo-brand-rgb: 20, 184, 166;
+  --octo-brand-octo-agent: #14B8A6;
+  --octo-brand-octo-agent-rgb: 20, 184, 166;
+  --octo-error: #dc3545;
+  --octo-error-rgb: 220, 53, 69;
+  --octo-compact: #5bc0de;
 }
 
-body.theme-light .claudian-container {
-  --claudian-brand-octo-agent: #0F9488;
-  --claudian-brand-octo-agent-rgb: 15, 148, 136;
+body.theme-light .octo-container {
+  --octo-brand-octo-agent: #0F9488;
+  --octo-brand-octo-agent-rgb: 15, 148, 136;
 }
 
 /* Active-provider alias for single-provider surfaces. */
-.claudian-container[data-provider="octo-agent"] {
-  --claudian-brand: var(--claudian-brand-octo-agent);
-  --claudian-brand-rgb: var(--claudian-brand-octo-agent-rgb);
+.octo-container[data-provider="octo-agent"] {
+  --octo-brand: var(--octo-brand-octo-agent);
+  --octo-brand-rgb: var(--octo-brand-octo-agent-rgb);
 }

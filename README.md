@@ -80,7 +80,7 @@ npm run build
 ## Privacy & Data Use
 
 - **Sent to API**: Your input, attached files, images, and tool call outputs, sent to the Octo Agent server configured in provider settings.
-- **Local storage**: Plugin settings and session metadata in `vault/.claudian/`.
+- **Local storage**: Plugin settings and session metadata in `vault/.octo-agent/`.
 - **Environment variables**: The Octo Agent process inherits the Obsidian process environment plus any variables you configure in Settings. This is needed for CLI authentication, proxies, certificates, and PATH resolution.
 - **Background activity**: The plugin does not run telemetry beacons. UI polling timers read local Obsidian/editor selection state only. Network activity is limited to explicit Octo Agent server calls needed to answer your requests.
 

@@ -6,8 +6,8 @@ import type {
 } from '../../../core/providers/types';
 import { OCTO_AGENT_PROVIDER_ICON } from '../../../shared/icons';
 import {
-  isValidClaudianPermissionMode,
-  toClaudianPermissionMode,
+  isValidOctoPermissionMode,
+  toOctoPermissionMode,
 } from '../permissionMode';
 
 const OCTO_AGENT_MODEL: ProviderUIOption = {
@@ -90,19 +90,19 @@ export const octoAgentChatUIConfig: ProviderChatUIConfig = {
 
   resolvePermissionMode(settings: Record<string, unknown>): string | null {
     const value = typeof settings.permissionMode === 'string' ? settings.permissionMode : 'yolo';
-    if (isValidClaudianPermissionMode(value)) {
+    if (isValidOctoPermissionMode(value)) {
       return value;
     }
-    return toClaudianPermissionMode(value);
+    return toOctoPermissionMode(value);
   },
 
   applyPermissionMode(value: string, settings: unknown): void {
     if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
       return;
     }
-    const normalized = isValidClaudianPermissionMode(value)
+    const normalized = isValidOctoPermissionMode(value)
       ? value
-      : toClaudianPermissionMode(value);
+      : toOctoPermissionMode(value);
     (settings as Record<string, unknown>).permissionMode = normalized;
   },
 

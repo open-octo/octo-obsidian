@@ -1,5 +1,5 @@
 /**
- * Claudian - External Context Utilities
+ * Octo - External Context Utilities
  *
  * Utilities for external context validation, normalization, and conflict detection.
  */

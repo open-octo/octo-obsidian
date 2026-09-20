@@ -1,4 +1,4 @@
-import type ClaudianPlugin from '../../main';
+import type OctoPlugin from '../../main';
 import type { ChatRuntime } from '../runtime/ChatRuntime';
 import { decodeProviderModelSelectionId } from './modelSelection';
 import {
@@ -45,7 +45,7 @@ export class ProviderRegistry {
     return this.getProviderRegistration(providerId).createRuntime(options);
   }
 
-  static createInlineEditService(plugin: ClaudianPlugin, providerId: ProviderId = DEFAULT_CHAT_PROVIDER_ID): InlineEditService {
+  static createInlineEditService(plugin: OctoPlugin, providerId: ProviderId = DEFAULT_CHAT_PROVIDER_ID): InlineEditService {
     return this.getProviderRegistration(providerId).createInlineEditService(plugin);
   }
 

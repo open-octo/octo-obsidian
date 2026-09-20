@@ -5,7 +5,7 @@ import { ProviderRegistry } from '../../core/providers/ProviderRegistry';
 import type { ChatViewPlacement } from '../../core/types/settings';
 import { getAvailableLocales, getLocaleDisplayName, setLocale, t } from '../../i18n/i18n';
 import type { Locale, TranslationKey } from '../../i18n/types';
-import type ClaudianPlugin from '../../main';
+import type OctoPlugin from '../../main';
 import {
   DEFAULT_OCTO_AGENT_PROVIDER_SETTINGS,
   getOctoAgentProviderSettings,
@@ -87,7 +87,7 @@ function getHotkeyForCommand(app: App, commandId: string): string | null {
 
 function addHotkeySettingRow(
   containerEl: HTMLElement,
-  plugin: ClaudianPlugin,
+  plugin: OctoPlugin,
   /** Command id as passed to addCommand(), without the plugin-id prefix. */
   commandId: string,
   translationPrefix: string,
@@ -96,21 +96,21 @@ function addHotkeySettingRow(
   // the hotkey manager is indexed by. Deriving it from the manifest keeps the
   // lookup correct if the plugin id ever changes.
   const hotkey = getHotkeyForCommand(plugin.app, `${plugin.manifest.id}:${commandId}`);
-  const item = containerEl.createDiv({ cls: 'claudian-hotkey-item' });
+  const item = containerEl.createDiv({ cls: 'octo-hotkey-item' });
   item.createSpan({
-    cls: 'claudian-hotkey-name',
+    cls: 'octo-hotkey-name',
     text: t(`${translationPrefix}.name` as TranslationKey),
   });
   if (hotkey) {
-    item.createSpan({ cls: 'claudian-hotkey-badge', text: hotkey });
+    item.createSpan({ cls: 'octo-hotkey-badge', text: hotkey });
   }
   item.addEventListener('click', () => openHotkeySettings(plugin.app));
 }
 
-export class ClaudianSettingTab extends PluginSettingTab {
-  plugin: ClaudianPlugin;
+export class OctoSettingTab extends PluginSettingTab {
+  plugin: OctoPlugin;
 
-  constructor(app: App, plugin: ClaudianPlugin) {
+  constructor(app: App, plugin: OctoPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }
@@ -118,7 +118,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.addClass('claudian-settings');
+    containerEl.addClass('octo-settings');
 
     setLocale(this.plugin.settings.locale as Locale);
 
@@ -240,12 +240,12 @@ export class ClaudianSettingTab extends PluginSettingTab {
       .setDesc(t('settings.maxTabs.desc'));
 
     const maxTabsWarningEl = container.createDiv({
-      cls: 'claudian-max-tabs-warning claudian-setting-validation claudian-setting-validation-warning claudian-hidden',
+      cls: 'octo-max-tabs-warning octo-setting-validation octo-setting-validation-warning octo-hidden',
     });
     maxTabsWarningEl.setText(t('settings.maxTabs.warning'));
 
     const updateMaxTabsWarning = (value: number): void => {
-      maxTabsWarningEl.toggleClass('claudian-hidden', value <= 5);
+      maxTabsWarningEl.toggleClass('octo-hidden', value <= 5);
     };
 
     maxTabsSetting.addSlider((slider) => {
@@ -348,7 +348,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
             this.plugin.settings.mediaFolder = value.trim();
             await this.plugin.saveSettings();
           });
-        text.inputEl.addClass('claudian-settings-media-input');
+        text.inputEl.addClass('octo-settings-media-input');
         text.inputEl.addEventListener('blur', () => {
           void this.restartServiceForPromptChange();
         });
@@ -428,7 +428,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
     new Setting(container).setName(t('settings.hotkeys')).setHeading();
 
-    const hotkeyGrid = container.createDiv({ cls: 'claudian-hotkey-grid' });
+    const hotkeyGrid = container.createDiv({ cls: 'octo-hotkey-grid' });
     addHotkeySettingRow(hotkeyGrid, this.plugin, 'inline-edit', 'settings.inlineEditHotkey');
     addHotkeySettingRow(hotkeyGrid, this.plugin, 'open-view', 'settings.openChatHotkey');
     addHotkeySettingRow(hotkeyGrid, this.plugin, 'new-session', 'settings.newSessionHotkey');
@@ -466,30 +466,30 @@ export class ClaudianSettingTab extends PluginSettingTab {
       return;
     }
 
-    const headerEl = container.createDiv({ cls: 'claudian-context-limits-header' });
+    const headerEl = container.createDiv({ cls: 'octo-context-limits-header' });
     headerEl.createSpan({
       text: t('settings.customModelOverrides.name'),
-      cls: 'claudian-context-limits-label',
+      cls: 'octo-context-limits-label',
     });
 
-    const descEl = container.createDiv({ cls: 'claudian-context-limits-desc' });
+    const descEl = container.createDiv({ cls: 'octo-context-limits-desc' });
     descEl.setText(t('settings.customModelOverrides.desc'));
 
-    const listEl = container.createDiv({ cls: 'claudian-context-limits-list' });
+    const listEl = container.createDiv({ cls: 'octo-context-limits-list' });
 
     for (const modelId of uniqueModelIds) {
       const currentValue = this.plugin.settings.customContextLimits?.[modelId];
       const currentAlias = this.plugin.settings.customModelAliases?.[modelId] ?? '';
 
-      const itemEl = listEl.createDiv({ cls: 'claudian-context-limits-item' });
-      const nameEl = itemEl.createDiv({ cls: 'claudian-context-limits-model' });
+      const itemEl = listEl.createDiv({ cls: 'octo-context-limits-item' });
+      const nameEl = itemEl.createDiv({ cls: 'octo-context-limits-model' });
       nameEl.setText(modelId);
 
-      const inputWrapper = itemEl.createDiv({ cls: 'claudian-context-limits-input-wrapper' });
+      const inputWrapper = itemEl.createDiv({ cls: 'octo-context-limits-input-wrapper' });
       const aliasInputEl = inputWrapper.createEl('input', {
         type: 'text',
         placeholder: t('settings.customModelAliases.placeholder'),
-        cls: 'claudian-context-alias-input',
+        cls: 'octo-context-alias-input',
         value: currentAlias,
       });
       aliasInputEl.setAttribute('aria-label', `Alias for ${modelId}`);
@@ -498,12 +498,12 @@ export class ClaudianSettingTab extends PluginSettingTab {
       const inputEl = inputWrapper.createEl('input', {
         type: 'text',
         placeholder: '200k',
-        cls: 'claudian-context-limits-input',
+        cls: 'octo-context-limits-input',
         value: currentValue ? formatContextLimit(currentValue) : '',
       });
       inputEl.setAttribute('aria-label', `Context window for ${modelId}`);
 
-      const validationEl = inputWrapper.createDiv({ cls: 'claudian-context-limit-validation claudian-hidden' });
+      const validationEl = inputWrapper.createDiv({ cls: 'octo-context-limit-validation octo-hidden' });
 
       const saveAlias = async (): Promise<void> => {
         if (!this.plugin.settings.customModelAliases) {
@@ -538,20 +538,20 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
         if (!trimmed) {
           delete this.plugin.settings.customContextLimits[modelId];
-          validationEl.toggleClass('claudian-hidden', true);
-          inputEl.classList.remove('claudian-input-error');
+          validationEl.toggleClass('octo-hidden', true);
+          inputEl.classList.remove('octo-input-error');
         } else {
           const parsed = parseContextLimit(trimmed);
           if (parsed === null) {
             validationEl.setText(t('settings.customContextLimits.invalid'));
-            validationEl.toggleClass('claudian-hidden', false);
-            inputEl.classList.add('claudian-input-error');
+            validationEl.toggleClass('octo-hidden', false);
+            inputEl.classList.add('octo-input-error');
             return;
           }
 
           this.plugin.settings.customContextLimits[modelId] = parsed;
-          validationEl.toggleClass('claudian-hidden', true);
-          inputEl.classList.remove('claudian-input-error');
+          validationEl.toggleClass('octo-hidden', true);
+          inputEl.classList.remove('octo-input-error');
         }
 
         await this.plugin.saveSettings();

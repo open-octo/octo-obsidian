@@ -10,17 +10,17 @@ export {
   type SessionMetadata,
   type StreamChunk,
   type UsageInfo,
-  VIEW_TYPE_CLAUDIAN,
+  VIEW_TYPE_OCTO,
 } from './chat';
 export { type ProviderId } from './provider';
 
 // Settings and command types
 export {
   type ApprovalDecision,
-  type ClaudianSettings,
   type EnvSnippet,
   type HostnameCliPaths,
   type KeyboardNavigationSettings,
+  type OctoSettings,
   type PermissionMode,
   type SlashCommand,
 } from './settings';

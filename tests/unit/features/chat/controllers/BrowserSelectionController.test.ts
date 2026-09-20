@@ -6,30 +6,30 @@ import { BrowserSelectionController } from '@/features/chat/controllers/BrowserS
 
 function createMockIndicator() {
   const indicatorEl = createMockEl();
-  indicatorEl.addClass('claudian-browser-selection-indicator');
-  indicatorEl.addClass('claudian-hidden');
+  indicatorEl.addClass('octo-browser-selection-indicator');
+  indicatorEl.addClass('octo-hidden');
   return indicatorEl;
 }
 
 function createMockContextRow(browserIndicator: HTMLElement) {
   const editorIndicator = createMockEl();
-  editorIndicator.addClass('claudian-selection-indicator');
-  editorIndicator.addClass('claudian-hidden');
+  editorIndicator.addClass('octo-selection-indicator');
+  editorIndicator.addClass('octo-hidden');
   const canvasIndicator = createMockEl();
-  canvasIndicator.addClass('claudian-canvas-indicator');
-  canvasIndicator.addClass('claudian-hidden');
+  canvasIndicator.addClass('octo-canvas-indicator');
+  canvasIndicator.addClass('octo-hidden');
   const fileIndicator = createMockEl();
-  fileIndicator.addClass('claudian-file-indicator');
-  fileIndicator.addClass('claudian-hidden');
+  fileIndicator.addClass('octo-file-indicator');
+  fileIndicator.addClass('octo-hidden');
   const imagePreview = createMockEl();
-  imagePreview.addClass('claudian-image-preview');
-  imagePreview.addClass('claudian-hidden');
+  imagePreview.addClass('octo-image-preview');
+  imagePreview.addClass('octo-hidden');
   const elements: Record<string, any> = {
-    '.claudian-selection-indicator': editorIndicator,
-    '.claudian-browser-selection-indicator': browserIndicator,
-    '.claudian-canvas-indicator': canvasIndicator,
-    '.claudian-file-indicator': fileIndicator,
-    '.claudian-image-preview': imagePreview,
+    '.octo-selection-indicator': editorIndicator,
+    '.octo-browser-selection-indicator': browserIndicator,
+    '.octo-canvas-indicator': canvasIndicator,
+    '.octo-file-indicator': fileIndicator,
+    '.octo-image-preview': imagePreview,
   };
   const contextRow = createMockEl();
   const toggle = contextRow.classList.toggle;

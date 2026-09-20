@@ -41,7 +41,7 @@ describe('OctoAgentClient', () => {
       });
       const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
 
-      await client.createSession({ source: 'claudian' });
+      await client.createSession({ source: 'octo' });
 
       const body = JSON.parse(requestUrlMock.mock.calls[0][0].body);
       expect(body.model).toBe('');
@@ -108,7 +108,7 @@ describe('OctoAgentClient', () => {
       });
       const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
 
-      await client.createSession({ groupId: 'g-123', source: 'claudian' });
+      await client.createSession({ groupId: 'g-123', source: 'octo' });
 
       const body = JSON.parse(requestUrlMock.mock.calls[0][0].body);
       expect(body.group_id).toBe('g-123');
@@ -121,7 +121,7 @@ describe('OctoAgentClient', () => {
       });
       const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
 
-      await client.createSession({ source: 'claudian' });
+      await client.createSession({ source: 'octo' });
 
       const body = JSON.parse(requestUrlMock.mock.calls[0][0].body);
       expect('group_id' in body).toBe(false);

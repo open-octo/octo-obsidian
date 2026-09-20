@@ -1,5 +1,5 @@
 /**
- * Claudian - Context Utilities
+ * Octo - Context Utilities
  *
  * Note and context file formatting for prompts.
  */

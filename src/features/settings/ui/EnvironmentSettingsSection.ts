@@ -1,11 +1,11 @@
 import { Setting } from 'obsidian';
 
-import type ClaudianPlugin from '../../../main';
+import type OctoPlugin from '../../../main';
 import { EnvSnippetManager } from './EnvSnippetManager';
 
 interface EnvironmentSettingsSectionOptions {
   container: HTMLElement;
-  plugin: ClaudianPlugin;
+  plugin: OctoPlugin;
   heading?: string;
   name: string;
   desc: string;
@@ -39,7 +39,7 @@ export function renderEnvironmentSettingsSection(
         .setValue(plugin.getActiveEnvironmentVariables());
       text.inputEl.rows = 6;
       text.inputEl.cols = 50;
-      text.inputEl.addClass('claudian-settings-env-textarea');
+      text.inputEl.addClass('octo-settings-env-textarea');
       text.inputEl.addEventListener('blur', () => {
         void (async (): Promise<void> => {
           await plugin.applyEnvironmentVariables(text.inputEl.value);
@@ -48,10 +48,10 @@ export function renderEnvironmentSettingsSection(
       });
     });
 
-  const contextLimitsContainer = container.createDiv({ cls: 'claudian-context-limits-container' });
+  const contextLimitsContainer = container.createDiv({ cls: 'octo-context-limits-container' });
   renderCustomContextLimits?.(contextLimitsContainer);
 
-  const envSnippetsContainer = container.createDiv({ cls: 'claudian-env-snippets-container' });
+  const envSnippetsContainer = container.createDiv({ cls: 'octo-env-snippets-container' });
   new EnvSnippetManager(envSnippetsContainer, plugin, () => {
     renderCustomContextLimits?.(contextLimitsContainer);
   });

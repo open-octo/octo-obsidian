@@ -1,20 +1,20 @@
 import {
-  isValidClaudianPermissionMode,
-  toClaudianPermissionMode,
+  isValidOctoPermissionMode,
   toOctoAgentPermissionMode,
+  toOctoPermissionMode,
 } from '@/providers/octo-agent/permissionMode';
 
 describe('octo-agent permissionMode', () => {
   describe('toOctoAgentPermissionMode', () => {
-    it('maps Claudian yolo to octo-agent auto', () => {
+    it('maps Octo yolo to octo-agent auto', () => {
       expect(toOctoAgentPermissionMode('yolo')).toBe('auto');
     });
 
-    it('maps Claudian normal to octo-agent interactive', () => {
+    it('maps Octo normal to octo-agent interactive', () => {
       expect(toOctoAgentPermissionMode('normal')).toBe('interactive');
     });
 
-    it('maps Claudian plan to octo-agent plan', () => {
+    it('maps Octo plan to octo-agent plan', () => {
       expect(toOctoAgentPermissionMode('plan')).toBe('plan');
     });
 
@@ -29,42 +29,42 @@ describe('octo-agent permissionMode', () => {
     });
   });
 
-  describe('toClaudianPermissionMode', () => {
-    it('maps octo-agent auto to Claudian yolo', () => {
-      expect(toClaudianPermissionMode('auto')).toBe('yolo');
+  describe('toOctoPermissionMode', () => {
+    it('maps octo-agent auto to Octo yolo', () => {
+      expect(toOctoPermissionMode('auto')).toBe('yolo');
     });
 
-    it('maps octo-agent interactive to Claudian normal', () => {
-      expect(toClaudianPermissionMode('interactive')).toBe('normal');
+    it('maps octo-agent interactive to Octo normal', () => {
+      expect(toOctoPermissionMode('interactive')).toBe('normal');
     });
 
-    it('maps octo-agent plan to Claudian plan', () => {
-      expect(toClaudianPermissionMode('plan')).toBe('plan');
+    it('maps octo-agent plan to Octo plan', () => {
+      expect(toOctoPermissionMode('plan')).toBe('plan');
     });
 
     it('falls back to yolo for unknown values', () => {
-      expect(toClaudianPermissionMode('unknown')).toBe('yolo');
-      expect(toClaudianPermissionMode(undefined)).toBe('yolo');
+      expect(toOctoPermissionMode('unknown')).toBe('yolo');
+      expect(toOctoPermissionMode(undefined)).toBe('yolo');
     });
 
     it('passes through UI-native values', () => {
-      expect(toClaudianPermissionMode('yolo')).toBe('yolo');
-      expect(toClaudianPermissionMode('normal')).toBe('normal');
+      expect(toOctoPermissionMode('yolo')).toBe('yolo');
+      expect(toOctoPermissionMode('normal')).toBe('normal');
     });
   });
 
-  describe('isValidClaudianPermissionMode', () => {
+  describe('isValidOctoPermissionMode', () => {
     it('accepts yolo, normal, and plan', () => {
-      expect(isValidClaudianPermissionMode('yolo')).toBe(true);
-      expect(isValidClaudianPermissionMode('normal')).toBe(true);
-      expect(isValidClaudianPermissionMode('plan')).toBe(true);
+      expect(isValidOctoPermissionMode('yolo')).toBe(true);
+      expect(isValidOctoPermissionMode('normal')).toBe(true);
+      expect(isValidOctoPermissionMode('plan')).toBe(true);
     });
 
     it('rejects octo-agent values and unknown strings', () => {
-      expect(isValidClaudianPermissionMode('auto')).toBe(false);
-      expect(isValidClaudianPermissionMode('interactive')).toBe(false);
-      expect(isValidClaudianPermissionMode('')).toBe(false);
-      expect(isValidClaudianPermissionMode('unknown')).toBe(false);
+      expect(isValidOctoPermissionMode('auto')).toBe(false);
+      expect(isValidOctoPermissionMode('interactive')).toBe(false);
+      expect(isValidOctoPermissionMode('')).toBe(false);
+      expect(isValidOctoPermissionMode('unknown')).toBe(false);
     });
   });
 });

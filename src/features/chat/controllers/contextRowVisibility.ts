@@ -1,15 +1,15 @@
 export function updateContextRowHasContent(contextRowEl: HTMLElement): void {
-  const editorIndicator = contextRowEl.querySelector('.claudian-selection-indicator');
-  const browserIndicator = contextRowEl.querySelector('.claudian-browser-selection-indicator');
-  const canvasIndicator = contextRowEl.querySelector('.claudian-canvas-indicator');
-  const fileIndicator = contextRowEl.querySelector('.claudian-file-indicator');
-  const imagePreview = contextRowEl.querySelector('.claudian-image-preview');
+  const editorIndicator = contextRowEl.querySelector('.octo-selection-indicator');
+  const browserIndicator = contextRowEl.querySelector('.octo-browser-selection-indicator');
+  const canvasIndicator = contextRowEl.querySelector('.octo-canvas-indicator');
+  const fileIndicator = contextRowEl.querySelector('.octo-file-indicator');
+  const imagePreview = contextRowEl.querySelector('.octo-image-preview');
 
-  const hasEditorSelection = !!editorIndicator && !editorIndicator.hasClass('claudian-hidden');
-  const hasBrowserSelection = !!browserIndicator && !browserIndicator.hasClass('claudian-hidden');
-  const hasCanvasSelection = !!canvasIndicator && !canvasIndicator.hasClass('claudian-hidden');
-  const hasFileChips = !!fileIndicator && fileIndicator.hasClass('claudian-visible-flex');
-  const hasImageChips = !!imagePreview && imagePreview.hasClass('claudian-visible-flex');
+  const hasEditorSelection = !!editorIndicator && !editorIndicator.hasClass('octo-hidden');
+  const hasBrowserSelection = !!browserIndicator && !browserIndicator.hasClass('octo-hidden');
+  const hasCanvasSelection = !!canvasIndicator && !canvasIndicator.hasClass('octo-hidden');
+  const hasFileChips = !!fileIndicator && fileIndicator.hasClass('octo-visible-flex');
+  const hasImageChips = !!imagePreview && imagePreview.hasClass('octo-visible-flex');
 
   contextRowEl.classList.toggle(
     'has-content',

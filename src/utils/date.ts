@@ -1,5 +1,5 @@
 /**
- * Claudian - Date Utilities
+ * Octo - Date Utilities
  *
  * Date formatting helpers for system prompts.
  */

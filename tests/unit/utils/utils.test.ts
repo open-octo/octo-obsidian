@@ -141,8 +141,8 @@ describe('utils.ts', () => {
   });
 
   describe('expandHomePath', () => {
-    const envKey = 'CLAUDIAN_TEST_PATH';
-    const envValue = path.join(os.tmpdir(), 'claudian-env');
+    const envKey = 'OCTO_TEST_PATH';
+    const envValue = path.join(os.tmpdir(), 'octo-env');
     let originalValue: string | undefined;
 
     beforeEach(() => {
@@ -181,8 +181,8 @@ describe('utils.ts', () => {
     });
 
     it('should leave unknown environment variables untouched', () => {
-      expect(expandHomePath('%CLAUDIAN_MISSING_VAR%')).toBe('%CLAUDIAN_MISSING_VAR%');
-      expect(expandHomePath('$CLAUDIAN_MISSING_VAR')).toBe('$CLAUDIAN_MISSING_VAR');
+      expect(expandHomePath('%OCTO_MISSING_VAR%')).toBe('%OCTO_MISSING_VAR%');
+      expect(expandHomePath('$OCTO_MISSING_VAR')).toBe('$OCTO_MISSING_VAR');
     });
   });
 
@@ -199,12 +199,12 @@ describe('utils.ts', () => {
     });
 
     it('expands environment variables before filesystem use', () => {
-      const envKey = 'CLAUDIAN_FS_TEST_PATH';
+      const envKey = 'OCTO_FS_TEST_PATH';
       const originalValue = process.env[envKey];
-      process.env[envKey] = '/tmp/claudian-test';
+      process.env[envKey] = '/tmp/octo-test';
 
       try {
-        expect(normalizePathForFilesystem(`$${envKey}/notes/file.md`)).toBe('/tmp/claudian-test/notes/file.md');
+        expect(normalizePathForFilesystem(`$${envKey}/notes/file.md`)).toBe('/tmp/octo-test/notes/file.md');
       } finally {
         if (originalValue === undefined) {
           delete process.env[envKey];
@@ -243,7 +243,7 @@ describe('utils.ts', () => {
     });
 
     it('handles chained home and environment variable expansions', () => {
-      const envKey = 'CLAUDIAN_TEST_SUBDIR';
+      const envKey = 'OCTO_TEST_SUBDIR';
       const originalValue = process.env[envKey];
       process.env[envKey] = 'project';
 

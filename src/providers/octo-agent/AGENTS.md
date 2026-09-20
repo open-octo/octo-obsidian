@@ -4,7 +4,7 @@
 
 ## Ownership
 
-- Server lifecycle (locate binary, spawn, health-probe), WebSocket transport, event parsing, prompt encoding, and settings reconciliation live here. The settings *UI* does not: it is inlined in `src/features/settings/ClaudianSettings.ts`, which reads and writes this provider's config through `settings.ts`.
+- Server lifecycle (locate binary, spawn, health-probe), WebSocket transport, event parsing, prompt encoding, and settings reconciliation live here. The settings *UI* does not: it is inlined in `src/features/settings/OctoSettings.ts`, which reads and writes this provider's config through `settings.ts`.
 - Shared code should consume Octo Agent behavior through `ChatRuntime`, provider capabilities, and workspace-service contracts — not through `OctoAgentClient`/`OctoAgentEvent` directly.
 
 ## Protocol Rules

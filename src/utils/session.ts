@@ -1,5 +1,5 @@
 /**
- * Claudian - Session Utilities
+ * Octo - Session Utilities
  *
  * Session recovery and history reconstruction.
  */

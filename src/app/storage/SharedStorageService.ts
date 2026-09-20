@@ -7,14 +7,14 @@ import { OCTO_AGENT_STORAGE_PATH } from '../../core/bootstrap/StoragePaths';
 import { normalizeTabManagerState } from '../../core/bootstrap/tabManagerState';
 import type { AppTabManagerState } from '../../core/providers/types';
 import { VaultFileAdapter } from '../../core/storage/VaultFileAdapter';
-import { ClaudianSettingsStorage, type StoredClaudianSettings } from '../settings/ClaudianSettingsStorage';
+import { OctoSettingsStorage, type StoredOctoSettings } from '../settings/OctoSettingsStorage';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
 
 export class SharedStorageService implements SharedAppStorage {
-  readonly claudianSettings: ClaudianSettingsStorage;
+  readonly octoSettings: OctoSettingsStorage;
   readonly sessions: SessionStorage;
 
   private adapter: VaultFileAdapter;
@@ -23,18 +23,18 @@ export class SharedStorageService implements SharedAppStorage {
   constructor(plugin: Plugin) {
     this.plugin = plugin;
     this.adapter = new VaultFileAdapter(plugin.app);
-    this.claudianSettings = new ClaudianSettingsStorage(this.adapter);
+    this.octoSettings = new OctoSettingsStorage(this.adapter);
     this.sessions = new SessionStorage(this.adapter);
   }
 
-  async initialize(): Promise<{ claudian: Record<string, unknown> }> {
+  async initialize(): Promise<{ octo: Record<string, unknown> }> {
     await this.ensureDirectories();
-    const claudian = await this.claudianSettings.load();
-    return { claudian };
+    const octo = await this.octoSettings.load();
+    return { octo };
   }
 
-  async saveClaudianSettings(settings: Record<string, unknown>): Promise<void> {
-    await this.claudianSettings.save(settings as StoredClaudianSettings);
+  async saveOctoSettings(settings: Record<string, unknown>): Promise<void> {
+    await this.octoSettings.save(settings as StoredOctoSettings);
   }
 
   async setTabManagerState(state: AppTabManagerState): Promise<void> {

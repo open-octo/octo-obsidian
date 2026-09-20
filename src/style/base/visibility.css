@@ -2,14 +2,14 @@
  * Visibility utilities are imported late so they can override component display
  * defaults without importance flags.
  */
-.claudian-hidden.claudian-hidden {
+.octo-hidden.octo-hidden {
   display: none;
 }
 
-.claudian-visible-block.claudian-visible-block {
+.octo-visible-block.octo-visible-block {
   display: block;
 }
 
-.claudian-visible-flex.claudian-visible-flex {
+.octo-visible-flex.octo-visible-flex {
   display: flex;
 }

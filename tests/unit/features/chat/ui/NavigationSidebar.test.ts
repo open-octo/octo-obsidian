@@ -279,7 +279,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       expect(container).not.toBeNull();
     });
 
@@ -289,7 +289,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       expect(container).not.toBeNull();
       expect(container!.children.length).toBe(5);
     });
@@ -300,7 +300,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       const buttons = container!.children;
 
       expect(buttons[0].getAttribute('aria-label')).toBe('Scroll to top');
@@ -316,7 +316,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       const buttons = container!.children;
 
       expect(buttons[0].getAttribute('data-icon')).toBe('chevrons-up');
@@ -337,7 +337,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       expect(container!.classList.contains('visible')).toBe(false);
     });
 
@@ -350,7 +350,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       expect(container!.classList.contains('visible')).toBe(true);
     });
 
@@ -363,7 +363,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       expect(container!.classList.contains('visible')).toBe(false);
 
       // Simulate content growth
@@ -383,7 +383,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       messagesEl.scrollHeight = 1000;
       sidebar.updateVisibility();
       sidebar.updateVisibility();
@@ -407,7 +407,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       const topBtn = container!.children[0];
       topBtn.click();
 
@@ -428,7 +428,7 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      const container = parentEl.querySelector('.claudian-nav-sidebar');
+      const container = parentEl.querySelector('.octo-nav-sidebar');
       const bottomBtn = container!.children[4];
       bottomBtn.click();
 
@@ -440,13 +440,13 @@ describe('NavigationSidebar', () => {
 
   describe('previous/next message navigation', () => {
     function addUserMessage(el: MockElement, offset: number): MockElement {
-      const msg = el.createDiv({ cls: 'claudian-message claudian-message-user' });
+      const msg = el.createDiv({ cls: 'octo-message octo-message-user' });
       msg.offsetTop = offset;
       return msg;
     }
 
     function addAssistantMessage(el: MockElement, offset: number): MockElement {
-      const msg = el.createDiv({ cls: 'claudian-message claudian-message-assistant' });
+      const msg = el.createDiv({ cls: 'octo-message octo-message-assistant' });
       msg.offsetTop = offset;
       return msg;
     }
@@ -464,7 +464,7 @@ describe('NavigationSidebar', () => {
     }
 
     function getButtons(parent: MockElement) {
-      const container = parent.querySelector('.claudian-nav-sidebar')!;
+      const container = parent.querySelector('.octo-nav-sidebar')!;
       return {
         prev: container.children[1],
         next: container.children[3],
@@ -596,7 +596,7 @@ describe('NavigationSidebar', () => {
       offset: number,
       tocTitle?: string
     ): MockElement {
-      const msg = el.createDiv({ cls: `claudian-message claudian-message-${role}` });
+      const msg = el.createDiv({ cls: `octo-message octo-message-${role}` });
       msg.offsetTop = offset;
       if (tocTitle) {
         msg.setAttribute('data-toc-title', tocTitle);
@@ -605,7 +605,7 @@ describe('NavigationSidebar', () => {
     }
 
     function getDirectoryButton(parent: MockElement): MockElement {
-      const container = parent.querySelector('.claudian-nav-sidebar')!;
+      const container = parent.querySelector('.octo-nav-sidebar')!;
       return container.children[2];
     }
 
@@ -619,12 +619,12 @@ describe('NavigationSidebar', () => {
       );
 
       const directoryBtn = getDirectoryButton(parentEl);
-      expect(directoryBtn.classList.contains('claudian-hidden')).toBe(false);
+      expect(directoryBtn.classList.contains('octo-hidden')).toBe(false);
 
       directoryBtn.click();
 
-      const popover = parentEl.querySelector('.claudian-nav-toc-popover');
-      const emptyState = parentEl.querySelector('.claudian-nav-toc-empty');
+      const popover = parentEl.querySelector('.octo-nav-toc-popover');
+      const emptyState = parentEl.querySelector('.octo-nav-toc-empty');
       expect(popover).not.toBeNull();
       expect(emptyState?.textContent).toBe('No user prompts in this conversation');
     });
@@ -643,8 +643,8 @@ describe('NavigationSidebar', () => {
 
       getDirectoryButton(parentEl).click();
 
-      const popover = parentEl.querySelector('.claudian-nav-toc-popover');
-      const items = parentEl.querySelectorAll('.claudian-nav-toc-item');
+      const popover = parentEl.querySelector('.octo-nav-toc-popover');
+      const items = parentEl.querySelectorAll('.octo-nav-toc-item');
       expect(popover).not.toBeNull();
       expect(items).toHaveLength(2);
       expect(items[0].textContent).toBe('1. First prompt');
@@ -656,7 +656,7 @@ describe('NavigationSidebar', () => {
       messagesEl.clientHeight = 500;
       const userMsg = addMessage(messagesEl, 'user', 0);
       userMsg.createDiv({
-        cls: 'claudian-message-content',
+        cls: 'octo-message-content',
         text: 'Legacy prompt title\nsecond line',
       });
 
@@ -666,11 +666,11 @@ describe('NavigationSidebar', () => {
       );
 
       const directoryBtn = getDirectoryButton(parentEl);
-      expect(directoryBtn.classList.contains('claudian-hidden')).toBe(false);
+      expect(directoryBtn.classList.contains('octo-hidden')).toBe(false);
 
       directoryBtn.click();
 
-      const items = parentEl.querySelectorAll('.claudian-nav-toc-item');
+      const items = parentEl.querySelectorAll('.octo-nav-toc-item');
       expect(items).toHaveLength(1);
       expect(items[0].textContent).toBe('1. Legacy prompt title');
     });
@@ -679,12 +679,12 @@ describe('NavigationSidebar', () => {
       messagesEl.scrollHeight = 2000;
       messagesEl.clientHeight = 500;
       const userMsg = messagesEl.createDiv({
-        cls: 'claudian-message',
+        cls: 'octo-message',
         attr: { 'data-role': 'user' },
       });
       userMsg.offsetTop = 120;
       userMsg.createDiv({
-        cls: 'claudian-message-content',
+        cls: 'octo-message-content',
         text: 'Role based prompt',
       });
 
@@ -695,7 +695,7 @@ describe('NavigationSidebar', () => {
 
       getDirectoryButton(parentEl).click();
 
-      const items = parentEl.querySelectorAll('.claudian-nav-toc-item');
+      const items = parentEl.querySelectorAll('.octo-nav-toc-item');
       expect(items).toHaveLength(1);
       expect(items[0].textContent).toBe('1. Role based prompt');
     });
@@ -712,13 +712,13 @@ describe('NavigationSidebar', () => {
       );
 
       getDirectoryButton(parentEl).click();
-      const items = parentEl.querySelectorAll('.claudian-nav-toc-item');
+      const items = parentEl.querySelectorAll('.octo-nav-toc-item');
       items[1].click();
 
       const lastCall = messagesEl.scrollToCalls[messagesEl.scrollToCalls.length - 1];
       expect(lastCall.top).toBe(390);
       expect(lastCall.behavior).toBe('smooth');
-      expect(parentEl.querySelector('.claudian-nav-toc-popover')).toBeNull();
+      expect(parentEl.querySelector('.octo-nav-toc-popover')).toBeNull();
     });
 
     it('should close the directory when the directory button is clicked again', () => {
@@ -733,10 +733,10 @@ describe('NavigationSidebar', () => {
 
       const directoryBtn = getDirectoryButton(parentEl);
       directoryBtn.click();
-      expect(parentEl.querySelector('.claudian-nav-toc-popover')).not.toBeNull();
+      expect(parentEl.querySelector('.octo-nav-toc-popover')).not.toBeNull();
 
       directoryBtn.click();
-      expect(parentEl.querySelector('.claudian-nav-toc-popover')).toBeNull();
+      expect(parentEl.querySelector('.octo-nav-toc-popover')).toBeNull();
     });
 
     it('should keep the directory button visible when message DOM changes', () => {
@@ -749,13 +749,13 @@ describe('NavigationSidebar', () => {
       );
 
       const directoryBtn = getDirectoryButton(parentEl);
-      expect(directoryBtn.classList.contains('claudian-hidden')).toBe(false);
+      expect(directoryBtn.classList.contains('octo-hidden')).toBe(false);
 
       addMessage(messagesEl, 'user', 0, 'New prompt');
       mutationCallback?.([], {} as MutationObserver);
       jest.advanceTimersByTime(16);
 
-      expect(directoryBtn.classList.contains('claudian-hidden')).toBe(false);
+      expect(directoryBtn.classList.contains('octo-hidden')).toBe(false);
     });
 
     it('should refresh an open directory to an empty state when user messages are removed', () => {
@@ -770,7 +770,7 @@ describe('NavigationSidebar', () => {
 
       const directoryBtn = getDirectoryButton(parentEl);
       directoryBtn.click();
-      expect(parentEl.querySelector('.claudian-nav-toc-popover')).not.toBeNull();
+      expect(parentEl.querySelector('.octo-nav-toc-popover')).not.toBeNull();
 
       messagesEl.empty();
       mutationCallback?.([
@@ -783,9 +783,9 @@ describe('NavigationSidebar', () => {
       ], {} as MutationObserver);
       jest.advanceTimersByTime(16);
 
-      const emptyState = parentEl.querySelector('.claudian-nav-toc-empty');
-      expect(directoryBtn.classList.contains('claudian-hidden')).toBe(false);
-      expect(parentEl.querySelector('.claudian-nav-toc-popover')).not.toBeNull();
+      const emptyState = parentEl.querySelector('.octo-nav-toc-empty');
+      expect(directoryBtn.classList.contains('octo-hidden')).toBe(false);
+      expect(parentEl.querySelector('.octo-nav-toc-popover')).not.toBeNull();
       expect(emptyState?.textContent).toBe('No user prompts in this conversation');
     });
 
@@ -794,7 +794,7 @@ describe('NavigationSidebar', () => {
       messagesEl.clientHeight = 500;
       addMessage(messagesEl, 'user', 0, 'First prompt');
       const assistantMsg = addMessage(messagesEl, 'assistant', 120);
-      const assistantContent = assistantMsg.createDiv({ cls: 'claudian-message-content' });
+      const assistantContent = assistantMsg.createDiv({ cls: 'octo-message-content' });
 
       sidebar = new NavigationSidebar(
         parentEl as unknown as HTMLElement,
@@ -803,7 +803,7 @@ describe('NavigationSidebar', () => {
 
       const directoryBtn = getDirectoryButton(parentEl);
       directoryBtn.click();
-      const originalPopover = parentEl.querySelector('.claudian-nav-toc-popover');
+      const originalPopover = parentEl.querySelector('.octo-nav-toc-popover');
       expect(originalPopover).not.toBeNull();
 
       const assistantChunk = assistantContent.createDiv({ text: 'Streaming response chunk' });
@@ -817,7 +817,7 @@ describe('NavigationSidebar', () => {
       ], {} as MutationObserver);
       jest.advanceTimersByTime(16);
 
-      expect(parentEl.querySelector('.claudian-nav-toc-popover')).toBe(originalPopover);
+      expect(parentEl.querySelector('.octo-nav-toc-popover')).toBe(originalPopover);
     });
 
     it('should refresh an open directory when a user message toc title changes', () => {
@@ -831,7 +831,7 @@ describe('NavigationSidebar', () => {
       );
 
       getDirectoryButton(parentEl).click();
-      const originalPopover = parentEl.querySelector('.claudian-nav-toc-popover');
+      const originalPopover = parentEl.querySelector('.octo-nav-toc-popover');
       expect(originalPopover).not.toBeNull();
 
       userMsg.setAttribute('data-toc-title', 'Updated prompt');
@@ -844,8 +844,8 @@ describe('NavigationSidebar', () => {
       ], {} as MutationObserver);
       jest.advanceTimersByTime(16);
 
-      const updatedPopover = parentEl.querySelector('.claudian-nav-toc-popover');
-      const items = parentEl.querySelectorAll('.claudian-nav-toc-item');
+      const updatedPopover = parentEl.querySelector('.octo-nav-toc-popover');
+      const items = parentEl.querySelectorAll('.octo-nav-toc-item');
       expect(updatedPopover).not.toBe(originalPopover);
       expect(items).toHaveLength(1);
       expect(items[0].textContent).toBe('1. Updated prompt');
@@ -859,11 +859,11 @@ describe('NavigationSidebar', () => {
         messagesEl as unknown as HTMLElement
       );
 
-      expect(parentEl.querySelector('.claudian-nav-sidebar')).not.toBeNull();
+      expect(parentEl.querySelector('.octo-nav-sidebar')).not.toBeNull();
 
       sidebar.destroy();
 
-      expect(parentEl.querySelector('.claudian-nav-sidebar')).toBeNull();
+      expect(parentEl.querySelector('.octo-nav-sidebar')).toBeNull();
     });
   });
 });

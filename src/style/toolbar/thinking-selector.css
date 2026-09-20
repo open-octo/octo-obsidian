@@ -1,24 +1,24 @@
 /* Thinking selector (effort for adaptive models, token budget for custom) */
-.claudian-thinking-selector {
+.octo-thinking-selector {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 /* Effort / budget container (shared layout) */
-.claudian-thinking-effort,
-.claudian-thinking-budget {
+.octo-thinking-effort,
+.octo-thinking-budget {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.claudian-thinking-label-text {
+.octo-thinking-label-text {
   font-size: 11px;
   color: var(--text-muted);
 }
 
-.claudian-thinking-gears {
+.octo-thinking-gears {
   position: relative;
   display: flex;
   align-items: center;
@@ -26,10 +26,10 @@
 }
 
 /* Current selection (visible when collapsed) */
-.claudian-thinking-current {
+.octo-thinking-current {
   padding: 3px 8px;
   font-size: 11px;
-  color: var(--claudian-brand);
+  color: var(--octo-brand);
   font-weight: 500;
   cursor: pointer;
   border-radius: 3px;
@@ -38,7 +38,7 @@
 }
 
 /* Options container - expands vertically upward */
-.claudian-thinking-options {
+.octo-thinking-options {
   position: absolute;
   left: 0;
   bottom: 100%;
@@ -56,12 +56,12 @@
 }
 
 /* Expand on hover */
-.claudian-thinking-gears:hover .claudian-thinking-options {
+.octo-thinking-gears:hover .octo-thinking-options {
   opacity: 1;
   visibility: visible;
 }
 
-.claudian-thinking-gear {
+.octo-thinking-gear {
   padding: 3px 8px;
   font-size: 11px;
   color: var(--text-muted);
@@ -71,13 +71,13 @@
   white-space: nowrap;
 }
 
-.claudian-thinking-gear:hover {
+.octo-thinking-gear:hover {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.claudian-thinking-gear.selected {
-  background: rgba(var(--claudian-brand-rgb), 0.15);
-  color: var(--claudian-brand);
+.octo-thinking-gear.selected {
+  background: rgba(var(--octo-brand-rgb), 0.15);
+  color: var(--octo-brand);
   font-weight: 500;
 }

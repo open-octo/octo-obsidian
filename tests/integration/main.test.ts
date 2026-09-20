@@ -1,16 +1,16 @@
 
-import { DEFAULT_CLAUDIAN_SETTINGS as DEFAULT_SETTINGS } from '@/app/settings/defaultSettings';
-import { VIEW_TYPE_CLAUDIAN } from '@/core/types';
+import { DEFAULT_OCTO_SETTINGS as DEFAULT_SETTINGS } from '@/app/settings/defaultSettings';
+import { VIEW_TYPE_OCTO } from '@/core/types';
 import { OCTO_APP_ICON_ID } from '@/shared/icons';
 
-// Mock fs for ClaudianService
+// Mock fs for OctoService
 jest.mock('fs');
 
 // Now import the plugin after mocking
-import ClaudianPlugin from '@/main';
+import OctoPlugin from '@/main';
 
-describe('ClaudianPlugin', () => {
-  let plugin: ClaudianPlugin;
+describe('OctoPlugin', () => {
+  let plugin: OctoPlugin;
   let mockApp: any;
   let mockManifest: any;
 
@@ -61,13 +61,13 @@ describe('ClaudianPlugin', () => {
     };
 
     mockManifest = {
-      id: 'claudian',
-      name: 'Claudian',
+      id: 'octo',
+      name: 'Octo',
       version: '0.1.0',
     };
 
     // Create plugin instance with mocked app
-    plugin = new ClaudianPlugin(mockApp, mockManifest);
+    plugin = new OctoPlugin(mockApp, mockManifest);
     (plugin.loadData as jest.Mock).mockResolvedValue({});
   });
 
@@ -86,7 +86,7 @@ describe('ClaudianPlugin', () => {
       await plugin.onload();
 
       expect((plugin.registerView as jest.Mock)).toHaveBeenCalledWith(
-        VIEW_TYPE_CLAUDIAN,
+        VIEW_TYPE_OCTO,
         expect.any(Function)
       );
     });
@@ -114,7 +114,7 @@ describe('ClaudianPlugin', () => {
   });
 
   describe('onunload', () => {
-    // Note: With multi-tab, cleanup is handled per-tab via ClaudianView.onClose()
+    // Note: With multi-tab, cleanup is handled per-tab via OctoView.onClose()
     it('should complete without error', async () => {
       await plugin.onload();
 
@@ -145,7 +145,7 @@ describe('ClaudianPlugin', () => {
 
       expect(mockApp.workspace.getRightLeaf).toHaveBeenCalledWith(false);
       expect(mockRightLeaf.setViewState).toHaveBeenCalledWith({
-        type: VIEW_TYPE_CLAUDIAN,
+        type: VIEW_TYPE_OCTO,
         active: true,
       });
     });
@@ -165,7 +165,7 @@ describe('ClaudianPlugin', () => {
       expect(mockApp.workspace.getRightLeaf).not.toHaveBeenCalled();
       expect(mockApp.workspace.getLeaf).not.toHaveBeenCalled();
       expect(mockLeftLeaf.setViewState).toHaveBeenCalledWith({
-        type: VIEW_TYPE_CLAUDIAN,
+        type: VIEW_TYPE_OCTO,
         active: true,
       });
     });
@@ -195,7 +195,7 @@ describe('ClaudianPlugin', () => {
       expect(mockApp.workspace.getRightLeaf).not.toHaveBeenCalled();
       expect(mockApp.workspace.getLeftLeaf).not.toHaveBeenCalled();
       expect(mockMainLeaf.setViewState).toHaveBeenCalledWith({
-        type: VIEW_TYPE_CLAUDIAN,
+        type: VIEW_TYPE_OCTO,
         active: true,
       });
     });
@@ -213,7 +213,7 @@ describe('ClaudianPlugin', () => {
 
   describe('loadSettings', () => {
     it('should merge saved data with defaults', async () => {
-      // Mock claudian-settings.json exists with custom values (Claudian-specific settings)
+      // Mock octo-settings.json exists with custom values (Octo-specific settings)
       mockApp.vault.adapter.exists.mockImplementation(async (path: string) => {
         return path === '.octo-agent/settings.json';
       });
@@ -277,7 +277,7 @@ describe('ClaudianPlugin', () => {
       expect(content).toHaveProperty('lastCustomModel');
       expect(content).not.toHaveProperty('enableBlocklist');
       expect(content).not.toHaveProperty('blockedCommands');
-      // Permissions are now in .claude/settings.json (CC format), not claudian-settings.json
+      // Permissions are now in .claude/settings.json (CC format), not octo-settings.json
       expect(content).not.toHaveProperty('permissions');
     });
   });
@@ -503,7 +503,7 @@ describe('ClaudianPlugin', () => {
       expect(command.checkCallback(true)).toBe(false);
     });
 
-    it('keeps tab commands unavailable while a Claudian leaf view is not initialized', async () => {
+    it('keeps tab commands unavailable while a Octo leaf view is not initialized', async () => {
       await plugin.onload();
 
       mockApp.workspace.getLeavesOfType.mockReturnValue([{ view: {} }]);
@@ -825,7 +825,7 @@ describe('ClaudianPlugin', () => {
         if (path === '.octo-agent/sessions' || path === '.octo-agent/sessions/conv-saved-1.meta.json') {
           return true;
         }
-        // claudian-settings.json exists
+        // octo-settings.json exists
         if (path === '.octo-agent/settings.json') {
           return true;
         }

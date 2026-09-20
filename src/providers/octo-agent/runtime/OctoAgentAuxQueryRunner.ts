@@ -1,4 +1,4 @@
-import type ClaudianPlugin from '../../../main';
+import type OctoPlugin from '../../../main';
 import { toOctoAgentPermissionMode } from '../permissionMode';
 import { getOctoAgentProviderSettings } from '../settings';
 import { OctoAgentClient } from './OctoAgentClient';
@@ -20,7 +20,7 @@ export interface OctoAgentAuxQueryResult {
 const QUERY_TIMEOUT_MS = 60_000;
 
 export async function runOctoAgentAuxQuery(
-  plugin: ClaudianPlugin,
+  plugin: OctoPlugin,
   options: OctoAgentAuxQueryOptions,
   prompt: string,
 ): Promise<OctoAgentAuxQueryResult> {
@@ -120,7 +120,7 @@ export async function runOctoAgentAuxQuery(
           if (!sessionId) {
             const session = await client.createSession({
               model: options.model ?? '',
-              source: options.source ?? 'claudian-aux',
+              source: options.source ?? 'octo-aux',
             });
             sessionId = session.id;
 

@@ -1,5 +1,5 @@
 /* @ Mention dropdown */
-.claudian-mention-dropdown {
+.octo-mention-dropdown {
   display: none;
   position: absolute;
   bottom: 100%;
@@ -17,21 +17,21 @@
   overflow-y: auto;
 }
 
-.claudian-mention-dropdown.visible {
+.octo-mention-dropdown.visible {
   display: block;
 }
 
 /* Fixed positioning for inline editor */
-.claudian-mention-dropdown-fixed {
+.octo-mention-dropdown-fixed {
   position: fixed;
-  bottom: var(--claudian-fixed-dropdown-bottom);
-  left: var(--claudian-fixed-dropdown-left);
+  bottom: var(--octo-fixed-dropdown-bottom);
+  left: var(--octo-fixed-dropdown-left);
   right: auto;
-  width: var(--claudian-fixed-dropdown-width);
+  width: var(--octo-fixed-dropdown-width);
   z-index: 10001;
 }
 
-.claudian-mention-item {
+.octo-mention-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -40,24 +40,24 @@
   transition: background 0.1s ease;
 }
 
-.claudian-mention-item:hover,
-.claudian-mention-item.selected {
+.octo-mention-item:hover,
+.octo-mention-item.selected {
   background: var(--background-modifier-hover);
 }
 
-.claudian-mention-icon {
+.octo-mention-icon {
   display: flex;
   align-items: center;
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.claudian-mention-icon svg {
+.octo-mention-icon svg {
   width: 14px;
   height: 14px;
 }
 
-.claudian-mention-path {
+.octo-mention-path {
   font-size: 13px;
   color: var(--text-normal);
   overflow: hidden;
@@ -65,7 +65,7 @@
   white-space: nowrap;
 }
 
-.claudian-mention-empty {
+.octo-mention-empty {
   padding: 12px;
   text-align: center;
   color: var(--text-muted);
@@ -73,29 +73,29 @@
 }
 
 /* Scrollbar for mention dropdown */
-.claudian-mention-dropdown::-webkit-scrollbar {
+.octo-mention-dropdown::-webkit-scrollbar {
   width: 6px;
 }
 
-.claudian-mention-dropdown::-webkit-scrollbar-track {
+.octo-mention-dropdown::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.claudian-mention-dropdown::-webkit-scrollbar-thumb {
+.octo-mention-dropdown::-webkit-scrollbar-thumb {
   background: var(--background-modifier-border);
   border-radius: 3px;
 }
 
 /* MCP items in @-mention dropdown */
-.claudian-mention-item.mcp-server .claudian-mention-icon {
+.octo-mention-item.mcp-server .octo-mention-icon {
   color: var(--interactive-accent);
 }
 
-.claudian-mention-item.vault-folder .claudian-mention-icon {
+.octo-mention-item.vault-folder .octo-mention-icon {
   color: var(--text-muted);
 }
 
-.claudian-mention-text {
+.octo-mention-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -103,13 +103,13 @@
   flex: 1;
 }
 
-.claudian-mention-name {
+.octo-mention-name {
   font-size: 13px;
   font-weight: 500;
   color: var(--interactive-accent);
 }
 
-.claudian-mention-desc {
+.octo-mention-desc {
   font-size: 11px;
   color: var(--text-muted);
   overflow: hidden;
@@ -118,17 +118,17 @@
 }
 
 /* Context file items in @-mention dropdown */
-.claudian-mention-item.context-file .claudian-mention-icon {
-  color: var(--claudian-brand);
+.octo-mention-item.context-file .octo-mention-icon {
+  color: var(--octo-brand);
 }
 
-.claudian-mention-item.context-file .claudian-mention-text {
+.octo-mention-item.context-file .octo-mention-text {
   flex-direction: row;
   overflow: hidden;
   white-space: nowrap;
 }
 
-.claudian-mention-item.context-file .claudian-mention-name-context {
+.octo-mention-item.context-file .octo-mention-name-context {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -136,35 +136,35 @@
 }
 
 /* Context folder filter items in @-mention dropdown */
-.claudian-mention-item.context-folder .claudian-mention-icon {
+.octo-mention-item.context-folder .octo-mention-icon {
   color: var(--text-muted);
 }
 
-.claudian-mention-name-folder {
+.octo-mention-name-folder {
   color: var(--text-normal);
   font-weight: 500;
 }
 
-.claudian-mention-name-context {
+.octo-mention-name-context {
   color: var(--text-normal);
 }
 
 /* Agent folder items in @-mention dropdown */
-.claudian-mention-item.agent-folder .claudian-mention-icon {
+.octo-mention-item.agent-folder .octo-mention-icon {
   color: var(--link-color);
 }
 
-.claudian-mention-name-agent-folder {
+.octo-mention-name-agent-folder {
   color: var(--link-color);
   font-weight: 600;
 }
 
 /* Agent items in @-mention dropdown (inside @Agents/) */
-.claudian-mention-item.agent .claudian-mention-icon {
+.octo-mention-item.agent .octo-mention-icon {
   color: var(--link-color);
 }
 
-.claudian-mention-item.agent .claudian-mention-text {
+.octo-mention-item.agent .octo-mention-text {
   flex-direction: row;
   align-items: baseline;
   gap: 6px;
@@ -172,13 +172,13 @@
   white-space: nowrap;
 }
 
-.claudian-mention-item.agent .claudian-mention-name-agent {
+.octo-mention-item.agent .octo-mention-name-agent {
   color: var(--text-normal);
   font-size: 13px;
   flex-shrink: 0;
 }
 
-.claudian-mention-item.agent .claudian-mention-agent-desc {
+.octo-mention-item.agent .octo-mention-agent-desc {
   font-size: 11px;
   color: var(--text-muted);
   overflow: hidden;
