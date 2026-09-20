@@ -1,5 +1,6 @@
 
 import { DEFAULT_OCTO_SETTINGS as DEFAULT_SETTINGS } from '@/app/settings/defaultSettings';
+import { ProviderRegistry } from '@/core/providers/ProviderRegistry';
 import { VIEW_TYPE_OCTO } from '@/core/types';
 import { OCTO_APP_ICON_ID } from '@/shared/icons';
 
@@ -668,6 +669,46 @@ describe('OctoPlugin', () => {
 
       const list = plugin.getConversationList();
       expect(list.find(c => c.id === convId)).toBeUndefined();
+    });
+
+    it('resets the owning tab before deleting the server session', async () => {
+      // Deleting the session makes the server broadcast session_deleted. If a
+      // tab is still bound to it mid-stream, its runtime matches the id and
+      // reports "Session was deleted from another client" — which is wrong,
+      // this client deleted it. Resetting the tab first clears the binding.
+      await plugin.onload();
+      const conv = await plugin.createConversation({ providerId: 'octo-agent' });
+
+      const order: string[] = [];
+      jest
+        .spyOn(
+          ProviderRegistry.getConversationHistoryService('octo-agent'),
+          'deleteConversationSession',
+        )
+        .mockImplementation(async () => {
+          order.push('delete-session');
+        });
+
+      const mockTabManager = {
+        getAllTabs: jest.fn().mockReturnValue([{
+          conversationId: conv.id,
+          controllers: {
+            inputController: {
+              cancelStreaming: jest.fn(() => order.push('cancel-streaming')),
+            },
+            conversationController: {
+              createNew: jest.fn(async () => { order.push('reset-tab'); }),
+            },
+          },
+        }]),
+      };
+      jest.spyOn(plugin, 'getAllViews').mockReturnValue([
+        { getTabManager: () => mockTabManager } as any,
+      ]);
+
+      await plugin.deleteConversation(conv.id);
+
+      expect(order).toEqual(['cancel-streaming', 'reset-tab', 'delete-session']);
     });
 
     it('should allow deleting last conversation without recreating', async () => {

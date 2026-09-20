@@ -601,12 +601,9 @@ export default class OctoPlugin extends Plugin {
     const conversation = this.conversations[index];
     this.conversations.splice(index, 1);
 
-    await ProviderRegistry
-      .getConversationHistoryService(conversation.providerId)
-      .deleteConversationSession(conversation, getVaultPath(this.app));
-
-    await this.storage.sessions.deleteMetadata(id);
-
+    // Unbind the tabs first. Deleting the session makes the server broadcast
+    // session_deleted; a tab still bound to it would match the id and report
+    // "Session was deleted from another client", which is this client.
     for (const view of this.getAllViews()) {
       const tabManager = view.getTabManager();
       if (!tabManager) continue;
@@ -618,6 +615,12 @@ export default class OctoPlugin extends Plugin {
         }
       }
     }
+
+    await ProviderRegistry
+      .getConversationHistoryService(conversation.providerId)
+      .deleteConversationSession(conversation, getVaultPath(this.app), this);
+
+    await this.storage.sessions.deleteMetadata(id);
   }
 
   async renameConversation(id: string, title: string): Promise<void> {

@@ -1,5 +1,8 @@
 import type { ProviderConversationHistoryService } from '../../../core/providers/types';
 import type { Conversation } from '../../../core/types';
+import type OctoPlugin from '../../../main';
+import { OctoAgentClient } from '../runtime/OctoAgentClient';
+import { getOctoAgentProviderSettings } from '../settings';
 import { buildPersistedOctoAgentState, getOctoAgentState } from '../types';
 
 export class OctoAgentConversationHistoryService implements ProviderConversationHistoryService {
@@ -15,10 +18,29 @@ export class OctoAgentConversationHistoryService implements ProviderConversation
   }
 
   async deleteConversationSession(
-    _conversation: Conversation,
+    conversation: Conversation,
     _vaultPath: string | null,
+    plugin: OctoPlugin,
   ): Promise<void> {
-    // octo-agent session deletion is not exposed through the public API yet.
+    const sessionId = this.resolveSessionIdForConversation(conversation);
+    if (!sessionId) {
+      return;
+    }
+
+    const settings = getOctoAgentProviderSettings(plugin.settings as Record<string, unknown>);
+    const client = new OctoAgentClient({
+      accessKey: settings.accessKey || undefined,
+      baseUrl: `http://${settings.host}:${settings.port}`,
+    });
+
+    try {
+      await client.deleteSession(sessionId);
+    } catch (error) {
+      // The conversation is already gone locally and its metadata is deleted
+      // next, so a server that refuses must not abort that. Worst case the
+      // session lingers server-side, visible in octo's own session list.
+      console.error('Failed to delete the octo-agent session:', error);
+    }
   }
 
   resolveSessionIdForConversation(conversation: Conversation | null): string | null {

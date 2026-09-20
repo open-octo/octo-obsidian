@@ -17,7 +17,7 @@
 ## Session and History Rules
 
 - History is server-resident. `OctoAgentConversationHistoryService.hydrateConversationHistory()` is an intentional no-op — continuity works by re-subscribing to `providerState.sessionId` on the WS, and `ChatRuntime.loadHistory()` fetches messages on demand from `GET /api/sessions/:id/messages`. Do not add vault-side history persistence here.
-- `deleteConversationSession()` is also a no-op: deleting a conversation in the plugin does not delete the server-side session (no public API for it yet).
+- `deleteConversationSession()` does delete the server-side session via `DELETE /api/sessions/:id`, which also discards its transcript, agent events and task workspace. It builds its own short-lived client (the conversation being deleted may have no live runtime) and swallows failures: the caller has already dropped the conversation from memory and still has to delete its metadata.
 - `OctoAgentProviderState` is exactly `{ sessionId?: string }`. `buildPersistedOctoAgentState()` returns `undefined`, not `{}`, when there's no session id yet.
 - Forking currently reuses the source session id as the new provider state (`buildForkProviderState`) rather than creating an independent server-side copy at this layer.
 - A `send_rejected`/`error` event whose message contains "not found" triggers exactly one automatic session-recreate-and-resend per turn (`retriedAfterSessionNotFound`). Do not remove the single-retry guard — it exists to avoid retry loops against a server that keeps rejecting the same session id.
