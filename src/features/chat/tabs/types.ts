@@ -20,7 +20,6 @@ import type {
   ContextUsageMeter,
   ExternalContextSelector,
   McpServerSelector,
-  ModelSelector,
   ModeSelector,
   PermissionToggle,
   ServiceTierToggle,
@@ -113,7 +112,6 @@ export interface TabServices {
 export interface TabUIComponents {
   fileContextManager: FileContextManager | null;
   imageContextManager: ImageContextManager | null;
-  modelSelector: ModelSelector | null;
   modeSelector: ModeSelector | null;
   thinkingBudgetSelector: ThinkingBudgetSelector | null;
   externalContextSelector: ExternalContextSelector | null;

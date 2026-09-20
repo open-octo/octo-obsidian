@@ -192,7 +192,6 @@ export class OctoAgentChatRuntime implements ChatRuntime {
       }
     }
 
-    await this.refreshConfig();
 
     if (options?.force || !this.sessionId) {
       await this.createSessionIfNeeded(options?.allowSessionCreation !== false);
@@ -394,40 +393,6 @@ export class OctoAgentChatRuntime implements ChatRuntime {
 
   getAuxiliaryModel(): string | null {
     return null;
-  }
-
-  private async refreshConfig(): Promise<void> {
-    if (!this.client) {
-      return;
-    }
-    const config = await this.client.getConfig();
-    if (!config || config.models.length === 0) {
-      return;
-    }
-
-    const pluginSettings = this.plugin.settings as unknown as Record<string, unknown>;
-    const options = config.models.map((entry, index) => {
-      const isDefault = index === config.defaultModelIdx;
-      return {
-        description: isDefault ? 'Default octo-agent model' : undefined,
-        label: entry.id || entry.model,
-        value: `octo-agent/${entry.model}`,
-      };
-    });
-    pluginSettings.octoAgentModels = options;
-
-    const defaultEntry = config.models[config.defaultModelIdx] ?? config.models[0];
-    if (defaultEntry) {
-      const defaultValue = `octo-agent/${defaultEntry.model}`;
-      const currentModel = pluginSettings.model;
-      if (
-        !currentModel
-        || typeof currentModel !== 'string'
-        || !options.some((option) => option.value === currentModel)
-      ) {
-        pluginSettings.model = defaultValue;
-      }
-    }
   }
 
   cleanup(): void {
@@ -678,6 +643,29 @@ export class OctoAgentChatRuntime implements ChatRuntime {
       source: 'claudian',
     });
     this.sessionId = session.id;
+    this.adoptSessionModel(session.model);
+  }
+
+  /**
+   * Records the model the server resolved for a session. The plugin does not
+   * choose a model: `POST /api/sessions` with an empty `model` lets octo apply
+   * the default from its own config, and this keeps the plugin's view of it
+   * honest for context-window and usage display.
+   */
+  private adoptSessionModel(model: string | undefined): void {
+    const trimmed = model?.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    const pluginSettings = this.plugin.settings as unknown as Record<string, unknown>;
+    const value = `octo-agent/${trimmed}`;
+    if (pluginSettings.model === value) {
+      return;
+    }
+
+    pluginSettings.model = value;
+    void this.plugin.saveSettings();
   }
 
   private async applySettingsToSession(sessionId: string): Promise<void> {
@@ -691,18 +679,6 @@ export class OctoAgentChatRuntime implements ChatRuntime {
         await this.client.setWorkingDir(sessionId, vaultPath);
       } catch (error) {
         console.error('Failed to set octo-agent working directory:', error);
-      }
-    }
-
-    const pluginSettings = this.plugin.settings as unknown as Record<string, unknown>;
-    if (pluginSettings.model) {
-      try {
-        const modelId = String(pluginSettings.model).replace(/^octo-agent\//, '');
-        if (modelId && modelId !== 'octo-agent') {
-          await this.client.setModel(sessionId, modelId);
-        }
-      } catch (error) {
-        console.error('Failed to set octo-agent model:', error);
       }
     }
 

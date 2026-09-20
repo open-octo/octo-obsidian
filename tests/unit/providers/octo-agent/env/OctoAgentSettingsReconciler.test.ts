@@ -15,15 +15,16 @@ describe('octoAgentSettingsReconciler', () => {
       expect(settings.model).toBe('octo-agent/kimi-for-coding');
     });
 
-    it('normalizes an invalid octo-agent model to the default and reports changed', () => {
-      const settings: Record<string, unknown> = {
-        model: 'octo-agent/unknown',
-        octoAgentModels: [
-          { value: 'octo-agent/kimi-for-coding', label: 'Kimi' },
-        ],
-      };
-      expect(octoAgentSettingsReconciler.normalizeModelVariantSettings(settings)).toBe(true);
-      expect(settings.model).toBe('octo-agent/kimi-for-coding');
+    it('normalizes a bare octo-agent id to the qualified default', () => {
+      const settings: Record<string, unknown> = { model: 'octo-agent' };
+      expect(octoAgentSettingsReconciler.normalizeModelVariantSettings(settings)).toBe(false);
+      expect(settings.model).toBe('octo-agent');
+    });
+
+    it('leaves a server-resolved model untouched', () => {
+      const settings: Record<string, unknown> = { model: 'octo-agent/k3' };
+      expect(octoAgentSettingsReconciler.normalizeModelVariantSettings(settings)).toBe(false);
+      expect(settings.model).toBe('octo-agent/k3');
     });
   });
 

@@ -26,11 +26,10 @@ const OCTO_AGENT_PERMISSION_MODE_TOGGLE: ProviderPermissionModeToggleConfig = {
 };
 
 export const octoAgentChatUIConfig: ProviderChatUIConfig = {
-  getModelOptions(settings: Record<string, unknown>): ProviderUIOption[] {
-    const cached = settings.octoAgentModels as ProviderUIOption[] | undefined;
-    if (cached && cached.length > 0) {
-      return cached;
-    }
+  getModelOptions(_settings: Record<string, unknown>): ProviderUIOption[] {
+    // There is no model picker: the server resolves the model from its own
+    // config and the runtime adopts it. This single entry is only the fallback
+    // the settings coordinator normalizes against before a session exists.
     return [OCTO_AGENT_MODEL];
   },
 
@@ -72,16 +71,10 @@ export const octoAgentChatUIConfig: ProviderChatUIConfig = {
     }
   },
 
-  normalizeModelVariant(model: string, settings: Record<string, unknown>): string {
-    const cached = settings.octoAgentModels as ProviderUIOption[] | undefined;
-    if (cached && cached.length > 0) {
-      if (cached.some((option) => option.value === model)) {
-        return model;
-      }
-      const defaultOption = cached.find((option) => option.value === 'octo-agent/kimi-for-coding') ?? cached[0];
-      return defaultOption?.value ?? 'octo-agent/kimi-for-coding';
-    }
-    if (model === 'octo-agent' || model === 'octo-agent/kimi-for-coding' || model.startsWith('octo-agent/')) {
+  normalizeModelVariant(model: string, _settings: Record<string, unknown>): string {
+    // Any octo-agent/* value is accepted: it may be a model the server chose
+    // that this plugin has never seen listed.
+    if (model === 'octo-agent' || model.startsWith('octo-agent/')) {
       return model;
     }
     return 'octo-agent/kimi-for-coding';

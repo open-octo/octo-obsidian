@@ -33,6 +33,45 @@ describe('OctoAgentClient', () => {
     });
   });
 
+  describe('createSession', () => {
+    it('sends an empty model so the server applies its own default', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '', model: 'k3' } }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      await client.createSession({ source: 'claudian' });
+
+      const body = JSON.parse(requestUrlMock.mock.calls[0][0].body);
+      expect(body.model).toBe('');
+    });
+
+    it('reports the model the server resolved', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '', model: 'k3' } }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      const session = await client.createSession();
+
+      expect(session.model).toBe('k3');
+    });
+
+    it('leaves the model undefined when the server omits it', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '' } }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      const session = await client.createSession();
+
+      expect(session.model).toBeUndefined();
+    });
+  });
+
   describe('parseEvent', () => {
     let client: OctoAgentClient;
 

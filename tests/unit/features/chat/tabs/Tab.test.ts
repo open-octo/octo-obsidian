@@ -99,12 +99,6 @@ const createMockStatusPanel = () => ({
   destroy: jest.fn(),
 });
 
-const createMockModelSelector = () => ({
-  updateDisplay: jest.fn(),
-  renderOptions: jest.fn(),
-  setReady: jest.fn(),
-});
-
 const createMockModeSelector = () => ({
   updateDisplay: jest.fn(),
   renderOptions: jest.fn(),
@@ -177,7 +171,6 @@ let mockImageContextManager: ReturnType<typeof createMockImageContextManager>;
 let mockSlashCommandDropdown: ReturnType<typeof createMockSlashCommandDropdown>;
 let mockBangBashModeManager: ReturnType<typeof createMockBangBashModeManager>;
 let mockStatusPanel: ReturnType<typeof createMockStatusPanel>;
-let mockModelSelector: ReturnType<typeof createMockModelSelector>;
 let mockModeSelector: ReturnType<typeof createMockModeSelector>;
 let mockThinkingBudgetSelector: ReturnType<typeof createMockThinkingBudgetSelector>;
 let mockContextUsageMeter: ReturnType<typeof createMockContextUsageMeter>;
@@ -249,7 +242,6 @@ jest.mock('@/features/chat/ui/StatusPanel', () => ({
 
 jest.mock('@/features/chat/ui/InputToolbar', () => ({
   createInputToolbar: jest.fn().mockImplementation(() => {
-    mockModelSelector = createMockModelSelector();
     mockModeSelector = createMockModeSelector();
     mockThinkingBudgetSelector = createMockThinkingBudgetSelector();
     mockContextUsageMeter = createMockContextUsageMeter();
@@ -258,7 +250,6 @@ jest.mock('@/features/chat/ui/InputToolbar', () => ({
     mockPermissionToggle = createMockPermissionToggle();
     mockServiceTierToggle = createMockServiceTierToggle();
     return {
-      modelSelector: mockModelSelector,
       modeSelector: mockModeSelector,
       thinkingBudgetSelector: mockThinkingBudgetSelector,
       contextUsageMeter: mockContextUsageMeter,
@@ -1226,7 +1217,6 @@ describe('Tab - UI Initialization', () => {
 
       initializeTabUI(tab, options.plugin);
 
-      expect(tab.ui.modelSelector).toBeDefined();
       expect(tab.ui.thinkingBudgetSelector).toBeDefined();
       expect(tab.ui.contextUsageMeter).toBeDefined();
       expect(tab.ui.externalContextSelector).toBeDefined();
@@ -2878,118 +2868,6 @@ describe('Tab - Blank Tab Model Selector', () => {
 
     const result = getBlankTabModelOptions({});
     expect(result).toEqual(octoAgentModels.map(m => ({ ...m, group: 'Octo Agent' })));
-  });
-});
-
-describe('Tab - Same-Provider Model Change', () => {
-  it('allows same-provider model change on bound tab', async () => {
-    (Notice as unknown as jest.Mock).mockClear();
-    jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
-    jest.spyOn(ProviderRegistry, 'getChatUIConfig').mockReturnValue({
-      getModelOptions: jest.fn().mockReturnValue([]),
-      ownsModel: jest.fn((model: string) => model.startsWith('octo-agent/')),
-      isAdaptiveReasoningModel: jest.fn().mockReturnValue(false),
-      getReasoningOptions: jest.fn().mockReturnValue([]),
-      getDefaultReasoningValue: jest.fn().mockReturnValue('off'),
-      getContextWindowSize: jest.fn().mockReturnValue(200000),
-      isDefaultModel: jest.fn().mockReturnValue(false),
-      applyModelDefaults: jest.fn(),
-      normalizeModelVariant: jest.fn((model: string) => model),
-      getCustomModelIds: jest.fn().mockReturnValue(new Set()),
-    } as any);
-
-    const plugin = createMockPlugin();
-    const tab = createTab(createMockOptions({ plugin }));
-    initializeTabUI(tab, plugin);
-
-    // Simulate bound tab
-    tab.lifecycleState = 'bound_cold';
-    tab.providerId = 'octo-agent';
-    tab.conversationId = 'conv-1';
-
-    const toolbarModule = jest.requireMock('@/features/chat/ui/InputToolbar') as {
-      createInputToolbar: jest.Mock;
-    };
-    const toolbarCallbacks = toolbarModule.createInputToolbar.mock.calls.at(-1)?.[1];
-
-    // Same-provider model change
-    await toolbarCallbacks.onModelChange('octo-agent/other-model');
-
-    expect(Notice).not.toHaveBeenCalled();
-    expect(plugin.updateConversation).toHaveBeenCalledWith('conv-1', {
-      selectedModel: 'octo-agent/other-model',
-    });
-    expect(plugin.saveSettings).not.toHaveBeenCalled();
-  });
-});
-
-describe('Tab - Blank Tab Draft Model Change', () => {
-  it('updates draft model without creating a runtime', async () => {
-    jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
-    jest.spyOn(ProviderRegistry, 'getChatUIConfig').mockReturnValue({
-      getModelOptions: jest.fn().mockReturnValue([]),
-      ownsModel: jest.fn((model: string) => model.startsWith('octo-agent/')),
-      isAdaptiveReasoningModel: jest.fn().mockReturnValue(false),
-      getReasoningOptions: jest.fn().mockReturnValue([]),
-      getDefaultReasoningValue: jest.fn().mockReturnValue('off'),
-      getContextWindowSize: jest.fn().mockReturnValue(200000),
-      isDefaultModel: jest.fn().mockReturnValue(false),
-      applyModelDefaults: jest.fn(),
-      normalizeModelVariant: jest.fn((model: string) => model),
-      getCustomModelIds: jest.fn().mockReturnValue(new Set()),
-    } as any);
-
-    const plugin = createMockPlugin();
-    const tab = createTab(createMockOptions({ plugin }));
-    initializeTabUI(tab, plugin);
-
-    expect(tab.lifecycleState).toBe('blank');
-    expect(tab.service).toBeNull();
-
-    const toolbarModule = jest.requireMock('@/features/chat/ui/InputToolbar') as {
-      createInputToolbar: jest.Mock;
-    };
-    const toolbarCallbacks = toolbarModule.createInputToolbar.mock.calls.at(-1)?.[1];
-
-    await toolbarCallbacks.onModelChange('octo-agent/other-model');
-
-    expect(tab.draftModel).toBe('octo-agent/other-model');
-    expect(tab.providerId).toBe('octo-agent');
-    // No runtime should have been created
-    expect(tab.service).toBeNull();
-    expect(tab.serviceInitialized).toBe(false);
-    expect(tab.lifecycleState).toBe('blank');
-  });
-
-  it('refreshes the service-tier toggle when the model changes on a blank tab', async () => {
-    jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
-    jest.spyOn(ProviderRegistry, 'getChatUIConfig').mockReturnValue({
-      getModelOptions: jest.fn().mockReturnValue([]),
-      ownsModel: jest.fn((model: string) => model.startsWith('octo-agent/')),
-      isAdaptiveReasoningModel: jest.fn().mockReturnValue(false),
-      getReasoningOptions: jest.fn().mockReturnValue([]),
-      getDefaultReasoningValue: jest.fn().mockReturnValue('off'),
-      getContextWindowSize: jest.fn().mockReturnValue(200000),
-      isDefaultModel: jest.fn().mockReturnValue(false),
-      applyModelDefaults: jest.fn(),
-      normalizeModelVariant: jest.fn((model: string) => model),
-      getCustomModelIds: jest.fn().mockReturnValue(new Set()),
-    } as any);
-
-    const plugin = createMockPlugin();
-    const tab = createTab(createMockOptions({ plugin }));
-    initializeTabUI(tab, plugin);
-
-    const toolbarModule = jest.requireMock('@/features/chat/ui/InputToolbar') as {
-      createInputToolbar: jest.Mock;
-    };
-    const toolbarCallbacks = toolbarModule.createInputToolbar.mock.calls.at(-1)?.[1];
-
-    mockServiceTierToggle.updateDisplay.mockClear();
-
-    await toolbarCallbacks.onModelChange('octo-agent/other-model');
-
-    expect(mockServiceTierToggle.updateDisplay).toHaveBeenCalled();
   });
 });
 

@@ -5,7 +5,6 @@ import {
   ContextUsageMeter,
   createInputToolbar,
   McpServerSelector,
-  ModelSelector,
   ModeSelector,
   PermissionToggle,
   ServiceTierToggle,
@@ -179,178 +178,6 @@ function createMockCallbacks(overrides: Record<string, any> = {}) {
     ...overrides,
   };
 }
-
-describe('ModelSelector', () => {
-  let parentEl: any;
-  let callbacks: ReturnType<typeof createMockCallbacks>;
-  let selector: ModelSelector;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    parentEl = createMockEl();
-    callbacks = createMockCallbacks();
-    selector = new ModelSelector(parentEl, callbacks);
-  });
-
-  it('should create a container with model-selector class', () => {
-    const container = parentEl.querySelector('.claudian-model-selector');
-    expect(container).not.toBeNull();
-  });
-
-  it('should display current model label', () => {
-    // Default model is 'sonnet' which maps to 'Sonnet'
-    const btn = parentEl.querySelector('.claudian-model-btn');
-    expect(btn).not.toBeNull();
-    const label = btn?.querySelector('.claudian-model-label');
-    expect(label).not.toBeNull();
-    expect(label?.textContent).toBe('Sonnet');
-  });
-
-  it('should display first model when current model not found', () => {
-    callbacks.getSettings.mockReturnValue({
-      model: 'nonexistent',
-      thinkingBudget: 'low',
-      serviceTier: 'default',
-      permissionMode: 'normal',
-      enableOpus1M: false,
-      enableSonnet1M: false,
-    });
-    selector.updateDisplay();
-    const label = parentEl.querySelector('.claudian-model-label');
-    expect(label?.textContent).toBe('Haiku');
-  });
-
-  it('should render model options in reverse order', () => {
-    const dropdown = parentEl.querySelector('.claudian-model-dropdown');
-    expect(dropdown).not.toBeNull();
-    // DEFAULT_CLAUDE_MODELS is [haiku, sonnet, opus] -> reversed is [opus, sonnet, haiku]
-    const options = dropdown?.children || [];
-    expect(options.length).toBe(3);
-    // Text is in child span, check first child's textContent
-    expect(options[0]?.children[0]?.textContent).toBe('Opus');
-    expect(options[1]?.children[0]?.textContent).toBe('Sonnet');
-    expect(options[2]?.children[0]?.textContent).toBe('Haiku');
-  });
-
-  it('should mark current model as selected', () => {
-    const dropdown = parentEl.querySelector('.claudian-model-dropdown');
-    const options = dropdown?.children || [];
-    // Sonnet is current (index 1 in reversed order)
-    const sonnetOption = options.find((o: any) => o.children[0]?.textContent === 'Sonnet');
-    expect(sonnetOption?.hasClass('selected')).toBe(true);
-  });
-
-  it('should call onModelChange when option clicked', async () => {
-    const dropdown = parentEl.querySelector('.claudian-model-dropdown');
-    const options = dropdown?.children || [];
-    const opusOption = options.find((o: any) => o.children[0]?.textContent === 'Opus');
-
-    await opusOption?.dispatchEvent('click', { stopPropagation: () => {} });
-    expect(callbacks.onModelChange).toHaveBeenCalledWith('opus');
-  });
-
-  it('should always show brand color on model button', () => {
-    const btn = parentEl.querySelector('.claudian-model-btn');
-    expect(btn).toBeTruthy();
-    expect(btn?.hasClass('ready')).toBe(false);
-  });
-
-  it('should use custom models from environment variables', () => {
-    callbacks.getEnvironmentVariables.mockReturnValue(
-      'CLAUDE_CODE_USE_BEDROCK=1\nANTHROPIC_MODEL=us.anthropic.claude-sonnet-4-20250514-v1:0'
-    );
-    callbacks.getSettings.mockReturnValue({
-      model: 'us.anthropic.claude-sonnet-4-20250514-v1:0',
-      thinkingBudget: 'low',
-      permissionMode: 'normal',
-      enableOpus1M: false,
-      enableSonnet1M: false,
-    });
-    selector.renderOptions();
-    selector.updateDisplay();
-    // Custom models should be available in dropdown
-    const label = parentEl.querySelector('.claudian-model-label');
-    expect(label?.textContent).toBeDefined();
-  });
-
-  it('should not filter custom env models when 1M toggles are enabled', () => {
-    callbacks.getEnvironmentVariables.mockReturnValue(
-      'ANTHROPIC_MODEL=opus'
-    );
-    callbacks.getSettings.mockReturnValue({
-      model: 'opus',
-      thinkingBudget: 'low',
-      permissionMode: 'normal',
-      enableOpus1M: true,
-      enableSonnet1M: true,
-    });
-
-    selector.renderOptions();
-    selector.updateDisplay();
-
-    const label = parentEl.querySelector('.claudian-model-label');
-    expect(label?.textContent).toBe('Opus');
-  });
-
-  it('should render group separators when models have group field', () => {
-    const groupedModels = [
-      { value: 'opus', label: 'Opus', group: 'Group A' },
-      { value: 'sonnet', label: 'Sonnet', group: 'Group A' },
-      { value: 'other-model', label: 'Other Model', group: 'Group B' },
-    ];
-    const uiConfig = createMockUIConfig();
-    uiConfig.getModelOptions.mockReturnValue(groupedModels);
-    callbacks.getUIConfig.mockReturnValue(uiConfig);
-    callbacks.getSettings.mockReturnValue({
-      model: 'sonnet',
-      thinkingBudget: 'low',
-      effortLevel: 'high',
-      serviceTier: 'default',
-      permissionMode: 'normal',
-    });
-
-    selector.renderOptions();
-
-    const dropdown = parentEl.querySelector('.claudian-model-dropdown');
-    const children = dropdown?.children || [];
-    // Reversed: [Group B, other model, Group A, Sonnet, Opus]
-    const groups = children.filter((c: any) => c.hasClass('claudian-model-group'));
-    expect(groups.length).toBe(2);
-    expect(groups[0]?.textContent).toBe('Group B');
-    expect(groups[1]?.textContent).toBe('Group A');
-  });
-
-  it('should not render group separators when models have no group field', () => {
-    selector.renderOptions();
-
-    const dropdown = parentEl.querySelector('.claudian-model-dropdown');
-    const children = dropdown?.children || [];
-    const groups = children.filter((c: any) => c.hasClass('claudian-model-group'));
-    expect(groups.length).toBe(0);
-  });
-
-  it('should show 1M variants instead of standard variants when enabled', () => {
-    callbacks.getSettings.mockReturnValue({
-      model: 'opus[1m]',
-      thinkingBudget: 'medium',
-      serviceTier: 'default',
-      permissionMode: 'normal',
-      enableOpus1M: true,
-      enableSonnet1M: true,
-    });
-
-    selector.renderOptions();
-    selector.updateDisplay();
-
-    const dropdown = parentEl.querySelector('.claudian-model-dropdown');
-    const options = dropdown?.children || [];
-    expect(options.find((o: any) => o.children[0]?.textContent === 'Opus 1M')).toBeDefined();
-    expect(options.find((o: any) => o.children[0]?.textContent === 'Sonnet 1M')).toBeDefined();
-    expect(options.find((o: any) => o.children[0]?.textContent === 'Opus')).toBeUndefined();
-    expect(options.find((o: any) => o.children[0]?.textContent === 'Sonnet')).toBeUndefined();
-    expect(parentEl.querySelector('.claudian-model-label')?.textContent).toBe('Opus 1M');
-  });
-});
 
 describe('ModeSelector', () => {
   let parentEl: any;
@@ -1113,7 +940,6 @@ describe('createInputToolbar', () => {
     const callbacks = createMockCallbacks();
     const toolbar = createInputToolbar(parentEl, callbacks);
 
-    expect(toolbar.modelSelector).toBeInstanceOf(ModelSelector);
     expect(toolbar.modeSelector).toBeInstanceOf(ModeSelector);
     expect(toolbar.thinkingBudgetSelector).toBeInstanceOf(ThinkingBudgetSelector);
     expect(toolbar.contextUsageMeter).toBeInstanceOf(ContextUsageMeter);

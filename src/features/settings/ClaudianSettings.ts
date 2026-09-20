@@ -521,7 +521,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
         await this.plugin.saveSettings();
         for (const view of this.plugin.getAllViews()) {
-          view.refreshModelSelector();
+          view.refreshModelDependentUI();
         }
       };
 

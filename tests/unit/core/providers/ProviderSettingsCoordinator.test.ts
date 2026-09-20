@@ -49,19 +49,13 @@ describe('ProviderSettingsCoordinator', () => {
       expect(typeof result).toBe('boolean');
     });
 
-    it('migrates the active octo-agent model in place when the cached model list no longer offers it', () => {
-      const settings: Record<string, unknown> = {
-        model: 'octo-agent/gpt-legacy',
-        providerConfigs: {
-          'octo-agent': { enabled: true },
-        },
-        octoAgentModels: [
-          { label: 'Kimi For Coding', value: 'octo-agent/kimi-for-coding' },
-        ],
-      };
+    it('keeps any octo-agent model the server may have resolved', () => {
+      // The plugin no longer curates a model list, so an unfamiliar
+      // octo-agent/* value must survive rather than snap back to a default.
+      const settings: Record<string, unknown> = { model: 'octo-agent/k3' };
 
-      expect(ProviderSettingsCoordinator.normalizeAllModelVariants(settings)).toBe(true);
-      expect(settings.model).toBe('octo-agent/kimi-for-coding');
+      expect(ProviderSettingsCoordinator.normalizeAllModelVariants(settings)).toBe(false);
+      expect(settings.model).toBe('octo-agent/k3');
     });
   });
 

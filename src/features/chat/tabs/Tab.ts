@@ -9,7 +9,7 @@ import {
   normalizeProviderModelSelection,
   resolveConversationModel,
 } from '../../../core/providers/conversationModel';
-import { getEnabledProviderForModel, getProviderForModel } from '../../../core/providers/modelRouting';
+import { getEnabledProviderForModel } from '../../../core/providers/modelRouting';
 import { ProviderRegistry } from '../../../core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from '../../../core/providers/ProviderSettingsCoordinator';
 import { ProviderWorkspaceRegistry } from '../../../core/providers/ProviderWorkspaceRegistry';
@@ -51,7 +51,6 @@ import { createInputToolbar } from '../ui/InputToolbar';
 import { NavigationSidebar } from '../ui/NavigationSidebar';
 import { StatusPanel } from '../ui/StatusPanel';
 import { autoResizeTextarea } from '../ui/textareaResize';
-import { recalculateUsageForModel } from '../utils/usageInfo';
 import { getTabProviderId } from './providerResolution';
 import type { TabData, TabDOMElements, TabId, TabManagerViewHost, TabProviderContext } from './types';
 import { generateTabId } from './types';
@@ -364,8 +363,6 @@ async function updateTabProviderSettings(
 function refreshTabProviderUI(tab: TabData, plugin: ClaudianPlugin): void {
   const capabilities = getTabCapabilities(tab, plugin);
   const permissionMode = getTabPermissionMode(tab, plugin);
-  tab.ui.modelSelector?.updateDisplay();
-  tab.ui.modelSelector?.renderOptions();
   tab.ui.modeSelector?.updateDisplay();
   tab.ui.modeSelector?.renderOptions();
   tab.ui.thinkingBudgetSelector?.updateDisplay();
@@ -537,7 +534,6 @@ export function createTab(options: TabCreateOptions): TabData {
     ui: {
       fileContextManager: null,
       imageContextManager: null,
-      modelSelector: null,
       modeSelector: null,
       thinkingBudgetSelector: null,
       externalContextSelector: null,
@@ -855,94 +851,6 @@ function initializeInputToolbar(
     getCapabilities: () => getTabCapabilities(tab, plugin),
     getSettings: () => getTabSettingsSnapshot(tab, plugin),
     getEnvironmentVariables: () => plugin.getActiveEnvironmentVariables(),
-    onModelChange: async (model: string) => {
-      // For blank tabs, update draft model and derive provider
-      if (tab.lifecycleState === 'blank') {
-        const previousProvider = tab.providerId;
-        tab.draftModel = model;
-        const newProvider = getEnabledProviderForModel(
-          model,
-          plugin.settings,
-        );
-        const didProviderChange = newProvider !== previousProvider;
-        if (tab.service) {
-          cleanupTabRuntime(tab);
-        }
-        tab.providerId = newProvider;
-        if (didProviderChange) {
-          syncTabProviderServices(tab, plugin);
-        }
-        syncSlashCommandDropdownForProvider(tab, plugin, getProviderCatalogConfig);
-
-        const uiConfig = ProviderRegistry.getChatUIConfig(newProvider);
-        if (didProviderChange) {
-          await onProviderChanged?.(newProvider);
-        }
-        await uiConfig.prepareModelMetadata?.(
-          model,
-          getProviderSettingsSnapshotWithModel(plugin.settings, newProvider, model),
-          { plugin },
-        );
-        tab.ui.thinkingBudgetSelector?.updateDisplay();
-        tab.ui.serviceTierToggle?.updateDisplay();
-        tab.ui.modelSelector?.updateDisplay();
-        tab.ui.modeSelector?.updateDisplay();
-        // Re-render options (provider may have changed reasoning controls)
-        tab.ui.modelSelector?.renderOptions();
-        tab.ui.modeSelector?.renderOptions();
-        applyProviderUIGating(tab, plugin);
-        return;
-      }
-
-      // For bound tabs, reject cross-provider model changes
-      const boundProvider = tab.providerId;
-      const modelProvider = getProviderForModel(model, plugin.settings);
-      if (modelProvider !== boundProvider) {
-        new Notice('Cannot switch provider on a bound session. Start a new tab instead.');
-        tab.ui.modelSelector?.updateDisplay();
-        return;
-      }
-
-      const uiConfig: ProviderChatUIConfig = getTabChatUIConfig(tab, plugin);
-      const normalizedModel = normalizeProviderModelSelection(boundProvider, plugin.settings, model) ?? model;
-      const providerSettings = getProviderSettingsSnapshotWithModel(
-        plugin.settings,
-        boundProvider,
-        normalizedModel,
-      ) as TabProviderSettings;
-
-      if (tab.conversationId) {
-        await plugin.updateConversation(tab.conversationId, {
-          selectedModel: normalizedModel,
-        });
-        const updatedConversation = plugin.getConversationSync(tab.conversationId);
-        if (updatedConversation && tab.service?.providerId === boundProvider) {
-          const hasMessages = updatedConversation.messages.length > 0;
-          const externalContextPaths = tab.ui.externalContextSelector?.getExternalContexts()
-            ?? (hasMessages
-              ? updatedConversation.externalContextPaths ?? []
-              : plugin.settings.persistentExternalContextPaths ?? []);
-          tab.service.syncConversationState(updatedConversation, externalContextPaths);
-        }
-      }
-
-      await uiConfig.prepareModelMetadata?.(normalizedModel, providerSettings, { plugin });
-      tab.ui.thinkingBudgetSelector?.updateDisplay();
-      tab.ui.serviceTierToggle?.updateDisplay();
-      tab.ui.modelSelector?.updateDisplay();
-      tab.ui.modelSelector?.renderOptions();
-
-      // Recalculate context usage percentage for the new model's context window
-      const currentUsage = tab.state.usage;
-      if (currentUsage) {
-        const newContextWindow = uiConfig.getContextWindowSize(
-          normalizedModel,
-          providerSettings.customContextLimits,
-          providerSettings,
-        );
-        tab.state.usage = recalculateUsageForModel(currentUsage, normalizedModel, newContextWindow);
-      }
-    },
     onModeChange: async (mode: string) => {
       await updateTabProviderSettings(tab, plugin, (settings) => {
         getTabChatUIConfig(tab, plugin).applyModeSelection?.(mode, settings);
@@ -992,7 +900,6 @@ function initializeInputToolbar(
     },
   });
 
-  tab.ui.modelSelector = toolbarComponents.modelSelector;
   tab.ui.modeSelector = toolbarComponents.modeSelector;
   tab.ui.thinkingBudgetSelector = toolbarComponents.thinkingBudgetSelector;
   tab.ui.contextUsageMeter = toolbarComponents.contextUsageMeter;
