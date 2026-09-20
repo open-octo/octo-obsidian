@@ -119,10 +119,6 @@
       "name": "Pasta de mídia",
       "desc": "Pasta contendo anexos/imagens. Quando notas usam ![[image.jpg]], Claude procurará aqui. Deixe vazio para a raiz do repositório."
     },
-    "systemPrompt": {
-      "name": "Prompt de sistema personalizado",
-      "desc": "Instruções adicionais anexadas ao prompt de sistema padrão"
-    },
     "navMappings": {
       "name": "Mapeamentos de navegação estilo Vim",
       "desc": "Um mapeamento por linha. Formato: \"map <tecla> <ação>\" (ações: scrollUp, scrollDown, focusInput)."

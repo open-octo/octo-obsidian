@@ -119,10 +119,6 @@
       "name": "Dossier des médias",
       "desc": "Dossier contenant les pièces jointes/images. Lorsque les notes utilisent ![[image.jpg]], Claude cherchera ici. Laisser vide pour la racine du coffre."
     },
-    "systemPrompt": {
-      "name": "Prompt système personnalisé",
-      "desc": "Instructions supplémentaires ajoutées au prompt système par défaut"
-    },
     "navMappings": {
       "name": "Mappages de navigation style Vim",
       "desc": "Un mappage par ligne. Format : \"map <touche> <action>\" (actions : scrollUp, scrollDown, focusInput)."

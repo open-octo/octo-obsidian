@@ -61,14 +61,6 @@ export const CHAT_VIEW_PLACEMENTS = [
 /** Workspace location used when opening the Claudian chat view. */
 export type ChatViewPlacement = typeof CHAT_VIEW_PLACEMENTS[number];
 
-/** Result from instruction refinement agent query. */
-export interface InstructionRefineResult {
-  success: boolean;
-  refinedInstruction?: string;  // The refined instruction text
-  clarification?: string;       // Agent's clarifying question (if any)
-  error?: string;               // Error message (if failed)
-}
-
 /** Permission mode for tool execution. */
 export type PermissionMode = 'yolo' | 'plan' | 'normal';
 
@@ -101,7 +93,6 @@ export interface ClaudianSettings {
   // Content settings
   excludedTags: string[];
   mediaFolder: string;
-  systemPrompt: string;
   persistentExternalContextPaths: string[];
 
   // Environment

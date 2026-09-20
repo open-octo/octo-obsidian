@@ -20,7 +20,6 @@ export {
   type ClaudianSettings,
   type EnvSnippet,
   type HostnameCliPaths,
-  type InstructionRefineResult,
   type KeyboardNavigationSettings,
   type PermissionMode,
   type SlashCommand,

@@ -1,6 +1,5 @@
 import type { ProviderRegistration } from '../../core/providers/types';
 import { OctoAgentInlineEditService } from './auxiliary/OctoAgentInlineEditService';
-import { OctoAgentInstructionRefineService } from './auxiliary/OctoAgentInstructionRefineService';
 import { OctoAgentTaskResultInterpreter } from './auxiliary/OctoAgentTaskResultInterpreter';
 import { OCTO_AGENT_PROVIDER_CAPABILITIES } from './capabilities';
 import { octoAgentSettingsReconciler } from './env/OctoAgentSettingsReconciler';
@@ -13,7 +12,6 @@ export const octoAgentProviderRegistration: ProviderRegistration = {
   capabilities: OCTO_AGENT_PROVIDER_CAPABILITIES,
   chatUIConfig: octoAgentChatUIConfig,
   createInlineEditService: (plugin) => new OctoAgentInlineEditService(plugin),
-  createInstructionRefineService: (plugin) => new OctoAgentInstructionRefineService(plugin),
   createRuntime: ({ plugin }) => new OctoAgentChatRuntime(plugin),
   displayName: 'Octo Agent',
   historyService: new OctoAgentConversationHistoryService(),

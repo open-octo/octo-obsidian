@@ -119,10 +119,6 @@
       "name": "媒體資料夾",
       "desc": "存放附件/圖片的資料夾。當筆記使用 ![[image.jpg]] 時，Claude 會在此查找。留空使用儲存庫根目錄。"
     },
-    "systemPrompt": {
-      "name": "自訂系統提示詞",
-      "desc": "附加到預設系統提示詞的額外指令"
-    },
     "navMappings": {
       "name": "Vim 風格導航映射",
       "desc": "每行一個映射。格式：\"map <鍵> <動作>\"（動作：scrollUp, scrollDown, focusInput）。"

@@ -8,7 +8,6 @@ import type { VaultFileAdapter } from '../storage/VaultFileAdapter';
 import type {
   AgentDefinition,
   Conversation,
-  InstructionRefineResult,
   ManagedMcpServer,
   PluginInfo,
   SessionMetadata,
@@ -30,7 +29,6 @@ export interface ProviderCapabilities {
   supportsFork: boolean;
   supportsProviderCommands: boolean;
   supportsImageAttachments: boolean;
-  supportsInstructionMode: boolean;
   supportsMcpTools: boolean;
   supportsTurnSteer?: boolean;
   reasoningControl: 'effort' | 'token-budget' | 'none';
@@ -60,7 +58,6 @@ export interface ProviderRegistration {
   chatUIConfig: ProviderChatUIConfig;
   settingsReconciler: ProviderSettingsReconciler;
   createRuntime: (options: Omit<CreateChatRuntimeOptions, 'providerId'>) => ChatRuntime;
-  createInstructionRefineService: (plugin: ClaudianPlugin) => InstructionRefineService;
   createInlineEditService: (plugin: ClaudianPlugin) => InlineEditService;
   historyService: ProviderConversationHistoryService;
   taskResultInterpreter: ProviderTaskResultInterpreter;
@@ -453,25 +450,6 @@ export interface ProviderSubagentLifecycleAdapter {
 // ---------------------------------------------------------------------------
 // Auxiliary service contracts
 // ---------------------------------------------------------------------------
-
-// -- Instruction refinement --
-
-export type RefineProgressCallback = (update: InstructionRefineResult) => void;
-
-export interface InstructionRefineService {
-  setModelOverride?(model?: string): void;
-  resetConversation(): void;
-  refineInstruction(
-    rawInstruction: string,
-    existingInstructions: string,
-    onProgress?: RefineProgressCallback
-  ): Promise<InstructionRefineResult>;
-  continueConversation(
-    message: string,
-    onProgress?: RefineProgressCallback
-  ): Promise<InstructionRefineResult>;
-  cancel(): void;
-}
 
 // -- Inline edit --
 

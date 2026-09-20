@@ -126,21 +126,6 @@ function createMockAgentService() {
   };
 }
 
-function createMockInstructionRefineService(overrides: Record<string, jest.Mock> = {}) {
-  return {
-    refineInstruction: jest.fn().mockResolvedValue({ success: true }),
-    resetConversation: jest.fn(),
-    continueConversation: jest.fn(),
-    cancel: jest.fn(),
-    setModelOverride: jest.fn(),
-    ...overrides,
-  };
-}
-
-function createMockInstructionModeManager() {
-  return { clear: jest.fn() };
-}
-
 function createMockDeps(overrides: Partial<InputControllerDeps> = {}): InputControllerDeps & { mockAgentService: ReturnType<typeof createMockAgentService> } {
   const state = new ChatState();
   const inputEl = createMockInputEl();
@@ -210,8 +195,6 @@ function createMockDeps(overrides: Partial<InputControllerDeps> = {}): InputCont
     getImageContextManager: () => imageContextManager as any,
     getMcpServerSelector: () => null,
     getExternalContextSelector: () => null,
-    getInstructionModeManager: () => null,
-    getInstructionRefineService: () => null,
     getStatusPanel: () => null,
     generateId: () => `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     resetInputHeight: jest.fn(),
@@ -2361,66 +2344,6 @@ describe('InputController - Message Queue', () => {
     });
   });
 
-  describe('handleInstructionSubmit', () => {
-    it('should create InstructionModal and call refineInstruction', async () => {
-      const mockInstructionRefineService = createMockInstructionRefineService({
-        refineInstruction: jest.fn().mockResolvedValue({
-          success: true,
-          refinedInstruction: 'refined instruction',
-        }),
-      });
-      const mockInstructionModeManager = createMockInstructionModeManager();
-
-      deps = createMockDeps({
-        getInstructionRefineService: () => mockInstructionRefineService as any,
-        getInstructionModeManager: () => mockInstructionModeManager as any,
-      });
-      deps.plugin.settings.systemPrompt = '';
-
-      controller = new InputController(deps);
-
-      await controller.handleInstructionSubmit('add logging');
-
-      expect(mockInstructionRefineService.resetConversation).toHaveBeenCalled();
-      expect(mockInstructionRefineService.refineInstruction).toHaveBeenCalledWith(
-        'add logging',
-        ''
-      );
-    });
-
-    it('should pass the active chat model into instruction refine service', async () => {
-      const mockInstructionRefineService = createMockInstructionRefineService({
-        refineInstruction: jest.fn().mockResolvedValue({
-          success: true,
-          refinedInstruction: 'refined instruction',
-        }),
-      });
-
-      deps = createMockDeps({
-        getAuxiliaryModel: () => 'opencode:openai/gpt-5.4',
-        getInstructionRefineService: () => mockInstructionRefineService as any,
-      });
-      deps.plugin.settings.systemPrompt = '';
-
-      controller = new InputController(deps);
-
-      await controller.handleInstructionSubmit('add logging');
-
-      expect(mockInstructionRefineService.setModelOverride).toHaveBeenCalledWith(
-        'opencode:openai/gpt-5.4',
-      );
-    });
-
-    it('should return early when instructionRefineService is null', async () => {
-      deps = createMockDeps({
-        getInstructionRefineService: () => null,
-      });
-      controller = new InputController(deps);
-
-      await expect(controller.handleInstructionSubmit('test')).resolves.not.toThrow();
-    });
-  });
-
   describe('processQueuedMessage sends the queued snapshot', () => {
     it('should send images from the queued message without rebuilding composer state', () => {
       jest.useFakeTimers();
@@ -2512,110 +2435,6 @@ describe('InputController - Message Queue', () => {
       expect(deps.streamController.appendText).not.toHaveBeenCalledWith(
         expect.stringContaining('Interrupted')
       );
-    });
-  });
-
-  describe('handleInstructionSubmit - advanced paths', () => {
-    it('should show clarification when result has clarification', async () => {
-      const mockInstructionRefineService = createMockInstructionRefineService({
-        refineInstruction: jest.fn().mockResolvedValue({
-          success: true,
-          clarification: 'Please clarify what you mean',
-        }),
-      });
-      const mockInstructionModeManager = createMockInstructionModeManager();
-
-      deps = createMockDeps({
-        getInstructionRefineService: () => mockInstructionRefineService as any,
-        getInstructionModeManager: () => mockInstructionModeManager as any,
-      });
-      controller = new InputController(deps);
-
-      await controller.handleInstructionSubmit('ambiguous instruction');
-
-      expect(mockInstructionRefineService.refineInstruction).toHaveBeenCalledWith(
-        'ambiguous instruction',
-        undefined
-      );
-    });
-
-    it('should show error when result has no clarification or instruction', async () => {
-      const mockInstructionRefineService = createMockInstructionRefineService();
-      const mockInstructionModeManager = createMockInstructionModeManager();
-
-      deps = createMockDeps({
-        getInstructionRefineService: () => mockInstructionRefineService as any,
-        getInstructionModeManager: () => mockInstructionModeManager as any,
-      });
-      controller = new InputController(deps);
-      mockNotice.mockClear();
-
-      await controller.handleInstructionSubmit('empty result');
-
-      expect(mockNotice).toHaveBeenCalledWith('No instruction received');
-      expect(mockInstructionModeManager.clear).toHaveBeenCalled();
-    });
-
-    it('should handle cancelled result from refineInstruction', async () => {
-      const mockInstructionRefineService = createMockInstructionRefineService({
-        refineInstruction: jest.fn().mockResolvedValue({
-          success: false,
-          error: 'Cancelled',
-        }),
-      });
-      const mockInstructionModeManager = createMockInstructionModeManager();
-
-      deps = createMockDeps({
-        getInstructionRefineService: () => mockInstructionRefineService as any,
-        getInstructionModeManager: () => mockInstructionModeManager as any,
-      });
-      controller = new InputController(deps);
-
-      await controller.handleInstructionSubmit('cancelled instruction');
-
-      expect(mockInstructionModeManager.clear).toHaveBeenCalled();
-      expect(mockNotice).not.toHaveBeenCalledWith(expect.stringContaining('Cancelled'));
-    });
-
-    it('should handle non-cancelled error from refineInstruction', async () => {
-      const mockInstructionRefineService = createMockInstructionRefineService({
-        refineInstruction: jest.fn().mockResolvedValue({
-          success: false,
-          error: 'API Error',
-        }),
-      });
-      const mockInstructionModeManager = createMockInstructionModeManager();
-
-      deps = createMockDeps({
-        getInstructionRefineService: () => mockInstructionRefineService as any,
-        getInstructionModeManager: () => mockInstructionModeManager as any,
-      });
-      controller = new InputController(deps);
-      mockNotice.mockClear();
-
-      await controller.handleInstructionSubmit('error instruction');
-
-      expect(mockNotice).toHaveBeenCalledWith('API Error');
-      expect(mockInstructionModeManager.clear).toHaveBeenCalled();
-    });
-
-    it('should handle exception thrown during refineInstruction', async () => {
-      const mockInstructionRefineService = createMockInstructionRefineService({
-        refineInstruction: jest.fn().mockRejectedValue(new Error('Unexpected error')),
-      });
-      const mockInstructionModeManager = createMockInstructionModeManager();
-
-      deps = createMockDeps({
-        getInstructionRefineService: () => mockInstructionRefineService as any,
-        getInstructionModeManager: () => mockInstructionModeManager as any,
-      });
-      controller = new InputController(deps);
-      mockNotice.mockClear();
-
-      await controller.handleInstructionSubmit('error instruction');
-
-      expect(mockNotice).toHaveBeenCalledWith('Error: Unexpected error');
-      expect(mockInstructionModeManager.clear).toHaveBeenCalled();
     });
   });
 

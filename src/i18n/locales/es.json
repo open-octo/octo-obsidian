@@ -119,10 +119,6 @@
       "name": "Carpeta de medios",
       "desc": "Carpeta que contiene archivos adjuntos/imagenes. Cuando las notas usan ![[image.jpg]], Claude buscará aquí. Dejar vacío para la raíz del depósito."
     },
-    "systemPrompt": {
-      "name": "Prompt de sistema personalizado",
-      "desc": "Instrucciones adicionales añadidas al prompt de sistema por defecto"
-    },
     "navMappings": {
       "name": "Mapeos de navegación estilo Vim",
       "desc": "Un mapeo por línea. Formato: \"map <tecla> <acción>\" (acciones: scrollUp, scrollDown, focusInput)."

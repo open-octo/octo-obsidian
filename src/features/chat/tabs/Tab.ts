@@ -48,7 +48,6 @@ import { BangBashModeManager as BangBashModeManagerClass } from '../ui/BangBashM
 import { FileContextManager } from '../ui/FileContext';
 import { ImageContextManager } from '../ui/ImageContext';
 import { createInputToolbar } from '../ui/InputToolbar';
-import { InstructionModeManager as InstructionModeManagerClass } from '../ui/InstructionModeManager';
 import { NavigationSidebar } from '../ui/NavigationSidebar';
 import { StatusPanel } from '../ui/StatusPanel';
 import { autoResizeTextarea } from '../ui/textareaResize';
@@ -409,9 +408,6 @@ function syncTabProviderServices(
   tab: TabData,
   plugin: ClaudianPlugin,
 ): void {
-  tab.services.instructionRefineService?.cancel();
-  tab.services.instructionRefineService?.resetConversation();
-  tab.services.instructionRefineService = ProviderRegistry.createInstructionRefineService(plugin, tab.providerId);
   tab.services.subagentManager.setTaskResultInterpreter?.(
     ProviderRegistry.getTaskResultInterpreter(tab.providerId)
   );
@@ -537,7 +533,6 @@ export function createTab(options: TabCreateOptions): TabData {
     },
     services: {
       subagentManager,
-      instructionRefineService: null,
     },
     ui: {
       fileContextManager: null,
@@ -550,7 +545,6 @@ export function createTab(options: TabCreateOptions): TabData {
       permissionToggle: null,
       serviceTierToggle: null,
       slashCommandDropdown: null,
-      instructionModeManager: null,
       bangBashModeManager: null,
       contextUsageMeter: null,
       statusPanel: null,
@@ -780,21 +774,12 @@ function initializeSlashCommands(
 }
 
 /**
- * Initializes instruction mode and todo panel for a tab.
+ * Initializes bang-bash mode and the todo panel for a tab.
  */
-function initializeInstructionAndTodo(tab: TabData, plugin: ClaudianPlugin): void {
+function initializeBangBashAndTodo(tab: TabData, plugin: ClaudianPlugin): void {
   const { dom } = tab;
 
   syncTabProviderServices(tab, plugin);
-  tab.ui.instructionModeManager = new InstructionModeManagerClass(
-    dom.inputEl,
-    {
-      onSubmit: async (rawInstruction) => {
-        await tab.controllers.inputController?.handleInstructionSubmit(rawInstruction);
-      },
-      getInputWrapper: () => dom.inputWrapper,
-    }
-  );
 
   // Bang bash mode (! command execution)
   if (isBangBashEnabled(plugin.settings)) {
@@ -1085,7 +1070,7 @@ export function initializeTabUI(
     );
   }
 
-  initializeInstructionAndTodo(tab, plugin);
+  initializeBangBashAndTodo(tab, plugin);
   initializeInputToolbar(tab, plugin, options.getProviderCatalogConfig, options.onProviderChanged);
 
   state.callbacks = {
@@ -1500,8 +1485,6 @@ export function initializeTabControllers(
     getImageContextManager: () => ui.imageContextManager,
     getMcpServerSelector: () => ui.mcpServerSelector,
     getExternalContextSelector: () => ui.externalContextSelector,
-    getInstructionModeManager: () => ui.instructionModeManager,
-    getInstructionRefineService: () => services.instructionRefineService,
     getStatusPanel: () => ui.statusPanel,
     generateId: generateMessageId,
     resetInputHeight: () => {
@@ -1531,7 +1514,6 @@ export function initializeTabControllers(
     getSettings: () => plugin.settings.keyboardNavigation,
     isStreaming: () => state.isStreaming,
     shouldSkipEscapeHandling: () => {
-      if (ui.instructionModeManager?.isActive()) return true;
       if (ui.bangBashModeManager?.isActive()) return true;
       if (tab.controllers.inputController?.isResumeDropdownVisible()) return true;
       if (ui.slashCommandDropdown?.isVisible()) return true;
@@ -1569,16 +1551,8 @@ export function wireTabInputEvents(tab: TabData, plugin: ClaudianPlugin): void {
       return;
     }
 
-    if (getTabCapabilities(tab, plugin).supportsInstructionMode && ui.instructionModeManager?.handleTriggerKey(e)) {
-      return;
-    }
-
     if (ui.bangBashModeManager?.handleTriggerKey(e)) {
       syncBangBashSuppression();
-      return;
-    }
-
-    if (getTabCapabilities(tab, plugin).supportsInstructionMode && ui.instructionModeManager?.handleKeydown(e)) {
       return;
     }
 
@@ -1616,7 +1590,6 @@ export function wireTabInputEvents(tab: TabData, plugin: ClaudianPlugin): void {
     if (!ui.bangBashModeManager?.isActive()) {
       ui.fileContextManager?.handleInputChange();
     }
-    ui.instructionModeManager?.handleInputChange();
     ui.bangBashModeManager?.handleInputChange();
     syncBangBashSuppression();
     autoResizeTextarea(dom.inputEl);
@@ -1719,13 +1692,8 @@ export async function destroyTab(tab: TabData): Promise<void> {
   tab.ui.fileContextManager?.destroy();
   tab.ui.slashCommandDropdown?.destroy();
   tab.ui.slashCommandDropdown = null;
-  tab.ui.instructionModeManager?.destroy();
-  tab.ui.instructionModeManager = null;
   tab.ui.bangBashModeManager?.destroy();
   tab.ui.bangBashModeManager = null;
-  tab.services.instructionRefineService?.cancel();
-  tab.services.instructionRefineService?.resetConversation();
-  tab.services.instructionRefineService = null;
   tab.ui.statusPanel?.destroy();
   tab.ui.statusPanel = null;
   tab.ui.navigationSidebar?.destroy();

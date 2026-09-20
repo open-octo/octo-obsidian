@@ -1,6 +1,6 @@
 import type { Component, WorkspaceLeaf } from 'obsidian';
 
-import type { InstructionRefineService, ProviderId } from '../../../core/providers/types';
+import type { ProviderId } from '../../../core/providers/types';
 import type { ChatRuntime } from '../../../core/runtime/ChatRuntime';
 import type { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
 import type { BrowserSelectionController } from '../controllers/BrowserSelectionController';
@@ -26,7 +26,6 @@ import type {
   ServiceTierToggle,
   ThinkingBudgetSelector,
 } from '../ui/InputToolbar';
-import type { InstructionModeManager } from '../ui/InstructionModeManager';
 import type { NavigationSidebar } from '../ui/NavigationSidebar';
 import type { StatusPanel } from '../ui/StatusPanel';
 
@@ -106,7 +105,6 @@ export interface TabControllers {
  */
 export interface TabServices {
   subagentManager: SubagentManager;
-  instructionRefineService: InstructionRefineService | null;
 }
 
 /**
@@ -123,7 +121,6 @@ export interface TabUIComponents {
   permissionToggle: PermissionToggle | null;
   serviceTierToggle: ServiceTierToggle | null;
   slashCommandDropdown: SlashCommandDropdown | null;
-  instructionModeManager: InstructionModeManager | null;
   bangBashModeManager: BangBashModeManager | null;
   contextUsageMeter: ContextUsageMeter | null;
   statusPanel: StatusPanel | null;
