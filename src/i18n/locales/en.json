@@ -71,15 +71,40 @@
   },
   "settings": {
     "title": "Octo Settings",
-    "tabs": {
-      "general": "General",
-      "claude": "Claude",
-      "codex": "Codex"
-    },
     "display": "Display",
     "content": "Content",
     "input": "Input",
     "setup": "Setup",
+    "serverCommand": {
+      "name": "Server command",
+      "desc": "Start octo-agent with: octo serve --cors 'app://obsidian.md'. Required so Obsidian can reach the REST and WebSocket endpoints."
+    },
+    "host": {
+      "name": "Host",
+      "desc": "Hostname of the octo-agent server."
+    },
+    "port": {
+      "name": "Port",
+      "desc": "Port of the octo-agent server (1-65535)."
+    },
+    "autoStartServer": {
+      "name": "Auto-start server",
+      "desc": "Run `octo serve` automatically when Octo needs a connection."
+    },
+    "cliPath": {
+      "name": "Claude CLI path",
+      "desc": "Custom path to Claude Code CLI. Leave empty for auto-detection.",
+      "descWindows": "For the native installer, use claude.exe. For npm/pnpm/yarn or other package manager installs, use the cli-wrapper.cjs path (not claude.cmd).",
+      "descUnix": "Paste the output of \"which claude\" — works for both native and npm/pnpm/yarn installs.",
+      "validation": {
+        "notExist": "Path does not exist",
+        "isDirectory": "Path is a directory, not a file"
+      }
+    },
+    "accessKey": {
+      "name": "Access key",
+      "desc": "Optional access key for non-loopback hosts. Leave empty when using 127.0.0.1."
+    },
     "models": "Models",
     "experimental": "Experimental",
     "userName": {
@@ -293,16 +318,6 @@
       "rightSidebar": "Right sidebar",
       "leftSidebar": "Left sidebar",
       "mainTab": "Main editor tab"
-    },
-    "cliPath": {
-      "name": "Claude CLI path",
-      "desc": "Custom path to Claude Code CLI. Leave empty for auto-detection.",
-      "descWindows": "For the native installer, use claude.exe. For npm/pnpm/yarn or other package manager installs, use the cli-wrapper.cjs path (not claude.cmd).",
-      "descUnix": "Paste the output of \"which claude\" — works for both native and npm/pnpm/yarn installs.",
-      "validation": {
-        "notExist": "Path does not exist",
-        "isDirectory": "Path is a directory, not a file"
-      }
     },
     "language": {
       "name": "Language",

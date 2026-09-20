@@ -274,7 +274,6 @@ describe('ClaudianPlugin', () => {
       const content = JSON.parse(writeCall[1]);
       expect(content).not.toHaveProperty('activeConversationId');
       expect(content).toHaveProperty(['providerConfigs', 'octo-agent', 'cliPath']);
-      expect(content).toHaveProperty(['providerConfigs', 'octo-agent', 'enabled']);
       expect(content).toHaveProperty('lastCustomModel');
       expect(content).not.toHaveProperty('enableBlocklist');
       expect(content).not.toHaveProperty('blockedCommands');
@@ -287,30 +286,27 @@ describe('ClaudianPlugin', () => {
     it('updates runtime env vars when changed', async () => {
       await plugin.onload();
 
-      await plugin.applyEnvironmentVariables('shared', 'A=2');
-      expect(plugin.getEnvironmentVariablesForScope('shared')).toBe('A=2');
+      await plugin.applyEnvironmentVariables('A=2');
+      expect(plugin.getActiveEnvironmentVariables()).toBe('A=2');
 
-      await plugin.applyEnvironmentVariables('shared', 'A=3');
-      expect(plugin.getEnvironmentVariablesForScope('shared')).toBe('A=3');
+      await plugin.applyEnvironmentVariables('A=3');
+      expect(plugin.getActiveEnvironmentVariables()).toBe('A=3');
 
       // No change - should not update
-      const currentEnv = plugin.getEnvironmentVariablesForScope('shared');
-      await plugin.applyEnvironmentVariables('shared', 'A=3');
-      expect(plugin.getEnvironmentVariablesForScope('shared')).toBe(currentEnv);
+      const currentEnv = plugin.getActiveEnvironmentVariables();
+      await plugin.applyEnvironmentVariables('A=3');
+      expect(plugin.getActiveEnvironmentVariables()).toBe(currentEnv);
     });
 
-    it('invalidates sessions when env hash changes', async () => {
+    it('keeps server-resident sessions alive across env changes', async () => {
       await plugin.onload();
 
       const conv = await plugin.createConversation({ providerId: 'octo-agent', sessionId: 'session-123' });
-      const saveMetadataSpy = jest.spyOn(plugin.storage.sessions, 'saveMetadata');
-      saveMetadataSpy.mockClear();
 
-      await plugin.applyEnvironmentVariables('provider:octo-agent', 'SOME_VAR=changed');
+      await plugin.applyEnvironmentVariables('SOME_VAR=changed');
 
       const updated = await plugin.getConversationById(conv.id);
-      expect(updated?.sessionId).toBeNull();
-      expect(saveMetadataSpy).toHaveBeenCalled();
+      expect(updated?.sessionId).toBe('session-123');
     });
 
     it('broadcasts ensureReady with force when env changes without model change', async () => {
@@ -340,13 +336,13 @@ describe('ClaudianPlugin', () => {
       jest.spyOn(plugin, 'getView').mockReturnValue(mockView as any);
 
       // Change env but not in a way that affects model
-      await plugin.applyEnvironmentVariables('shared', 'SOME_VAR=value');
+      await plugin.applyEnvironmentVariables('SOME_VAR=value');
 
       expect(mockSyncConversationState).toHaveBeenCalledWith(null, []);
       expect(mockEnsureReady).toHaveBeenCalledWith({ force: true });
     });
 
-    it('syncs live external contexts before restarting invalidated runtimes', async () => {
+    it('syncs live external contexts before force-restarting runtimes', async () => {
       await plugin.onload();
 
       const conversation = await plugin.createConversation({
@@ -388,14 +384,16 @@ describe('ClaudianPlugin', () => {
       };
       jest.spyOn(plugin, 'getView').mockReturnValue(mockView as any);
 
-      await plugin.applyEnvironmentVariables('provider:octo-agent', 'SOME_VAR=changed');
+      await plugin.applyEnvironmentVariables('SOME_VAR=changed');
 
       expect(mockSyncConversationState).toHaveBeenCalledWith(
         expect.objectContaining({ id: conversation.id }),
         ['/live/context'],
       );
-      expect(mockResetSession).toHaveBeenCalledTimes(1);
-      expect(mockEnsureReady).toHaveBeenCalledWith();
+      // Octo Agent sessions survive env changes, so the runtime is force-restarted
+      // in place rather than reset.
+      expect(mockResetSession).not.toHaveBeenCalled();
+      expect(mockEnsureReady).toHaveBeenCalledWith({ force: true });
     });
   });
 
@@ -859,7 +857,7 @@ describe('ClaudianPlugin', () => {
       expect(loaded?.title).toBe('Saved Chat');
     });
 
-    it('should clear session IDs when provider base URL changes', async () => {
+    it('should keep server-resident session IDs across a plugin reload', async () => {
       const timestamp = Date.now();
       const sessionMeta = JSON.stringify({
         id: 'conv-saved-1',
@@ -882,10 +880,9 @@ describe('ClaudianPlugin', () => {
       });
       mockApp.vault.adapter.read.mockImplementation(async (path: string) => {
         if (path === '.octo-agent/settings.json') {
-          // All these fields are now in claudian-settings.json
+          // Pre-0.2 top-level env bag: no longer read, and must not be erased.
           return JSON.stringify({
-            lastEnvHash: 'old-hash',
-            environmentVariables: 'ANTHROPIC_BASE_URL=https://api.example.com',
+            environmentVariables: 'LEGACY_VAR=legacy-value',
           });
         }
         if (path === '.octo-agent/sessions/conv-saved-1.meta.json') {
@@ -900,14 +897,12 @@ describe('ClaudianPlugin', () => {
       await plugin.loadSettings();
 
       const loaded = await plugin.getConversationById('conv-saved-1');
-      expect(loaded?.sessionId).toBeNull();
+      expect(loaded?.sessionId).toBe('saved-session');
 
-      const sessionWrite = (mockApp.vault.adapter.write as jest.Mock).mock.calls.find(
-        ([path]) => path === '.octo-agent/sessions/conv-saved-1.meta.json'
-      );
-      expect(sessionWrite).toBeDefined();
-      const meta = JSON.parse(sessionWrite?.[1] as string);
-      expect(meta.sessionId).toBeNull();
+      // The pre-0.2 bag is ignored, not migrated and not deleted.
+      expect(plugin.getActiveEnvironmentVariables()).toBe('');
+      expect((plugin.settings as Record<string, unknown>).environmentVariables)
+        .toBe('LEGACY_VAR=legacy-value');
     });
 
     it('should ignore legacy activeConversationId when no sessions exist', async () => {

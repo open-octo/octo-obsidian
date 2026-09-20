@@ -9,13 +9,10 @@ import '@/providers';
  * - bound_cold → send
  * - active → close
  * - restore/switch staying cold
- * - provider-disable session invalidation
  * - duplicate-owner prevention
  * - provider lock after bind
  */
 import { getProviderForModel } from '@/core/providers/modelRouting';
-import type { Conversation } from '@/core/types';
-import { octoAgentSettingsReconciler } from '@/providers/octo-agent/env/OctoAgentSettingsReconciler';
 
 describe('Tab Lifecycle - Model-Driven Provider Routing', () => {
   describe('getProviderForModel', () => {
@@ -141,30 +138,5 @@ describe('Tab Lifecycle - Close Semantics', () => {
     // Simulate close behavior
     tab.service.cleanup();
     expect(mockCleanup).toHaveBeenCalled();
-  });
-});
-
-describe('Tab Lifecycle - Provider Disable Handling', () => {
-  it('invalidates a bound tab session when octo-agent is disabled', () => {
-    const conversation = {
-      id: 'conv-1',
-      providerId: 'octo-agent',
-      sessionId: 'session-1',
-      messages: [],
-    } as unknown as Conversation;
-
-    const settings: Record<string, unknown> = {
-      providerConfigs: {
-        'octo-agent': { enabled: false },
-      },
-    };
-
-    const { changed, invalidatedConversations } =
-      octoAgentSettingsReconciler.reconcileModelWithEnvironment(settings, [conversation]);
-
-    expect(changed).toBe(true);
-    expect(invalidatedConversations).toContain(conversation);
-    expect(conversation.sessionId).toBeNull();
-    expect(conversation.providerState).toBeUndefined();
   });
 });

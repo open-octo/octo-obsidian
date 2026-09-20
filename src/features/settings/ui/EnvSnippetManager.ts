@@ -1,12 +1,8 @@
 import type { App } from 'obsidian';
 import { Modal, Notice, setIcon, Setting } from 'obsidian';
 
-import {
-  getEnvironmentScopeUpdates,
-  resolveEnvironmentSnippetScope,
-} from '../../../core/providers/providerEnvironment';
 import { ProviderRegistry } from '../../../core/providers/ProviderRegistry';
-import type { EnvironmentScope, EnvSnippet } from '../../../core/types';
+import type { EnvSnippet } from '../../../core/types';
 import { t } from '../../../i18n/i18n';
 import type ClaudianPlugin from '../../../main';
 import { confirmDelete } from '../../../shared/modals/ConfirmModal';
@@ -16,20 +12,17 @@ import type { ClaudianView } from '../../chat/ClaudianView';
 export class EnvSnippetModal extends Modal {
   plugin: ClaudianPlugin;
   snippet: EnvSnippet | null;
-  snippetScope: EnvironmentScope;
   onSave: (snippet: EnvSnippet) => void;
 
   constructor(
     app: App,
     plugin: ClaudianPlugin,
     snippet: EnvSnippet | null,
-    scope: EnvironmentScope,
     onSave: (snippet: EnvSnippet) => void,
   ) {
     super(app);
     this.plugin = plugin;
     this.snippet = snippet;
-    this.snippetScope = scope;
     this.onSave = onSave;
   }
 
@@ -88,10 +81,6 @@ export class EnvSnippetModal extends Modal {
         name,
         description: descEl.value.trim(),
         envVars: envVarsEl.value,
-        scope: resolveEnvironmentSnippetScope(
-          envVarsEl.value,
-          this.snippet?.scope ?? this.snippetScope,
-        ),
         contextLimits: Object.keys(contextLimits).length > 0 ? contextLimits : undefined,
         modelAliases: modelAliasInputs.size > 0 ? modelAliases : undefined,
       };
@@ -177,7 +166,7 @@ export class EnvSnippetModal extends Modal {
       .setDesc(t('settings.envSnippets.modal.envVarsPlaceholder'))
       .addTextArea((text) => {
         envVarsEl = text.inputEl;
-        const envVarsToShow = this.snippet?.envVars ?? this.plugin.getEnvironmentVariablesForScope(this.snippetScope);
+        const envVarsToShow = this.snippet?.envVars ?? this.plugin.getActiveEnvironmentVariables();
         text.setValue(envVarsToShow);
         text.inputEl.rows = 8;
         text.inputEl.addEventListener('blur', () => renderContextLimitFields());
@@ -215,18 +204,15 @@ export class EnvSnippetModal extends Modal {
 export class EnvSnippetManager {
   private containerEl: HTMLElement;
   private plugin: ClaudianPlugin;
-  private scope: EnvironmentScope;
   private onContextLimitsChange?: () => void;
 
   constructor(
     containerEl: HTMLElement,
     plugin: ClaudianPlugin,
-    scope: EnvironmentScope,
     onContextLimitsChange?: () => void,
   ) {
     this.containerEl = containerEl;
     this.plugin = plugin;
-    this.scope = scope;
     this.onContextLimitsChange = onContextLimitsChange;
     this.render();
   }
@@ -246,7 +232,7 @@ export class EnvSnippetManager {
       void this.saveCurrentEnv();
     });
 
-    const snippets = this.plugin.settings.envSnippets.filter((snippet) => this.shouldDisplaySnippet(snippet));
+    const snippets = this.plugin.settings.envSnippets;
 
     if (snippets.length === 0) {
       const emptyEl = this.containerEl.createDiv({ cls: 'claudian-snippet-empty' });
@@ -319,7 +305,6 @@ export class EnvSnippetManager {
       this.plugin.app,
       this.plugin,
       null,
-      this.scope,
       (snippet) => {
         void (async (): Promise<void> => {
           this.plugin.settings.envSnippets.push(snippet);
@@ -334,21 +319,8 @@ export class EnvSnippetManager {
 
   private async insertSnippet(snippet: EnvSnippet) {
     const snippetContent = snippet.envVars.trim();
-    const updates = getEnvironmentScopeUpdates(
-      snippetContent,
-      snippet.scope ?? this.scope,
-    );
-
-    if (updates.length === 1) {
-      const [update] = updates;
-      this.syncTextareaValue(update.scope, update.envText);
-      await this.plugin.applyEnvironmentVariables(update.scope, update.envText);
-    } else if (updates.length > 1) {
-      for (const update of updates) {
-        this.syncTextareaValue(update.scope, update.envText);
-      }
-      await this.plugin.applyEnvironmentVariablesBatch(updates);
-    }
+    this.syncTextareaValue(snippetContent);
+    await this.plugin.applyEnvironmentVariables(snippetContent);
 
     // Legacy snippets without contextLimits don't modify limits
     if (snippet.contextLimits) {
@@ -385,7 +357,6 @@ export class EnvSnippetManager {
       this.plugin.app,
       this.plugin,
       snippet,
-      this.scope,
       (updatedSnippet) => {
         void (async (): Promise<void> => {
           const index = this.plugin.settings.envSnippets.findIndex(s => s.id === snippet.id);
@@ -412,17 +383,9 @@ export class EnvSnippetManager {
     this.render();
   }
 
-  private shouldDisplaySnippet(snippet: EnvSnippet): boolean {
-    if (this.scope === 'shared') {
-      return !snippet.scope || snippet.scope === 'shared';
-    }
-
-    return snippet.scope === this.scope;
-  }
-
-  private syncTextareaValue(scope: EnvironmentScope, value: string): void {
-    const selector = `.claudian-settings-env-textarea[data-env-scope="${scope}"]`;
-    const envTextarea = (this.containerEl.ownerDocument ?? window.document).querySelector<HTMLTextAreaElement>(selector);
+  private syncTextareaValue(value: string): void {
+    const envTextarea = (this.containerEl.ownerDocument ?? window.document)
+      .querySelector<HTMLTextAreaElement>('.claudian-settings-env-textarea');
     if (envTextarea) {
       envTextarea.value = value;
     }

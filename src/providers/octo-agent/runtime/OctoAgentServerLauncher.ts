@@ -55,10 +55,6 @@ export async function ensureOctoAgentServerRunning(options: OctoAgentServerLaunc
   const settingsBag = plugin.settings as unknown as Record<string, unknown>;
   const settings = getOctoAgentProviderSettings(settingsBag);
 
-  if (!settings.enabled) {
-    return false;
-  }
-
   const baseUrl = `http://${settings.host}:${settings.port}`;
   const accessKey = settings.accessKey || undefined;
   const probe = await probeOctoAgentServer(baseUrl, accessKey);

@@ -71,15 +71,40 @@
   },
   "settings": {
     "title": "Configuración de Octo",
-    "tabs": {
-      "general": "General",
-      "claude": "Claude",
-      "codex": "Codex"
-    },
     "display": "Pantalla",
     "content": "Contenido",
     "input": "Entrada",
     "setup": "Configuración",
+    "serverCommand": {
+      "name": "Comando del servidor",
+      "desc": "Inicia octo-agent con: octo serve --cors 'app://obsidian.md'. Necesario para que Obsidian pueda acceder a los puntos finales REST y WebSocket."
+    },
+    "host": {
+      "name": "Host",
+      "desc": "Nombre de host del servidor octo-agent."
+    },
+    "port": {
+      "name": "Puerto",
+      "desc": "Puerto del servidor octo-agent (1-65535)."
+    },
+    "autoStartServer": {
+      "name": "Iniciar el servidor automáticamente",
+      "desc": "Ejecutar `octo serve` automáticamente cuando Octo necesite una conexión."
+    },
+    "cliPath": {
+      "name": "Ruta CLI Claude",
+      "desc": "Ruta personalizada a Claude Code CLI. Dejar vacío para detección automática.",
+      "descWindows": "Para el instalador nativo, use claude.exe. Para instalaciones con npm/pnpm/yarn u otros gestores de paquetes, use la ruta cli-wrapper.cjs (no claude.cmd).",
+      "descUnix": "Pegue la salida de \"which claude\" — funciona tanto para instalaciones nativas como npm/pnpm/yarn.",
+      "validation": {
+        "notExist": "La ruta no existe",
+        "isDirectory": "La ruta es un directorio, no un archivo"
+      }
+    },
+    "accessKey": {
+      "name": "Clave de acceso",
+      "desc": "Clave de acceso opcional para hosts que no sean de bucle invertido. Déjala vacía si usas 127.0.0.1."
+    },
     "models": "Modelos",
     "experimental": "Experimental",
     "userName": {
@@ -293,16 +318,6 @@
       "rightSidebar": "Barra lateral derecha",
       "leftSidebar": "Barra lateral izquierda",
       "mainTab": "Pestaña del editor principal"
-    },
-    "cliPath": {
-      "name": "Ruta CLI Claude",
-      "desc": "Ruta personalizada a Claude Code CLI. Dejar vacío para detección automática.",
-      "descWindows": "Para el instalador nativo, use claude.exe. Para instalaciones con npm/pnpm/yarn u otros gestores de paquetes, use la ruta cli-wrapper.cjs (no claude.cmd).",
-      "descUnix": "Pegue la salida de \"which claude\" — funciona tanto para instalaciones nativas como npm/pnpm/yarn.",
-      "validation": {
-        "notExist": "La ruta no existe",
-        "isDirectory": "La ruta es un directorio, no un archivo"
-      }
     },
     "language": {
       "name": "Idioma",

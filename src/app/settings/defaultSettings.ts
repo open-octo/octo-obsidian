@@ -17,7 +17,6 @@ export const DEFAULT_CLAUDIAN_SETTINGS: ClaudianSettings = {
   systemPrompt: '',
   persistentExternalContextPaths: [],
 
-  sharedEnvironmentVariables: '',
   envSnippets: [],
   customContextLimits: {},
   customModelAliases: {},

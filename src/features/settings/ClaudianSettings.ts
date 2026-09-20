@@ -1,22 +1,21 @@
 import type { App } from 'obsidian';
 import { Notice, Platform, PluginSettingTab, Setting } from 'obsidian';
 
-import {
-  getHiddenProviderCommands,
-  normalizeHiddenCommandList,
-} from '../../core/providers/commands/hiddenCommands';
 import { ProviderRegistry } from '../../core/providers/ProviderRegistry';
-import { ProviderWorkspaceRegistry } from '../../core/providers/ProviderWorkspaceRegistry';
-import type { ProviderId } from '../../core/providers/types';
 import type { ChatViewPlacement } from '../../core/types/settings';
 import { getAvailableLocales, getLocaleDisplayName, setLocale, t } from '../../i18n/i18n';
 import type { Locale, TranslationKey } from '../../i18n/types';
 import type ClaudianPlugin from '../../main';
+import {
+  DEFAULT_OCTO_AGENT_PROVIDER_SETTINGS,
+  getOctoAgentProviderSettings,
+  parseOctoServerPort,
+  updateOctoAgentProviderSettings,
+} from '../../providers/octo-agent/settings';
 import { formatContextLimit, parseContextLimit, parseEnvironmentVariables } from '../../utils/env';
 import { buildNavMappingText, parseNavMappings } from './keyboardNavigation';
 import { renderEnvironmentSettingsSection } from './ui/EnvironmentSettingsSection';
 
-type SettingsTabId = string;
 type ObsidianHotkey = { modifiers: string[]; key: string };
 type ObsidianHotkeyManager = {
   customKeys?: Record<string, ObsidianHotkey[] | undefined>;
@@ -106,7 +105,6 @@ function addHotkeySettingRow(
 
 export class ClaudianSettingTab extends PluginSettingTab {
   plugin: ClaudianPlugin;
-  private activeTab: SettingsTabId = 'general';
 
   constructor(app: App, plugin: ClaudianPlugin) {
     super(app, plugin);
@@ -120,67 +118,93 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
     setLocale(this.plugin.settings.locale as Locale);
 
-    const providerTabs = ProviderRegistry.getRegisteredProviderIds();
-    const tabIds: SettingsTabId[] = ['general', ...providerTabs];
-    if (!tabIds.includes(this.activeTab)) {
-      this.activeTab = 'general';
-    }
-
-    const tabBar = containerEl.createDiv({ cls: 'claudian-settings-tabs' });
-    const tabButtons = new Map<SettingsTabId, HTMLButtonElement>();
-    const tabContents = new Map<SettingsTabId, HTMLDivElement>();
-
-    for (const id of tabIds) {
-      const label = id === 'general'
-        ? t('settings.tabs.general')
-        : ProviderRegistry.getProviderDisplayName(id);
-      const button = tabBar.createEl('button', {
-        cls: `claudian-settings-tab${id === this.activeTab ? ' claudian-settings-tab--active' : ''}`,
-        text: label,
-      });
-      button.addEventListener('click', () => {
-        this.activeTab = id;
-        for (const tabId of tabIds) {
-          tabButtons.get(tabId)?.toggleClass('claudian-settings-tab--active', tabId === id);
-          tabContents.get(tabId)?.toggleClass('claudian-settings-tab-content--active', tabId === id);
-        }
-      });
-      tabButtons.set(id, button);
-    }
-
-    for (const id of tabIds) {
-      const content = containerEl.createDiv({
-        cls: `claudian-settings-tab-content${id === this.activeTab ? ' claudian-settings-tab-content--active' : ''}`,
-      });
-      tabContents.set(id, content);
-    }
-
-    this.renderGeneralTab(tabContents.get('general')!);
-
-    for (const providerId of providerTabs) {
-      const content = tabContents.get(providerId);
-      if (!content) {
-        continue;
-      }
-
-      ProviderWorkspaceRegistry.getSettingsTabRenderer(providerId)?.render(content, {
-        plugin: this.plugin,
-        renderHiddenProviderCommandSetting: (
-          target,
-          targetProviderId,
-          copy,
-        ) => this.renderHiddenProviderCommandSetting(target, targetProviderId, copy),
-        refreshModelSelectors: () => {
-          for (const view of this.plugin.getAllViews()) {
-            view.refreshModelSelector();
-          }
-        },
-        renderCustomContextLimits: (target, providerId) => this.renderCustomContextLimits(target, providerId),
-      });
-    }
+    this.renderSetupSection(containerEl);
+    this.renderGeneralSettings(containerEl);
   }
 
-  private renderGeneralTab(container: HTMLElement): void {
+  private renderSetupSection(container: HTMLElement): void {
+    const settingsBag = this.plugin.settings as unknown as Record<string, unknown>;
+    const octoSettings = getOctoAgentProviderSettings(settingsBag);
+
+    new Setting(container).setName(t('settings.setup')).setHeading();
+
+    new Setting(container)
+      .setName(t('settings.serverCommand.name'))
+      .setDesc(t('settings.serverCommand.desc'));
+
+    new Setting(container)
+      .setName(t('settings.host.name'))
+      .setDesc(t('settings.host.desc'))
+      .addText((text) =>
+        text
+          .setPlaceholder('127.0.0.1')
+          .setValue(octoSettings.host)
+          .onChange(async (value) => {
+            updateOctoAgentProviderSettings(settingsBag, { host: value.trim() || '127.0.0.1' });
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(container)
+      .setName(t('settings.port.name'))
+      .setDesc(t('settings.port.desc'))
+      .addText((text) => {
+        text
+          .setPlaceholder(String(DEFAULT_OCTO_AGENT_PROVIDER_SETTINGS.port))
+          .setValue(String(octoSettings.port))
+          .onChange(async (value) => {
+            updateOctoAgentProviderSettings(settingsBag, { port: parseOctoServerPort(value) });
+            await this.plugin.saveSettings();
+          });
+        // Show what was actually stored: the field is clamped, so a rejected
+        // entry would otherwise stay on screen looking accepted.
+        text.inputEl.addEventListener('blur', () => {
+          text.setValue(String(getOctoAgentProviderSettings(settingsBag).port));
+        });
+      });
+
+    new Setting(container)
+      .setName(t('settings.autoStartServer.name'))
+      .setDesc(t('settings.autoStartServer.desc'))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(octoSettings.autoStartServer)
+          .onChange(async (value) => {
+            updateOctoAgentProviderSettings(settingsBag, { autoStartServer: value });
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(container)
+      .setName(t('settings.cliPath.name'))
+      .setDesc(t('settings.cliPath.desc'))
+      .addText((text) =>
+        text
+          .setPlaceholder('/usr/local/bin/octo')
+          .setValue(octoSettings.cliPath)
+          .onChange(async (value) => {
+            updateOctoAgentProviderSettings(settingsBag, { cliPath: value.trim() || 'octo' });
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(container)
+      .setName(t('settings.accessKey.name'))
+      .setDesc(t('settings.accessKey.desc'))
+      .addText((text) => {
+        text
+          .setPlaceholder('Octo_...')
+          .setValue(octoSettings.accessKey)
+          .onChange(async (value) => {
+            updateOctoAgentProviderSettings(settingsBag, { accessKey: value.trim() });
+            await this.plugin.saveSettings();
+          });
+        // Masks shoulder-surfing only: the key is still stored and sent in clear.
+        text.inputEl.type = 'password';
+      });
+  }
+
+  private renderGeneralSettings(container: HTMLElement): void {
     new Setting(container)
       .setName(t('settings.language.name'))
       .setDesc(t('settings.language.desc'))
@@ -446,49 +470,20 @@ export class ClaudianSettingTab extends PluginSettingTab {
     renderEnvironmentSettingsSection({
       container,
       plugin: this.plugin,
-      scope: 'shared',
       heading: t('settings.environment'),
-      name: 'Shared environment',
-      desc: 'Provider-neutral runtime variables shared across all providers. Use this for PATH, proxy, cert, and temp variables.',
-      placeholder: 'PATH=/opt/homebrew/bin:/usr/local/bin\nHTTPS_PROXY=http://proxy.example.com:8080\nSSL_CERT_FILE=/path/to/cert.pem',
+      name: 'Environment variables',
+      desc: 'Passed to the octo-agent server process when the plugin starts it.',
+      placeholder: 'OCTO_MODEL=claude-sonnet-4\nHTTPS_PROXY=http://proxy.example.com:8080\nSSL_CERT_FILE=/path/to/cert.pem',
       renderCustomContextLimits: (target) => this.renderCustomContextLimits(target),
     });
   }
 
-  private renderHiddenProviderCommandSetting(
-    container: HTMLElement,
-    providerId: ProviderId,
-    copy: { name: string; desc: string; placeholder: string },
-  ): void {
-    new Setting(container)
-      .setName(copy.name)
-      .setDesc(copy.desc)
-      .addTextArea((text) => {
-        text
-          .setPlaceholder(copy.placeholder)
-          .setValue(getHiddenProviderCommands(this.plugin.settings, providerId).join('\n'))
-          .onChange(async (value) => {
-            this.plugin.settings.hiddenProviderCommands = {
-              ...this.plugin.settings.hiddenProviderCommands,
-              [providerId]: normalizeHiddenCommandList(value.split(/\r?\n/)),
-            };
-            await this.plugin.saveSettings();
-            this.plugin.getView()?.updateHiddenProviderCommands();
-          });
-        text.inputEl.rows = 4;
-        text.inputEl.cols = 30;
-      });
-  }
-
-  private renderCustomContextLimits(container: HTMLElement, providerId?: ProviderId): void {
+  private renderCustomContextLimits(container: HTMLElement): void {
     container.empty();
 
     const uniqueModelIds = new Set<string>();
-    const providerIds = providerId
-      ? [providerId]
-      : ProviderRegistry.getRegisteredProviderIds();
 
-    for (const targetProviderId of providerIds) {
+    for (const targetProviderId of ProviderRegistry.getRegisteredProviderIds()) {
       const envVars = parseEnvironmentVariables(
         this.plugin.getActiveEnvironmentVariables(targetProviderId),
       );

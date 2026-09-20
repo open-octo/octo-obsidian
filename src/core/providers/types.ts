@@ -50,14 +50,13 @@ export interface CreateChatRuntimeOptions {
  * This is intentionally limited to chat-facing services.
  * Shared bootstrap (defaults, storage) is in `src/core/bootstrap/`.
  * Provider-owned workspace services (CLI resolution, commands, agents,
- * MCP, settings tabs) live behind `src/providers/<id>/app/`.
+ * MCP) live behind `src/providers/<id>/app/`.
  */
 export interface ProviderRegistration {
   displayName: string;
   blankTabOrder: number;
   isEnabled: (settings: Record<string, unknown>) => boolean;
   capabilities: ProviderCapabilities;
-  environmentKeyPatterns?: RegExp[];
   chatUIConfig: ProviderChatUIConfig;
   settingsReconciler: ProviderSettingsReconciler;
   createRuntime: (options: Omit<CreateChatRuntimeOptions, 'providerId'>) => ChatRuntime;
@@ -368,23 +367,7 @@ export interface ProviderWorkspaceServices {
   runtimeCommandLoader?: ProviderRuntimeCommandLoader | null;
   tabWarmupPolicy?: ProviderTabWarmupPolicy | null;
   mcpServerManager?: McpServerManager | null;
-  settingsTabRenderer?: ProviderSettingsTabRenderer | null;
   refreshAgentMentions?(): Promise<void>;
-}
-
-export interface ProviderSettingsTabRendererContext {
-  plugin: ClaudianPlugin;
-  renderHiddenProviderCommandSetting(
-    container: HTMLElement,
-    providerId: ProviderId,
-    copy: { name: string; desc: string; placeholder: string },
-  ): void;
-  refreshModelSelectors(): void;
-  renderCustomContextLimits(container: HTMLElement, providerId?: ProviderId): void;
-}
-
-export interface ProviderSettingsTabRenderer {
-  render(container: HTMLElement, context: ProviderSettingsTabRendererContext): void;
 }
 
 export interface ProviderWorkspaceInitContext {

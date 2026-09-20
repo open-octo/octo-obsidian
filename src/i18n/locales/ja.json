@@ -71,15 +71,40 @@
   },
   "settings": {
     "title": "Octo 設定",
-    "tabs": {
-      "general": "一般",
-      "claude": "Claude",
-      "codex": "Codex"
-    },
     "display": "表示",
     "content": "コンテンツ",
     "input": "入力",
     "setup": "セットアップ",
+    "serverCommand": {
+      "name": "サーバー起動コマンド",
+      "desc": "octo serve --cors 'app://obsidian.md' で octo-agent を起動します。Obsidian が REST および WebSocket エンドポイントに接続するために必要です。"
+    },
+    "host": {
+      "name": "ホスト",
+      "desc": "octo-agent サーバーのホスト名。"
+    },
+    "port": {
+      "name": "ポート",
+      "desc": "octo-agent サーバーのポート（1-65535）。"
+    },
+    "autoStartServer": {
+      "name": "サーバーを自動起動",
+      "desc": "接続が必要になったときに `octo serve` を自動実行します。"
+    },
+    "cliPath": {
+      "name": "Claude CLI パス",
+      "desc": "Claude Code CLI のカスタムパス。空欄で自動検出を使用。",
+      "descWindows": "ネイティブインストーラーの場合は claude.exe を使用。npm/pnpm/yarn やその他のパッケージマネージャーでのインストールの場合は cli-wrapper.cjs パスを使用（claude.cmd ではない）。",
+      "descUnix": "\"which claude\" の出力を貼り付けてください - ネイティブと npm/pnpm/yarn インストールの両方で動作します。",
+      "validation": {
+        "notExist": "パスが存在しません",
+        "isDirectory": "パスはディレクトリでファイルではありません"
+      }
+    },
+    "accessKey": {
+      "name": "アクセスキー",
+      "desc": "ループバック以外のホストで使用する任意のアクセスキー。127.0.0.1 の場合は空欄で構いません。"
+    },
     "models": "モデル",
     "experimental": "実験的機能",
     "userName": {
@@ -293,16 +318,6 @@
       "rightSidebar": "右サイドバー",
       "leftSidebar": "左サイドバー",
       "mainTab": "メインエディタタブ"
-    },
-    "cliPath": {
-      "name": "Claude CLI パス",
-      "desc": "Claude Code CLI のカスタムパス。空欄で自動検出を使用。",
-      "descWindows": "ネイティブインストーラーの場合は claude.exe を使用。npm/pnpm/yarn やその他のパッケージマネージャーでのインストールの場合は cli-wrapper.cjs パスを使用（claude.cmd ではない）。",
-      "descUnix": "\"which claude\" の出力を貼り付けてください - ネイティブと npm/pnpm/yarn インストールの両方で動作します。",
-      "validation": {
-        "notExist": "パスが存在しません",
-        "isDirectory": "パスはディレクトリでファイルではありません"
-      }
     },
     "language": {
       "name": "言語",

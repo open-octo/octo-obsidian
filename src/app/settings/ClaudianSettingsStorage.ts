@@ -4,17 +4,11 @@ import {
 import {
   normalizeHiddenProviderCommands,
 } from '../../core/providers/commands/hiddenCommands';
-import {
-  getSharedEnvironmentVariables,
-  inferEnvironmentSnippetScope,
-  resolveEnvironmentSnippetScope,
-} from '../../core/providers/providerEnvironment';
 import type { VaultFileAdapter } from '../../core/storage/VaultFileAdapter';
 import {
   CHAT_VIEW_PLACEMENTS,
   type ChatViewPlacement,
   type ClaudianSettings,
-  type EnvironmentScope,
   type EnvSnippet,
   type ProviderConfigMap,
 } from '../../core/types/settings';
@@ -56,10 +50,6 @@ function normalizeProviderConfigs(value: unknown): ProviderConfigMap {
     }
   }
   return result;
-}
-
-function isEnvironmentScope(value: unknown): value is EnvironmentScope {
-  return value === 'shared' || (typeof value === 'string' && value.startsWith('provider:'));
 }
 
 function normalizeContextLimits(value: unknown): Record<string, number> | undefined {
@@ -128,12 +118,6 @@ function normalizeEnvSnippets(value: unknown): EnvSnippet[] {
       name: candidate.name,
       description: candidate.description,
       envVars: candidate.envVars,
-      scope: resolveEnvironmentSnippetScope(
-        candidate.envVars,
-        isEnvironmentScope(candidate.scope)
-          ? candidate.scope
-          : inferEnvironmentSnippetScope(candidate.envVars),
-      ),
       contextLimits: normalizeContextLimits(candidate.contextLimits),
       modelAliases,
     });
@@ -163,7 +147,6 @@ export class ClaudianSettingsStorage {
     return {
       ...this.getDefaults(),
       ...stored,
-      sharedEnvironmentVariables: getSharedEnvironmentVariables(stored),
       envSnippets: normalizeEnvSnippets(stored.envSnippets),
       customModelAliases: normalizeModelAliases(stored.customModelAliases),
       hiddenProviderCommands: normalizeHiddenProviderCommands(stored.hiddenProviderCommands),

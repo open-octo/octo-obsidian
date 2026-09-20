@@ -4,7 +4,7 @@
 
 ## Ownership
 
-- Server lifecycle (locate binary, spawn, health-probe), WebSocket transport, event parsing, prompt encoding, settings UI, and settings reconciliation live here.
+- Server lifecycle (locate binary, spawn, health-probe), WebSocket transport, event parsing, prompt encoding, and settings reconciliation live here. The settings *UI* does not: it is inlined in `src/features/settings/ClaudianSettings.ts`, which reads and writes this provider's config through `settings.ts`.
 - Shared code should consume Octo Agent behavior through `ChatRuntime`, provider capabilities, and workspace-service contracts — not through `OctoAgentClient`/`OctoAgentEvent` directly.
 
 ## Protocol Rules
@@ -29,7 +29,8 @@
 - `OctoAgentBinaryLocator` is a pure filesystem search (no `which`/PATH shell-out); if it can't find the binary it falls back to the raw `cliPath` string and lets the OS resolve it at spawn time.
 - `pendingConfirmations` dedupes by event id and handles the "another client answered first" race: `confirmation_complete` can delete an entry and resolve it before the local `handleConfirmation()` await returns, in which case the `finally` block detects the entry is gone and skips sending a duplicate answer.
 - `reloadMcpServers()`, `getSupportedCommands()`, `rewind()`, `setResumeCheckpoint()`, and subagent tool-call loading are all intentional no-ops/stubs — octo-agent manages its own MCP servers, has no runtime command catalog, and has no rewind or subagent concept. `OctoAgentTaskResultInterpreter` is a full no-op for the same reason (no async subagent/Task-tool launch protocol to parse).
-- `reconcileModelWithEnvironment()` only invalidates sessions when the provider gets disabled, never on `OCTO_*` environment-variable changes (`handleEnvironmentChange()` always returns `false`).
+- `octoAgentSettingsReconciler` never invalidates a session: both `reconcileModelWithEnvironment()` and `handleEnvironmentChange()` are no-ops. Sessions are server-resident, so they outlive any settings or `OCTO_*` environment change the plugin can make. An env change force-restarts the runtime in place instead of resetting the session.
+- Environment variables live in exactly one place: `providerConfigs['octo-agent'].environmentVariables`. They are spread into the spawned `octo serve` process, except `PATH`, which `ensureOctoAgentServerRunning()` always overwrites with `getEnhancedPath()`.
 - `capabilities.supportsPlanMode` is `false` even though `permissionMode.ts` and the wire protocol both define a `'plan'` value end-to-end. The mapping exists but the runtime never drives exit-plan-mode behavior and the UI has no plan toggle — don't assume flipping the capability flag alone would make plan mode work.
 - `capabilities.reasoningControl: 'effort'`, but `OctoAgentChatUIConfig` exposes no reasoning options (`getReasoningOptions()` → `[]`) even though the wire protocol carries `reasoningEffort`/`showReasoning` fields. Reasoning-effort UI is not wired up yet.
 - `OctoAgentInlineEditService` and `OctoAgentInstructionRefineService` run through a separate short-lived `runOctoAgentAuxQuery()` connection (its own session, fixed `permissionMode: 'interactive'`), fully decoupled from the main chat runtime's connection and event buffer.

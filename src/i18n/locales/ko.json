@@ -71,15 +71,40 @@
   },
   "settings": {
     "title": "Octo 설정",
-    "tabs": {
-      "general": "일반",
-      "claude": "Claude",
-      "codex": "Codex"
-    },
     "display": "표시",
     "content": "콘텐츠",
     "input": "입력",
     "setup": "설정",
+    "serverCommand": {
+      "name": "서버 실행 명령",
+      "desc": "octo serve --cors 'app://obsidian.md' 로 octo-agent 를 실행하세요. Obsidian 이 REST 및 WebSocket 엔드포인트에 접근하려면 필요합니다."
+    },
+    "host": {
+      "name": "호스트",
+      "desc": "octo-agent 서버의 호스트 이름."
+    },
+    "port": {
+      "name": "포트",
+      "desc": "octo-agent 서버의 포트 (1-65535)."
+    },
+    "autoStartServer": {
+      "name": "서버 자동 시작",
+      "desc": "연결이 필요할 때 `octo serve` 를 자동으로 실행합니다."
+    },
+    "cliPath": {
+      "name": "Claude CLI 경로",
+      "desc": "Claude Code CLI의 사용자 정의 경로. 비워두면 자동 감지 사용.",
+      "descWindows": "네이티브 설치 프로그램의 경우 claude.exe를 사용하세요. npm/pnpm/yarn 또는 기타 패키지 관리자 설치의 경우 cli-wrapper.cjs 경로를 사용하세요 (claude.cmd가 아님).",
+      "descUnix": "\"which claude\"의 출력을 붙여넣으세요 - 네이티브 및 npm/pnpm/yarn 설치 모두에서 작동합니다.",
+      "validation": {
+        "notExist": "경로가 존재하지 않습니다",
+        "isDirectory": "경로가 디렉토리입니다 파일이 아닙니다"
+      }
+    },
+    "accessKey": {
+      "name": "액세스 키",
+      "desc": "루프백이 아닌 호스트에 사용하는 선택적 액세스 키. 127.0.0.1 을 쓰면 비워 두세요."
+    },
     "models": "모델",
     "experimental": "실험적 기능",
     "userName": {
@@ -293,16 +318,6 @@
       "rightSidebar": "오른쪽 사이드바",
       "leftSidebar": "왼쪽 사이드바",
       "mainTab": "메인 편집기 탭"
-    },
-    "cliPath": {
-      "name": "Claude CLI 경로",
-      "desc": "Claude Code CLI의 사용자 정의 경로. 비워두면 자동 감지 사용.",
-      "descWindows": "네이티브 설치 프로그램의 경우 claude.exe를 사용하세요. npm/pnpm/yarn 또는 기타 패키지 관리자 설치의 경우 cli-wrapper.cjs 경로를 사용하세요 (claude.cmd가 아님).",
-      "descUnix": "\"which claude\"의 출력을 붙여넣으세요 - 네이티브 및 npm/pnpm/yarn 설치 모두에서 작동합니다.",
-      "validation": {
-        "notExist": "경로가 존재하지 않습니다",
-        "isDirectory": "경로가 디렉토리입니다 파일이 아닙니다"
-      }
     },
     "language": {
       "name": "언어",

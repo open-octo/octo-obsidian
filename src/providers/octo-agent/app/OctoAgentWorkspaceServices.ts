@@ -3,14 +3,11 @@ import type {
   ProviderWorkspaceRegistration,
   ProviderWorkspaceServices,
 } from '../../../core/providers/types';
-import { octoAgentSettingsTabRenderer } from '../ui/OctoAgentSettingsTab';
 
 export type OctoAgentWorkspaceServices = ProviderWorkspaceServices;
 
 export async function createOctoAgentWorkspaceServices(): Promise<OctoAgentWorkspaceServices> {
-  return {
-    settingsTabRenderer: octoAgentSettingsTabRenderer,
-  };
+  return {};
 }
 
 export const octoAgentWorkspaceRegistration: ProviderWorkspaceRegistration<OctoAgentWorkspaceServices> = {

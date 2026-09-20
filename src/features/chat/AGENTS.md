@@ -9,7 +9,7 @@
 - Do not read provider-specific fields from `Conversation.providerState` in feature code. Use runtime methods, provider history services, or typed provider helpers.
 - Resolve provider-owned services through registries:
   - `ProviderRegistry`: runtime, title generation, instruction refinement, inline edit, task-result interpretation.
-  - `ProviderWorkspaceRegistry`: command catalogs, agent mentions, MCP managers, CLI resolution, settings tabs.
+  - `ProviderWorkspaceRegistry`: command catalogs, agent mentions, MCP managers, CLI resolution.
 
 ## State Flow
 

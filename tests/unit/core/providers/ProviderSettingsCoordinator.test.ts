@@ -3,6 +3,7 @@ import '@/providers';
 import { ProviderRegistry } from '@/core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from '@/core/providers/ProviderSettingsCoordinator';
 import type { Conversation } from '@/core/types';
+import { octoAgentSettingsReconciler } from '@/providers/octo-agent/env/OctoAgentSettingsReconciler';
 
 describe('ProviderSettingsCoordinator', () => {
   describe('reconcileAllProviders', () => {
@@ -188,28 +189,30 @@ describe('ProviderSettingsCoordinator', () => {
   });
 
   describe('provider-scoped reconciliation', () => {
-    it('invalidates a bound conversation session when octo-agent is disabled', () => {
+    it('leaves bound conversation sessions alone — they are server-resident', () => {
       const octoConv = {
         providerId: 'octo-agent',
         sessionId: 'session-1',
+        providerState: { sessionId: 'session-1' },
         messages: [],
       } as unknown as Conversation;
 
       const settings: Record<string, unknown> = {
-        providerConfigs: {
-          'octo-agent': { enabled: false },
-        },
         model: 'octo-agent/kimi-for-coding',
         effortLevel: 'high',
         serviceTier: 'default',
         thinkingBudget: 'off',
       };
 
+      const reconcileSpy = jest.spyOn(octoAgentSettingsReconciler, 'reconcileModelWithEnvironment');
       const result = ProviderSettingsCoordinator.reconcileAllProviders(settings, [octoConv]);
 
-      expect(result.changed).toBe(true);
-      expect(octoConv.sessionId).toBeNull();
-      expect(octoConv.providerState).toBeUndefined();
+      // The outcome is a no-op, so assert the conversation still reached the
+      // provider's reconciler — otherwise a broken dispatch would pass too.
+      expect(reconcileSpy).toHaveBeenCalledWith(settings, [octoConv]);
+      expect(result).toEqual({ changed: false, invalidatedConversations: [] });
+      expect(octoConv.sessionId).toBe('session-1');
+      reconcileSpy.mockRestore();
     });
   });
 });

@@ -71,15 +71,40 @@
   },
   "settings": {
     "title": "Настройки Octo",
-    "tabs": {
-      "general": "Общие",
-      "claude": "Claude",
-      "codex": "Codex"
-    },
     "display": "Отображение",
     "content": "Содержание",
     "input": "Ввод",
     "setup": "Настройка",
+    "serverCommand": {
+      "name": "Команда запуска сервера",
+      "desc": "Запустите octo-agent командой: octo serve --cors 'app://obsidian.md'. Необходимо, чтобы Obsidian мог обращаться к REST- и WebSocket-эндпоинтам."
+    },
+    "host": {
+      "name": "Хост",
+      "desc": "Имя хоста сервера octo-agent."
+    },
+    "port": {
+      "name": "Порт",
+      "desc": "Порт сервера octo-agent (1-65535)."
+    },
+    "autoStartServer": {
+      "name": "Автозапуск сервера",
+      "desc": "Автоматически выполнять `octo serve`, когда Octo нужно подключение."
+    },
+    "cliPath": {
+      "name": "Путь к CLI Claude",
+      "desc": "Пользовательский путь к Claude Code CLI. Оставьте пустым для автоматического определения.",
+      "descWindows": "Для нативного установщика используйте claude.exe. Для установок через npm/pnpm/yarn или другие менеджеры пакетов используйте путь к cli-wrapper.cjs (не claude.cmd).",
+      "descUnix": "Вставьте вывод команды \"which claude\" — работает как для нативных установок, так и для npm/pnpm/yarn.",
+      "validation": {
+        "notExist": "Путь не существует",
+        "isDirectory": "Путь является директорией, а не файлом"
+      }
+    },
+    "accessKey": {
+      "name": "Ключ доступа",
+      "desc": "Необязательный ключ доступа для хостов вне петлевого интерфейса. Оставьте пустым при использовании 127.0.0.1."
+    },
     "models": "Модели",
     "experimental": "Экспериментальное",
     "userName": {
@@ -293,16 +318,6 @@
       "rightSidebar": "Правая боковая панель",
       "leftSidebar": "Левая боковая панель",
       "mainTab": "Основная вкладка редактора"
-    },
-    "cliPath": {
-      "name": "Путь к CLI Claude",
-      "desc": "Пользовательский путь к Claude Code CLI. Оставьте пустым для автоматического определения.",
-      "descWindows": "Для нативного установщика используйте claude.exe. Для установок через npm/pnpm/yarn или другие менеджеры пакетов используйте путь к cli-wrapper.cjs (не claude.cmd).",
-      "descUnix": "Вставьте вывод команды \"which claude\" — работает как для нативных установок, так и для npm/pnpm/yarn.",
-      "validation": {
-        "notExist": "Путь не существует",
-        "isDirectory": "Путь является директорией, а не файлом"
-      }
     },
     "language": {
       "name": "Язык",

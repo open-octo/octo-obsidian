@@ -165,10 +165,6 @@ export class OctoAgentChatRuntime implements ChatRuntime {
     const settings = getOctoAgentProviderSettings(
       this.plugin.settings as unknown as Record<string, unknown>,
     );
-    if (!settings.enabled) {
-      return false;
-    }
-
     // Auto-start octo serve if configured and not already running.
     if (settings.autoStartServer && !this.serverStartPromise) {
       this.serverStartPromise = ensureOctoAgentServerRunning({ plugin: this.plugin }).finally(() => {

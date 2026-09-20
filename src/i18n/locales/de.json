@@ -71,15 +71,40 @@
   },
   "settings": {
     "title": "Octo Einstellungen",
-    "tabs": {
-      "general": "Allgemein",
-      "claude": "Claude",
-      "codex": "Codex"
-    },
     "display": "Anzeige",
     "content": "Inhalte",
     "input": "Eingabe",
     "setup": "Einrichtung",
+    "serverCommand": {
+      "name": "Serverbefehl",
+      "desc": "Starte octo-agent mit: octo serve --cors 'app://obsidian.md'. Erforderlich, damit Obsidian die REST- und WebSocket-Endpunkte erreichen kann."
+    },
+    "host": {
+      "name": "Host",
+      "desc": "Hostname des octo-agent-Servers."
+    },
+    "port": {
+      "name": "Port",
+      "desc": "Port des octo-agent-Servers (1-65535)."
+    },
+    "autoStartServer": {
+      "name": "Server automatisch starten",
+      "desc": "`octo serve` automatisch ausführen, wenn Octo eine Verbindung benötigt."
+    },
+    "cliPath": {
+      "name": "Claude CLI-Pfad",
+      "desc": "Benutzerdefinierter Pfad zum Claude Code CLI. Leer lassen für automatische Erkennung.",
+      "descWindows": "Für den nativen Installer verwenden Sie claude.exe. Für npm/pnpm/yarn oder andere Paketmanager-Installationen verwenden Sie den cli-wrapper.cjs-Pfad (nicht claude.cmd).",
+      "descUnix": "Fügen Sie die Ausgabe von \"which claude\" ein — funktioniert sowohl für native als auch npm/pnpm/yarn-Installationen.",
+      "validation": {
+        "notExist": "Pfad existiert nicht",
+        "isDirectory": "Pfad ist ein Verzeichnis, keine Datei"
+      }
+    },
+    "accessKey": {
+      "name": "Zugriffsschlüssel",
+      "desc": "Optionaler Zugriffsschlüssel für Hosts außerhalb von Loopback. Bei 127.0.0.1 leer lassen."
+    },
     "models": "Modelle",
     "experimental": "Experimentell",
     "userName": {
@@ -293,16 +318,6 @@
       "rightSidebar": "Rechte Seitenleiste",
       "leftSidebar": "Linke Seitenleiste",
       "mainTab": "Haupteditor-Tab"
-    },
-    "cliPath": {
-      "name": "Claude CLI-Pfad",
-      "desc": "Benutzerdefinierter Pfad zum Claude Code CLI. Leer lassen für automatische Erkennung.",
-      "descWindows": "Für den nativen Installer verwenden Sie claude.exe. Für npm/pnpm/yarn oder andere Paketmanager-Installationen verwenden Sie den cli-wrapper.cjs-Pfad (nicht claude.cmd).",
-      "descUnix": "Fügen Sie die Ausgabe von \"which claude\" ein — funktioniert sowohl für native als auch npm/pnpm/yarn-Installationen.",
-      "validation": {
-        "notExist": "Pfad existiert nicht",
-        "isDirectory": "Pfad ist ein Verzeichnis, keine Datei"
-      }
     },
     "language": {
       "name": "Sprache",

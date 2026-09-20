@@ -71,15 +71,40 @@
   },
   "settings": {
     "title": "Octo 设置",
-    "tabs": {
-      "general": "通用",
-      "claude": "Claude",
-      "codex": "Codex"
-    },
     "display": "显示",
     "content": "内容",
     "input": "输入",
     "setup": "设置",
+    "serverCommand": {
+      "name": "服务端启动命令",
+      "desc": "用 octo serve --cors 'app://obsidian.md' 启动 octo-agent。必须带 --cors，否则 Obsidian 无法访问 REST 和 WebSocket 接口。"
+    },
+    "host": {
+      "name": "主机",
+      "desc": "octo-agent 服务端的主机名。"
+    },
+    "port": {
+      "name": "端口",
+      "desc": "octo-agent 服务端的端口（1-65535）。"
+    },
+    "autoStartServer": {
+      "name": "自动启动服务端",
+      "desc": "需要连接时自动运行 `octo serve`。"
+    },
+    "cliPath": {
+      "name": "Claude CLI 路径",
+      "desc": "Claude Code CLI 的自定义路径。留空使用自动检测。",
+      "descWindows": "对于原生安装程序，使用 claude.exe。对于 npm/pnpm/yarn 或其他包管理器安装，使用 cli-wrapper.cjs 路径（不是 claude.cmd）。",
+      "descUnix": "粘贴 \"which claude\" 的输出 - 适用于原生安装和 npm/pnpm/yarn 安装。",
+      "validation": {
+        "notExist": "路径不存在",
+        "isDirectory": "路径是目录，不是文件"
+      }
+    },
+    "accessKey": {
+      "name": "访问密钥",
+      "desc": "非本地回环主机可选填的访问密钥。使用 127.0.0.1 时留空即可。"
+    },
     "models": "模型",
     "experimental": "实验性功能",
     "userName": {
@@ -293,16 +318,6 @@
       "rightSidebar": "右侧边栏",
       "leftSidebar": "左侧边栏",
       "mainTab": "主编辑器标签页"
-    },
-    "cliPath": {
-      "name": "Claude CLI 路径",
-      "desc": "Claude Code CLI 的自定义路径。留空使用自动检测。",
-      "descWindows": "对于原生安装程序，使用 claude.exe。对于 npm/pnpm/yarn 或其他包管理器安装，使用 cli-wrapper.cjs 路径（不是 claude.cmd）。",
-      "descUnix": "粘贴 \"which claude\" 的输出 - 适用于原生安装和 npm/pnpm/yarn 安装。",
-      "validation": {
-        "notExist": "路径不存在",
-        "isDirectory": "路径是目录，不是文件"
-      }
     },
     "language": {
       "name": "语言",
