@@ -104,16 +104,7 @@ export default defineConfig([
     rules: stagedObsidianRules,
   },
   {
-    files: [
-      'src/OctoService.ts',
-      'src/InlineEditService.ts',
-      'src/InstructionRefineService.ts',
-      'src/images/**/*.ts',
-      'src/prompt/**/*.ts',
-      'src/sdk/**/*.ts',
-      'src/security/**/*.ts',
-      'src/tools/**/*.ts',
-    ],
+    files: ['src/core/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -124,7 +115,7 @@ export default defineConfig([
               message: 'Service and shared modules must not import UI modules.',
             },
             {
-              group: ['./OctoView', '../OctoView'],
+              group: ['**/OctoView'],
               message: 'Service and shared modules must not import the view.',
             },
           ],
