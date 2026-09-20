@@ -99,4 +99,5 @@ bun.lockb
 
 .claude/
 .codex/
+.codegraph/
 /.worktrees/
