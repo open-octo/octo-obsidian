@@ -87,11 +87,15 @@ function getHotkeyForCommand(app: App, commandId: string): string | null {
 
 function addHotkeySettingRow(
   containerEl: HTMLElement,
-  app: App,
+  plugin: ClaudianPlugin,
+  /** Command id as passed to addCommand(), without the plugin-id prefix. */
   commandId: string,
   translationPrefix: string,
 ): void {
-  const hotkey = getHotkeyForCommand(app, commandId);
+  // Obsidian registers commands as "<manifest id>:<id>", and that is the key
+  // the hotkey manager is indexed by. Deriving it from the manifest keeps the
+  // lookup correct if the plugin id ever changes.
+  const hotkey = getHotkeyForCommand(plugin.app, `${plugin.manifest.id}:${commandId}`);
   const item = containerEl.createDiv({ cls: 'claudian-hotkey-item' });
   item.createSpan({
     cls: 'claudian-hotkey-name',
@@ -100,7 +104,7 @@ function addHotkeySettingRow(
   if (hotkey) {
     item.createSpan({ cls: 'claudian-hotkey-badge', text: hotkey });
   }
-  item.addEventListener('click', () => openHotkeySettings(app));
+  item.addEventListener('click', () => openHotkeySettings(plugin.app));
 }
 
 export class ClaudianSettingTab extends PluginSettingTab {
@@ -425,11 +429,11 @@ export class ClaudianSettingTab extends PluginSettingTab {
     new Setting(container).setName(t('settings.hotkeys')).setHeading();
 
     const hotkeyGrid = container.createDiv({ cls: 'claudian-hotkey-grid' });
-    addHotkeySettingRow(hotkeyGrid, this.app, 'claudian:inline-edit', 'settings.inlineEditHotkey');
-    addHotkeySettingRow(hotkeyGrid, this.app, 'claudian:open-view', 'settings.openChatHotkey');
-    addHotkeySettingRow(hotkeyGrid, this.app, 'claudian:new-session', 'settings.newSessionHotkey');
-    addHotkeySettingRow(hotkeyGrid, this.app, 'claudian:new-tab', 'settings.newTabHotkey');
-    addHotkeySettingRow(hotkeyGrid, this.app, 'claudian:close-current-tab', 'settings.closeTabHotkey');
+    addHotkeySettingRow(hotkeyGrid, this.plugin, 'inline-edit', 'settings.inlineEditHotkey');
+    addHotkeySettingRow(hotkeyGrid, this.plugin, 'open-view', 'settings.openChatHotkey');
+    addHotkeySettingRow(hotkeyGrid, this.plugin, 'new-session', 'settings.newSessionHotkey');
+    addHotkeySettingRow(hotkeyGrid, this.plugin, 'new-tab', 'settings.newTabHotkey');
+    addHotkeySettingRow(hotkeyGrid, this.plugin, 'close-current-tab', 'settings.closeTabHotkey');
 
     // --- Environment ---
 

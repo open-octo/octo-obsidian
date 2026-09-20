@@ -72,6 +72,34 @@ describe('OctoAgentClient', () => {
     });
   });
 
+  describe('createSession defaults', () => {
+    beforeEach(() => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '' } }),
+      });
+    });
+
+    it("defaults agent_profile to 'default', not a sub-agent profile", async () => {
+      // 'general' is octo's delegated sub-agent profile ("return a
+      // self-contained result the caller can act on"); a chat session is not
+      // that, it is the default profile.
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      await client.createSession();
+
+      expect(JSON.parse(requestUrlMock.mock.calls[0][0].body).agent_profile).toBe('default');
+    });
+
+    it('passes an explicit agent profile through', async () => {
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      await client.createSession({ agentProfile: 'code-review' });
+
+      expect(JSON.parse(requestUrlMock.mock.calls[0][0].body).agent_profile).toBe('code-review');
+    });
+  });
+
   describe('session groups', () => {
     it('files a new session under a project when given one', async () => {
       requestUrlMock.mockResolvedValue({

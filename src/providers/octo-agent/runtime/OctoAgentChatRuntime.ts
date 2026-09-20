@@ -64,6 +64,9 @@ function askQuestionKey(questionId: string, index: number): string {
   return `${questionId}#${index}`;
 }
 
+/** Identifies this client in octo's session list. */
+const SESSION_SOURCE = 'octo-obsidian';
+
 export class OctoAgentChatRuntime implements ChatRuntime {
   readonly providerId: ProviderId = 'octo-agent';
 
@@ -649,7 +652,7 @@ export class OctoAgentChatRuntime implements ChatRuntime {
 
     const session = await this.client.createSession({
       groupId: await this.resolveVaultProjectId(),
-      source: 'claudian',
+      source: SESSION_SOURCE,
     });
     this.sessionId = session.id;
     this.adoptSessionModel(session.model);

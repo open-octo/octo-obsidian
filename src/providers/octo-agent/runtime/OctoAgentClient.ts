@@ -197,6 +197,11 @@ export class OctoAgentClient {
   async createSession(options: {
     name?: string;
     model?: string;
+    /**
+     * Octo's agent profile id. Defaults to `default`; the builtin `general`
+     * profile is a delegated SUB-agent ("return a self-contained result the
+     * caller can act on"), which is not what a chat session is.
+     */
     agentProfile?: string;
     source?: string;
     /**
@@ -212,7 +217,7 @@ export class OctoAgentClient {
       body: JSON.stringify({
         name: options.name ?? '',
         model: options.model ?? '',
-        agent_profile: options.agentProfile ?? 'general',
+        agent_profile: options.agentProfile ?? 'default',
         source: options.source ?? 'manual',
         ...(options.groupId ? { group_id: options.groupId } : {}),
       }),
