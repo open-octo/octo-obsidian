@@ -32,7 +32,12 @@ import {
 } from '../../../core/types';
 import type ClaudianPlugin from '../../../main';
 import { appendContextFiles, appendCurrentNote } from '../../../utils/context';
-import { getVaultPath } from '../../../utils/path';
+import {
+  getVaultPath,
+  isSameDirectory,
+  toAbsoluteVaultPath,
+  vaultProjectName,
+} from '../../../utils/path';
 import { OCTO_AGENT_PROVIDER_CAPABILITIES } from '../capabilities';
 import { toClaudianPermissionMode, toOctoAgentPermissionMode } from '../permissionMode';
 import { getOctoAgentProviderSettings } from '../settings';
@@ -103,7 +108,10 @@ export class OctoAgentChatRuntime implements ChatRuntime {
 
     let prompt = text;
     if (request.currentNotePath) {
-      prompt = appendCurrentNote(prompt, request.currentNotePath);
+      prompt = appendCurrentNote(
+        prompt,
+        toAbsoluteVaultPath(getVaultPath(this.plugin.app), request.currentNotePath),
+      );
     }
 
     const externalContextPaths = request.externalContextPaths?.filter(
@@ -640,10 +648,49 @@ export class OctoAgentChatRuntime implements ChatRuntime {
     }
 
     const session = await this.client.createSession({
+      groupId: await this.resolveVaultProjectId(),
       source: 'claudian',
     });
     this.sessionId = session.id;
     this.adoptSessionModel(session.model);
+  }
+
+  /**
+   * Finds, or creates, the octo project that mounts this vault, so a new
+   * session is filed under it at creation time.
+   *
+   * The server refuses PATCH /working_dir ("a session's working directory
+   * comes from its project"), and skips seeding a throwaway task workspace
+   * only when it can already see the membership — so this has to happen
+   * before the session exists, not after.
+   *
+   * Returns undefined on any failure: a session outside a project still
+   * works, it just loses the vault mount and the prompt's source-folder line.
+   */
+  private async resolveVaultProjectId(): Promise<string | undefined> {
+    const vaultPath = getVaultPath(this.plugin.app);
+    if (!vaultPath || !this.client) {
+      return undefined;
+    }
+
+    try {
+      const groups = await this.client.listSessionGroups();
+      const existing = groups.find((group) =>
+        group.sourceDirs.some((dir) => isSameDirectory(dir, vaultPath)),
+      );
+      if (existing) {
+        return existing.id;
+      }
+
+      const created = await this.client.createSessionGroup(
+        vaultProjectName(vaultPath),
+        [vaultPath],
+      );
+      return created.id || undefined;
+    } catch (error) {
+      console.error('Failed to resolve the octo-agent project for this vault:', error);
+      return undefined;
+    }
   }
 
   /**
@@ -671,15 +718,6 @@ export class OctoAgentChatRuntime implements ChatRuntime {
   private async applySettingsToSession(sessionId: string): Promise<void> {
     if (!this.client) {
       return;
-    }
-
-    const vaultPath = getVaultPath(this.plugin.app);
-    if (vaultPath) {
-      try {
-        await this.client.setWorkingDir(sessionId, vaultPath);
-      } catch (error) {
-        console.error('Failed to set octo-agent working directory:', error);
-      }
     }
 
     const permissionMode = toOctoAgentPermissionMode(

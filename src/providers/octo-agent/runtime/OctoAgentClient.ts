@@ -18,6 +18,16 @@ export interface OctoAgentSession {
   contextUsage?: number;
 }
 
+/** An octo "project": a group of sessions sharing a workspace and mounted source folders. */
+export interface OctoAgentSessionGroup {
+  id: string;
+  name: string;
+  /** The project's own generated workspace — never one of the mounted folders. */
+  workingDir?: string;
+  /** External folders mounted as additional roots for the tools. */
+  sourceDirs: string[];
+}
+
 export interface OctoAgentMessage {
   type?: string;
   role?: string;
@@ -189,6 +199,13 @@ export class OctoAgentClient {
     model?: string;
     agentProfile?: string;
     source?: string;
+    /**
+     * Files the session under a project at creation time. This is the only
+     * moment it can be done: the server skips seeding a throwaway task
+     * workspace when it already sees the membership, so a session created
+     * without it is stranded in ~/Octo/tasks/<id> for good.
+     */
+    groupId?: string;
   } = {}): Promise<OctoAgentSession> {
     const response = await this.fetchJson('/api/sessions', {
       method: 'POST',
@@ -197,6 +214,7 @@ export class OctoAgentClient {
         model: options.model ?? '',
         agent_profile: options.agentProfile ?? 'general',
         source: options.source ?? 'manual',
+        ...(options.groupId ? { group_id: options.groupId } : {}),
       }),
     });
 
@@ -219,13 +237,6 @@ export class OctoAgentClient {
     return [];
   }
 
-  async setWorkingDir(sessionId: string, workingDir: string): Promise<void> {
-    await this.fetchJson(`/api/sessions/${encodeURIComponent(sessionId)}/working_dir`, {
-      method: 'PATCH',
-      body: JSON.stringify({ working_dir: workingDir }),
-    });
-  }
-
   async setModel(sessionId: string, modelId: string): Promise<void> {
     await this.fetchJson(`/api/sessions/${encodeURIComponent(sessionId)}/model`, {
       method: 'PATCH',
@@ -245,6 +256,30 @@ export class OctoAgentClient {
       method: 'PATCH',
       body: JSON.stringify({ name }),
     });
+  }
+
+  async listSessionGroups(): Promise<OctoAgentSessionGroup[]> {
+    const response = await this.fetchJson('/api/session-groups');
+    const record = response as Record<string, any>;
+    const groups = Array.isArray(record.groups) ? record.groups : [];
+    return (groups as Record<string, any>[]).map(normalizeSessionGroup);
+  }
+
+  /**
+   * Creates a project mounting `sourceDirs`. The server generates the
+   * project's own workspace under its workspace root; the directories passed
+   * here become mounted source folders, never the working directory.
+   */
+  async createSessionGroup(name: string, sourceDirs: string[]): Promise<OctoAgentSessionGroup> {
+    const response = await this.fetchJson('/api/session-groups', {
+      method: 'POST',
+      body: JSON.stringify({ name, source_dirs: sourceDirs }),
+    });
+    const record = response as Record<string, any>;
+    if (record.group && typeof record.group === 'object') {
+      return normalizeSessionGroup(record.group as Record<string, any>);
+    }
+    throw new Error('Invalid session group creation response');
   }
 
   async listSessions(): Promise<OctoAgentSession[]> {
@@ -517,6 +552,18 @@ function normalizeSession(record: Record<string, any>): OctoAgentSession {
     reasoningEffort: asString(record.reasoning_effort) ?? undefined,
     showReasoning: typeof record.show_reasoning === 'boolean' ? record.show_reasoning : undefined,
     status: asString(record.status) ?? undefined,
+    workingDir: asString(record.working_dir) ?? undefined,
+  };
+}
+
+function normalizeSessionGroup(record: Record<string, any>): OctoAgentSessionGroup {
+  const sourceDirs = Array.isArray(record.source_dirs)
+    ? (record.source_dirs as unknown[]).filter((d): d is string => typeof d === 'string')
+    : [];
+  return {
+    id: asString(record.id) ?? '',
+    name: asString(record.name) ?? '',
+    sourceDirs,
     workingDir: asString(record.working_dir) ?? undefined,
   };
 }

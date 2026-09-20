@@ -11,11 +11,14 @@ import {
   getVaultPath,
   isPathWithinDirectory,
   isPathWithinVault,
+  isSameDirectory,
   normalizePathForComparison,
   normalizePathForFilesystem,
   normalizePathForVault,
   parsePathEntries,
+  toAbsoluteVaultPath,
   translateMsysPath,
+  vaultProjectName,
 } from '@/utils/path';
 
 const isWindows = process.platform === 'win32';
@@ -476,5 +479,68 @@ describe('expandHomePath - Windows environment variable formats', () => {
       if (original === undefined) delete process.env.MY_CI_VAR;
       else process.env.MY_CI_VAR = original;
     }
+  });
+});
+
+describe('toAbsoluteVaultPath', () => {
+  it('joins a vault-relative note path onto the vault root', () => {
+    expect(
+      toAbsoluteVaultPath('/Users/me/vault', '05-Learning/Agent/note.md'),
+    ).toBe('/Users/me/vault/05-Learning/Agent/note.md');
+  });
+
+  it('tolerates a trailing separator on the vault root', () => {
+    expect(toAbsoluteVaultPath('/Users/me/vault/', 'note.md')).toBe('/Users/me/vault/note.md');
+  });
+
+  it('leaves an already absolute path alone', () => {
+    expect(
+      toAbsoluteVaultPath('/Users/me/vault', '/elsewhere/note.md'),
+    ).toBe('/elsewhere/note.md');
+  });
+
+  it('returns the path unchanged when the vault root is unknown', () => {
+    // Better a relative path the model must hunt for than a wrong absolute one.
+    expect(toAbsoluteVaultPath(null, '05-Learning/note.md')).toBe('05-Learning/note.md');
+    expect(toAbsoluteVaultPath('', '05-Learning/note.md')).toBe('05-Learning/note.md');
+  });
+
+  it('keeps spaces and non-ASCII segments intact', () => {
+    expect(
+      toAbsoluteVaultPath('/Users/me/vault', '05-Learning/Agent 系统原理/从 ReAct 到 Ralph Loop.md'),
+    ).toBe('/Users/me/vault/05-Learning/Agent 系统原理/从 ReAct 到 Ralph Loop.md');
+  });
+});
+
+describe('isSameDirectory', () => {
+  it('matches identical paths', () => {
+    expect(isSameDirectory('/Users/me/vault', '/Users/me/vault')).toBe(true);
+  });
+
+  it('ignores a trailing separator', () => {
+    expect(isSameDirectory('/Users/me/vault/', '/Users/me/vault')).toBe(true);
+  });
+
+  it('does not match a different directory', () => {
+    expect(isSameDirectory('/Users/me/vault', '/Users/me/other')).toBe(false);
+  });
+
+  it('does not match a parent or child', () => {
+    expect(isSameDirectory('/Users/me', '/Users/me/vault')).toBe(false);
+    expect(isSameDirectory('/Users/me/vault/sub', '/Users/me/vault')).toBe(false);
+  });
+});
+
+describe('vaultProjectName', () => {
+  it('names the project after the vault folder', () => {
+    expect(vaultProjectName('/Users/me/notes/my-vault')).toBe('my-vault');
+  });
+
+  it('ignores a trailing separator', () => {
+    expect(vaultProjectName('/Users/me/notes/my-vault/')).toBe('my-vault');
+  });
+
+  it('falls back to the whole path when no basename resolves', () => {
+    expect(vaultProjectName('/')).toBe('/');
   });
 });
