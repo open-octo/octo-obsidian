@@ -1,27 +1,17 @@
 {
   "common": {
-    "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
-    "edit": "Bearbeiten",
-    "add": "Hinzufügen",
-    "remove": "Entfernen",
-    "clear": "Löschen",
-    "clearAll": "Alle löschen",
-    "loading": "Lädt",
     "error": "Fehler",
-    "success": "Erfolg",
-    "warning": "Warnung",
-    "confirm": "Bestätigen",
-    "settings": "Einstellungen",
-    "advanced": "Erweitert",
-    "enabled": "Aktiviert",
-    "disabled": "Deaktiviert",
-    "platform": "Plattform",
-    "refresh": "Aktualisieren",
-    "rewind": "Zurückspulen"
+    "confirm": "Bestätigen"
   },
   "chat": {
+    "greeting": {
+      "morning": "Guten Morgen",
+      "afternoon": "Guten Tag",
+      "evening": "Guten Abend",
+      "night": "Hallo, Nachteule"
+    },
     "rewind": {
       "confirmMessage": "Zu diesem Punkt zurückspulen? Dateiänderungen nach dieser Nachricht werden rückgängig gemacht. Das Zurückspulen betrifft keine manuell oder über Bash bearbeiteten Dateien.",
       "confirmMessageConversationOnly": "Konversation zu diesem Punkt zurückspulen? Dateiänderungen bleiben erhalten.",
@@ -70,14 +60,13 @@
     }
   },
   "settings": {
-    "title": "Octo Einstellungen",
     "display": "Anzeige",
     "content": "Inhalte",
     "input": "Eingabe",
     "setup": "Einrichtung",
     "serverCommand": {
       "name": "Serverbefehl",
-      "desc": "Starte octo-agent mit: octo serve --cors 'app://obsidian.md'. Erforderlich, damit Obsidian die REST- und WebSocket-Endpunkte erreichen kann."
+      "desc": "Starte octo-agent mit: octo serve. Der Obsidian-Origin wird automatisch zugelassen, zusätzliche Optionen sind nicht nötig."
     },
     "host": {
       "name": "Host",
@@ -92,24 +81,12 @@
       "desc": "`octo serve` automatisch ausführen, wenn Octo eine Verbindung benötigt."
     },
     "cliPath": {
-      "name": "Claude CLI-Pfad",
-      "desc": "Benutzerdefinierter Pfad zum Claude Code CLI. Leer lassen für automatische Erkennung.",
-      "descWindows": "Für den nativen Installer verwenden Sie claude.exe. Für npm/pnpm/yarn oder andere Paketmanager-Installationen verwenden Sie den cli-wrapper.cjs-Pfad (nicht claude.cmd).",
-      "descUnix": "Fügen Sie die Ausgabe von \"which claude\" ein — funktioniert sowohl für native als auch npm/pnpm/yarn-Installationen.",
-      "validation": {
-        "notExist": "Pfad existiert nicht",
-        "isDirectory": "Pfad ist ein Verzeichnis, keine Datei"
-      }
+      "name": "CLI-Pfad",
+      "desc": "Befehl zum Starten des octo-agent-Servers. Leer lassen, um `octo` aus dem PATH zu verwenden."
     },
     "accessKey": {
       "name": "Zugriffsschlüssel",
       "desc": "Optionaler Zugriffsschlüssel für Hosts außerhalb von Loopback. Bei 127.0.0.1 leer lassen."
-    },
-    "models": "Modelle",
-    "experimental": "Experimentell",
-    "userName": {
-      "name": "Wie soll Octo dich nennen?",
-      "desc": "Dein Name für personalisierte Begrüßungen (leer lassen für allgemeine Begrüßungen)"
     },
     "excludedTags": {
       "name": "Ausgeschlossene Tags",
@@ -117,7 +94,7 @@
     },
     "mediaFolder": {
       "name": "Medienordner",
-      "desc": "Ordner mit Anhängen/Bildern. Wenn Notizen ![[image.jpg]] verwenden, sucht Claude hier. Leer lassen für Vault-Stammverzeichnis."
+      "desc": "Ordner mit Anhängen/Bildern. Wird verwendet, um ![[image.jpg]] beim Rendern von Notizen im Chat aufzulösen. Leer lassen für Vault-Stammverzeichnis."
     },
     "navMappings": {
       "name": "Vim-Style Navigationszuordnungen",
@@ -129,113 +106,21 @@
     },
     "hotkeys": "Tastenkürzel",
     "inlineEditHotkey": {
-      "name": "Inline-Bearbeitung",
-      "descWithKey": "Aktuelles Tastenkürzel: {hotkey}",
-      "descNoKey": "Kein Tastenkürzel festgelegt",
-      "btnChange": "Ändern",
-      "btnSet": "Festlegen"
+      "name": "Inline-Bearbeitung"
     },
     "openChatHotkey": {
-      "name": "Chat öffnen",
-      "descWithKey": "Aktuelles Tastenkürzel: {hotkey}",
-      "descNoKey": "Kein Tastenkürzel festgelegt",
-      "btnChange": "Ändern",
-      "btnSet": "Festlegen"
+      "name": "Chat öffnen"
     },
     "newSessionHotkey": {
-      "name": "Neue Sitzung",
-      "descWithKey": "Aktuelles Tastenkürzel: {hotkey}",
-      "descNoKey": "Kein Tastenkürzel festgelegt",
-      "btnChange": "Ändern",
-      "btnSet": "Festlegen"
+      "name": "Neue Sitzung"
     },
     "newTabHotkey": {
-      "name": "Neuer Tab",
-      "descWithKey": "Aktuelles Tastenkürzel: {hotkey}",
-      "descNoKey": "Kein Tastenkürzel festgelegt",
-      "btnChange": "Ändern",
-      "btnSet": "Festlegen"
+      "name": "Neuer Tab"
     },
     "closeTabHotkey": {
-      "name": "Tab schließen",
-      "descWithKey": "Aktuelles Tastenkürzel: {hotkey}",
-      "descNoKey": "Kein Tastenkürzel festgelegt",
-      "btnChange": "Ändern",
-      "btnSet": "Festlegen"
-    },
-    "slashCommands": {
-      "name": "Befehle und Fähigkeiten",
-      "desc": "Verwalte Vault-Befehle und -Fähigkeiten in .claude/commands/ und .claude/skills/. Ausgelöst durch /Name."
-    },
-    "hiddenSlashCommands": {
-      "name": "Ausgeblendete Befehle und Fähigkeiten",
-      "desc": "Bestimmte Befehle und Fähigkeiten aus dem Dropdown ausblenden. Nützlich, um Claude Code-Einträge auszublenden, die für Octo nicht relevant sind. Gib Namen ohne führenden Schrägstrich ein, einen pro Zeile.",
-      "placeholder": "commit\nbuild\ntest"
-    },
-    "mcpServers": {
-      "name": "MCP-Server",
-      "desc": "Verwalte Vault-MCP-Serverkonfigurationen in .claude/mcp.json. Server mit Kontext-Speichermodus benötigen @mention zur Aktivierung."
-    },
-    "plugins": {
-      "name": "Claude Code-Plugins",
-      "desc": "Verwalte Claude Code Plugins aus ~/.claude/plugins. Aktivierte Plugins werden pro Vault in .claude/settings.json gespeichert."
-    },
-    "subagents": {
-      "name": "Sub-Agenten",
-      "desc": "Verwalte Vault-Sub-Agenten in .claude/agents/. Jede Markdown-Datei definiert einen benutzerdefinierten Agenten.",
-      "noAgents": "Keine Sub-Agenten konfiguriert. Klicke auf +, um einen zu erstellen.",
-      "deleteConfirm": "Sub-Agent \"{name}\" löschen?",
-      "saveFailed": "Sub-Agent konnte nicht gespeichert werden: {message}",
-      "refreshFailed": "Sub-Agenten konnten nicht aktualisiert werden: {message}",
-      "deleteFailed": "Sub-Agent konnte nicht gelöscht werden: {message}",
-      "renameCleanupFailed": "Warnung: Alte Datei für \"{name}\" konnte nicht entfernt werden",
-      "created": "Sub-Agent \"{name}\" erstellt",
-      "updated": "Sub-Agent \"{name}\" aktualisiert",
-      "deleted": "Sub-Agent \"{name}\" gelöscht",
-      "duplicateName": "Ein Agent mit dem Namen \"{name}\" existiert bereits",
-      "descriptionRequired": "Beschreibung ist erforderlich",
-      "promptRequired": "System-Prompt ist erforderlich",
-      "modal": {
-        "titleEdit": "Sub-Agent bearbeiten",
-        "titleAdd": "Sub-Agent hinzufügen",
-        "name": "Name",
-        "nameDesc": "Nur Kleinbuchstaben, Zahlen und Bindestriche",
-        "namePlaceholder": "code-reviewer",
-        "description": "Beschreibung",
-        "descriptionDesc": "Kurzbeschreibung dieses Agenten",
-        "descriptionPlaceholder": "Prüft Code auf Fehler und Stil",
-        "advancedOptions": "Erweiterte Optionen",
-        "model": "Modell",
-        "modelDesc": "Modellüberschreibung für diesen Agenten",
-        "tools": "Tools",
-        "toolsDesc": "Kommagetrennte Liste zulässiger Tools (leer = alle)",
-        "disallowedTools": "Nicht erlaubte Tools",
-        "disallowedToolsDesc": "Kommagetrennte Liste der zu verbietenden Tools",
-        "skills": "Fähigkeiten",
-        "skillsDesc": "Kommagetrennte Liste von Fähigkeiten",
-        "prompt": "System-Prompt",
-        "promptDesc": "Anweisungen für den Agenten",
-        "promptPlaceholder": "Du bist ein Code-Reviewer. Analysiere den angegebenen Code auf..."
-      }
-    },
-    "safety": "Sicherheit",
-    "loadUserSettings": {
-      "name": "Benutzer-Claude-Einstellungen laden",
-      "desc": "Lädt ~/.claude/settings.json. Wenn aktiviert, können Benutzer-Claude-Code-Berechtigungsregeln den Sicherheitsmodus umgehen."
-    },
-    "claudeSafeMode": {
-      "name": "Sicherheitsmodus",
-      "desc": "Berechtigungsmodus, der verwendet wird, wenn der Safe-Schalter aktiv ist."
-    },
-    "codexSafeMode": {
-      "name": "Sicherheitsmodus",
-      "desc": "Sandbox-Modus, der verwendet wird, wenn der Safe-Schalter aktiv ist."
+      "name": "Tab schließen"
     },
     "environment": "Umgebung",
-    "customVariables": {
-      "name": "Benutzerdefinierte Variablen",
-      "desc": "Umgebungsvariablen für Claude SDK (KEY=VALUE-Format, eine pro Zeile). Export-Präfix unterstützt."
-    },
     "envSnippets": {
       "name": "Snippets",
       "addBtn": "Snippet hinzufügen",
@@ -263,42 +148,16 @@
       "placeholder": "Aliasname"
     },
     "customContextLimits": {
-      "name": "Benutzerdefinierte Kontextlimits",
-      "desc": "Legen Sie die Kontextfenstergrößen für Ihre benutzerdefinierten Modelle fest. Leer lassen für den Standardwert (200k Token).",
       "invalid": "Ungültiges Format. Verwenden Sie: 256k, 1m oder exakte Anzahl (1000-10000000)."
-    },
-    "enableOpus1M": {
-      "name": "Opus 1M Kontextfenster",
-      "desc": "Opus 1M in der Modellauswahl anzeigen. In Max-, Team- und Enterprise-Plänen enthalten. API- und Pro-Nutzer benötigen zusätzliche Nutzung."
-    },
-    "enableSonnet1M": {
-      "name": "Sonnet 1M Kontextfenster",
-      "desc": "Sonnet 1M in der Modellauswahl anzeigen. Erfordert zusätzliche Nutzung bei Max-, Team- und Enterprise-Plänen. API- und Pro-Nutzer benötigen zusätzliche Nutzung."
-    },
-    "customModels": {
-      "name": "Benutzerdefinierte Modelle",
-      "desc": "Füge zusätzliche Claude-Modell-IDs zur Auswahl hinzu, eine pro Zeile. Modellüberschreibungen aus der Umgebung ersetzen die Auswahl weiterhin.",
-      "placeholder": "claude-opus-4-6\nclaude-opus-4-6[1m]\nclaude-opus-4-5-20251101"
-    },
-    "enableChrome": {
-      "name": "Chrome-Erweiterung aktivieren",
-      "desc": "Erlaubt Claude die Interaktion mit Chrome über die claude-in-chrome-Erweiterung. Die Erweiterung muss installiert sein. Erfordert Neustart der Sitzung."
-    },
-    "enableBangBash": {
-      "name": "Bash-Modus (!) aktivieren",
-      "desc": "Gib ! in ein leeres Eingabefeld ein, um den Bash-Modus zu starten. Führt Befehle direkt über Node.js child_process aus. Die Ansicht muss neu geöffnet werden.",
-      "validation": {
-        "noNode": "Node.js wurde auf PATH nicht gefunden. Installiere Node.js oder prüfe deine PATH-Konfiguration."
-      }
     },
     "maxTabs": {
       "name": "Maximale Chat-Tabs",
-      "desc": "Maximale Anzahl gleichzeitiger Chat-Tabs (3-10). Jeder Tab verwendet eine separate Claude-Sitzung.",
+      "desc": "Maximale Anzahl gleichzeitiger Chat-Tabs (3-10). Jeder Tab verwendet eine separate Octo-Sitzung.",
       "warning": "Mehr als 5 Tabs können Leistung und Speichernutzung beeinträchtigen."
     },
     "enableAutoScroll": {
       "name": "Automatisches Scrollen während Streaming",
-      "desc": "Automatisch nach unten scrollen, während Claude Antworten streamt. Deaktivieren, um oben zu bleiben und von Anfang an zu lesen."
+      "desc": "Automatisch nach unten scrollen, während Octo Antworten streamt. Deaktivieren, um oben zu bleiben und von Anfang an zu lesen."
     },
     "deferMathRenderingDuringStreaming": {
       "name": "Mathe-Rendering während Streaming aufschieben",
@@ -318,138 +177,6 @@
     "language": {
       "name": "Sprache",
       "desc": "Anzeigesprache der Plugin-Oberfläche ändern"
-    },
-    "codex": {
-      "enableProvider": {
-        "name": "Codex-Anbieter aktivieren",
-        "desc": "Wenn aktiviert, erscheinen Codex-Modelle in der Modellauswahl für neue Unterhaltungen. Bestehende Codex-Sitzungen bleiben erhalten."
-      },
-      "installationMethod": {
-        "name": "Installationsmethode",
-        "desc": "Wie Octo Codex unter Windows starten soll. Native Windows verwendet einen Windows-Programmpfad. WSL startet die Linux-CLI in einer ausgewählten Distribution.",
-        "nativeWindows": "Natives Windows",
-        "wsl": "WSL"
-      },
-      "cliPath": {
-        "name": "Codex-CLI-Pfad",
-        "descUnix": "Benutzerdefinierter Pfad zur lokalen Codex-CLI. Leer lassen, um bekannte Codex-Installationen und dann PATH zu bevorzugen.",
-        "descWindows": "Benutzerdefinierter Pfad zur lokalen Codex-CLI. Leer lassen für automatische Erkennung über PATH. Verwende den nativen Windows-Programmpfad, normalerweise `codex.exe`.",
-        "descWsl": "Linux-seitiger Codex-Befehl oder absoluter Pfad zur Ausführung in WSL. Leer lassen für PATH-Suche in der ausgewählten Distribution.",
-        "validation": {
-          "wslWindowsPath": "Der WSL-Modus erwartet einen Linux-Befehl oder absoluten Linux-Pfad, keinen Windows-Programmpfad."
-        }
-      },
-      "wslDistroOverride": {
-        "name": "WSL-Distribution überschreiben",
-        "desc": "Optionale erweiterte Überschreibung. Leer lassen, um die Distribution möglichst aus einem WSL-Workspace-Pfad abzuleiten, sonst wird die Standard-WSL-Distribution verwendet."
-      },
-      "safeMode": {
-        "workspaceWrite": "Workspace schreiben",
-        "readOnly": "Nur lesen"
-      },
-      "customModels": {
-        "name": "Benutzerdefinierte Modelle",
-        "desc": "Füge zusätzliche Codex-Modell-IDs zur Auswahl hinzu, eine pro Zeile. `OPENAI_MODEL` hat weiterhin Vorrang, wenn gesetzt.",
-        "placeholder": "gpt-5.4\ngpt-5.3-codex-spark"
-      },
-      "reasoningSummary": {
-        "name": "Reasoning-Zusammenfassung",
-        "desc": "Zeigt eine Zusammenfassung des Reasoning-Prozesses des Modells im Denkblock.",
-        "auto": "Automatisch",
-        "concise": "Kurz",
-        "detailed": "Ausführlich",
-        "off": "Aus"
-      },
-      "skills": {
-        "name": "Codex-Fähigkeiten",
-        "desc": "Verwalte Vault-Codex-Fähigkeiten in .codex/skills/ oder .agents/skills/. Fähigkeiten auf Home-Ebene sind hier ausgeschlossen.",
-        "hiddenName": "Ausgeblendete Fähigkeiten",
-        "hiddenDesc": "Blende bestimmte Codex-Fähigkeiten aus dem Dropdown aus. Gib Fähigkeitsnamen ohne führendes $ ein, einen pro Zeile.",
-        "hiddenPlaceholder": "analyze\nexplain\nfix"
-      },
-      "subagents": {
-        "name": "Codex-Sub-Agenten",
-        "desc": "Verwalte Vault-Codex-Sub-Agenten in .codex/agents/. Jede TOML-Datei definiert einen benutzerdefinierten Agenten."
-      },
-      "mcp": {
-        "descBeforeCommand": "Codex verwaltet MCP-Server über seine eigene CLI. Konfiguriere mit ",
-        "descAfterCommand": ", dann sind sie in Octo verfügbar. ",
-        "learnMore": "Mehr erfahren"
-      },
-      "environment": {
-        "name": "Codex-Umgebung",
-        "desc": "Nur Codex-eigene Laufzeitvariablen. Verwende dies für OPENAI_*- und CODEX_*-Einstellungen. Wenn die Codex-Autoerkennung Hilfe braucht, füge das Installationsverzeichnis dem gemeinsamen PATH hinzu statt diesem Anbieterabschnitt."
-      }
-    },
-    "codexSkills": {
-      "modal": {
-        "titleEdit": "Codex-Fähigkeit bearbeiten",
-        "titleAdd": "Codex-Fähigkeit hinzufügen",
-        "directory": "Verzeichnis",
-        "directoryDesc": "Speicherort der Fähigkeit",
-        "skillName": "Name der Fähigkeit",
-        "skillNameDesc": "Der Name nach $ (z. B. \"analyze\" für $analyze)",
-        "description": "Beschreibung",
-        "descriptionDesc": "Optionale Beschreibung im Dropdown",
-        "instructions": "Anweisungen",
-        "instructionsDesc": "Anweisungen der Fähigkeit (SKILL.md-Inhalt)",
-        "instructionsPlaceholder": "Analyze the code for..."
-      },
-      "instructionsRequired": "Anweisungen sind erforderlich",
-      "saveFailed": "Codex-Fähigkeit konnte nicht gespeichert werden",
-      "header": "Codex-Fähigkeiten",
-      "noSkills": "Keine Codex-Fähigkeiten im Vault. Klicke auf +, um eine zu erstellen.",
-      "skillBadge": "Fähigkeit",
-      "deleted": "Codex-Fähigkeit \"{name}\" gelöscht",
-      "deleteFailed": "Codex-Fähigkeit konnte nicht gelöscht werden",
-      "created": "Codex-Fähigkeit \"{name}\" erstellt",
-      "updated": "Codex-Fähigkeit \"{name}\" aktualisiert"
-    },
-    "codexSubagents": {
-      "modal": {
-        "titleEdit": "Codex-Sub-Agent bearbeiten",
-        "titleAdd": "Codex-Sub-Agent hinzufügen",
-        "nameDesc": "Agentenname, den Codex beim Starten verwendet (Kleinbuchstaben, Bindestriche, Unterstriche)",
-        "descriptionDesc": "Wann Codex diesen Agenten verwenden soll",
-        "modelDesc": "Modellüberschreibung (leer lassen zum Vererben)",
-        "namePlaceholder": "code_reviewer"
-      },
-      "reasoningEffort": {
-        "name": "Reasoning-Aufwand",
-        "desc": "Reasoning-Aufwandsstufe des Modells",
-        "inherit": "Vererben",
-        "low": "Niedrig",
-        "medium": "Mittel",
-        "high": "Hoch",
-        "xhigh": "Sehr hoch"
-      },
-      "sandboxMode": {
-        "name": "Sandbox-Modus",
-        "desc": "Sandbox-Beschränkung für diesen Agenten",
-        "inherit": "Vererben",
-        "readOnly": "Nur lesen",
-        "dangerFullAccess": "Vollzugriff",
-        "workspaceWrite": "Workspace schreiben"
-      },
-      "nicknameCandidates": {
-        "name": "Nickname-Kandidaten",
-        "desc": "Kommagetrennte Anzeige-Nicknames (z. B. atlas, delta, echo)"
-      },
-      "developerInstructions": {
-        "name": "Entwickleranweisungen",
-        "desc": "Kernanweisungen, die das Verhalten des Agenten definieren",
-        "placeholder": "Review code like an owner.\nPrioritize correctness, security, and missing test coverage.",
-        "required": "Entwickleranweisungen sind erforderlich"
-      },
-      "validation": {
-        "nameRequired": "Sub-Agent-Name ist erforderlich",
-        "nameTooLong": "Sub-Agent-Name darf höchstens {count} Zeichen lang sein",
-        "nameInvalid": "Sub-Agent-Name darf nur Kleinbuchstaben, Zahlen, Bindestriche und Unterstriche enthalten",
-        "nicknameInvalid": "Nickname-Kandidaten dürfen nur ASCII-Buchstaben, Zahlen, Leerzeichen, Bindestriche und Unterstriche enthalten",
-        "nicknameDuplicate": "Nickname-Kandidaten müssen eindeutig sein"
-      },
-      "header": "Codex-Sub-Agenten",
-      "noAgents": "Keine Codex-Sub-Agenten im Vault. Klicke auf +, um einen zu erstellen."
     }
   }
 }

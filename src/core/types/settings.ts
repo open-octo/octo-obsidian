@@ -78,9 +78,6 @@ export type ProviderConfigMap = Partial<Record<string, Record<string, unknown>>>
  * narrower types.
  */
 export interface ClaudianSettings {
-  // User preferences
-  userName: string;
-
   // Security
   permissionMode: PermissionMode;
 

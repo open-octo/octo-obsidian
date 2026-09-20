@@ -220,7 +220,7 @@ describe('ClaudianPlugin', () => {
       mockApp.vault.adapter.read.mockImplementation(async (path: string) => {
         if (path === '.octo-agent/settings.json') {
           return JSON.stringify({
-            userName: 'TestUser',
+            mediaFolder: 'Attachments',
           });
         }
         return '';
@@ -228,7 +228,7 @@ describe('ClaudianPlugin', () => {
 
       await plugin.loadSettings();
 
-      expect(plugin.settings.userName).toBe('TestUser');
+      expect(plugin.settings.mediaFolder).toBe('Attachments');
       expect(plugin.settings.hiddenProviderCommands).toEqual(DEFAULT_SETTINGS.hiddenProviderCommands);
     });
 

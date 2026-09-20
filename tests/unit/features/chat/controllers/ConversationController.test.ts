@@ -56,7 +56,6 @@ function createMockDeps(overrides: Partial<ConversationControllerDeps> = {}): Co
         setSessionId: jest.fn(),
       },
       settings: {
-        userName: '',
         permissionMode: 'yolo',
       },
     } as any,
@@ -1245,28 +1244,29 @@ describe('ConversationController', () => {
   });
 
   describe('Greeting Time Branches', () => {
-    it.each([
-      { name: 'morning (5-12)', hour: 9, day: 1, patterns: ['morning', 'Coffee'] },
-      { name: 'afternoon (12-18)', hour: 14, day: 2, patterns: ['afternoon'] },
-      { name: 'evening (18-22)', hour: 20, day: 3, patterns: ['evening', 'Evening', 'your day'] },
-      { name: 'night owl (22+)', hour: 23, day: 4, patterns: ['night owl', 'Evening'] },
-      { name: 'early morning night owl (0-4)', hour: 2, day: 0, patterns: ['night owl', 'Evening'] },
-    ])('should include $name greetings', ({ hour, day, patterns }) => {
-      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(hour);
-      jest.spyOn(Date.prototype, 'getDay').mockReturnValue(day);
-
-      const greetings = new Set<string>();
-      for (let i = 0; i < 50; i++) {
-        jest.spyOn(Math, 'random').mockReturnValue(i / 50);
-        greetings.add(controller.getGreeting());
-      }
-
-      const hasTimeBased = [...greetings].some(g =>
-        patterns.some(p => g.includes(p))
-      );
-      expect(hasTimeBased).toBe(true);
-
+    afterEach(() => {
       jest.restoreAllMocks();
+    });
+
+    it.each([
+      { name: 'morning', hour: 9, expected: 'Good morning' },
+      { name: 'morning boundary (05:00)', hour: 5, expected: 'Good morning' },
+      { name: 'afternoon', hour: 14, expected: 'Good afternoon' },
+      { name: 'afternoon boundary (12:00)', hour: 12, expected: 'Good afternoon' },
+      { name: 'evening', hour: 20, expected: 'Good evening' },
+      { name: 'evening boundary (18:00)', hour: 18, expected: 'Good evening' },
+      { name: 'late night (22:00)', hour: 22, expected: 'Hello, night owl' },
+      { name: 'small hours (02:00)', hour: 2, expected: 'Hello, night owl' },
+    ])('returns the $name greeting', ({ hour, expected }) => {
+      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(hour);
+
+      expect(controller.getGreeting()).toBe(expected);
+    });
+
+    it('is deterministic for a given hour', () => {
+      jest.spyOn(Date.prototype, 'getHours').mockReturnValue(9);
+
+      expect(controller.getGreeting()).toBe(controller.getGreeting());
     });
   });
 });
