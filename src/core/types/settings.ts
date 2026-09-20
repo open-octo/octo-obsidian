@@ -19,7 +19,6 @@ export interface EnvSnippet {
   name: string;
   description: string;
   envVars: string;
-  scope?: EnvironmentScope;
   contextLimits?: Record<string, number>;  // Optional: context limits for custom models
   modelAliases?: Record<string, string>;   // Optional: display aliases for custom models
 }
@@ -62,19 +61,8 @@ export const CHAT_VIEW_PLACEMENTS = [
 /** Workspace location used when opening the Claudian chat view. */
 export type ChatViewPlacement = typeof CHAT_VIEW_PLACEMENTS[number];
 
-/** Result from instruction refinement agent query. */
-export interface InstructionRefineResult {
-  success: boolean;
-  refinedInstruction?: string;  // The refined instruction text
-  clarification?: string;       // Agent's clarifying question (if any)
-  error?: string;               // Error message (if failed)
-}
-
 /** Permission mode for tool execution. */
 export type PermissionMode = 'yolo' | 'plan' | 'normal';
-
-/** Scope for environment variable storage and snippets. */
-export type EnvironmentScope = 'shared' | `provider:${string}`;
 
 /** Opaque device-keyed CLI paths for per-device configuration. */
 export type HostnameCliPaths = Record<string, string>;
@@ -90,9 +78,6 @@ export type ProviderConfigMap = Partial<Record<string, Record<string, unknown>>>
  * narrower types.
  */
 export interface ClaudianSettings {
-  // User preferences
-  userName: string;
-
   // Security
   permissionMode: PermissionMode;
 
@@ -105,11 +90,9 @@ export interface ClaudianSettings {
   // Content settings
   excludedTags: string[];
   mediaFolder: string;
-  systemPrompt: string;
   persistentExternalContextPaths: string[];
 
   // Environment
-  sharedEnvironmentVariables: string;
   envSnippets: EnvSnippet[];
   customContextLimits: Record<string, number>;
   customModelAliases: Record<string, string>;

@@ -1,12 +1,10 @@
 import type { ProviderRegistration } from '../../core/providers/types';
 import { OctoAgentInlineEditService } from './auxiliary/OctoAgentInlineEditService';
-import { OctoAgentInstructionRefineService } from './auxiliary/OctoAgentInstructionRefineService';
 import { OctoAgentTaskResultInterpreter } from './auxiliary/OctoAgentTaskResultInterpreter';
 import { OCTO_AGENT_PROVIDER_CAPABILITIES } from './capabilities';
 import { octoAgentSettingsReconciler } from './env/OctoAgentSettingsReconciler';
 import { OctoAgentConversationHistoryService } from './history/OctoAgentConversationHistoryService';
 import { OctoAgentChatRuntime } from './runtime/OctoAgentChatRuntime';
-import { getOctoAgentProviderSettings } from './settings';
 import { octoAgentChatUIConfig } from './ui/OctoAgentChatUIConfig';
 
 export const octoAgentProviderRegistration: ProviderRegistration = {
@@ -14,14 +12,12 @@ export const octoAgentProviderRegistration: ProviderRegistration = {
   capabilities: OCTO_AGENT_PROVIDER_CAPABILITIES,
   chatUIConfig: octoAgentChatUIConfig,
   createInlineEditService: (plugin) => new OctoAgentInlineEditService(plugin),
-  createInstructionRefineService: (plugin) => new OctoAgentInstructionRefineService(plugin),
   createRuntime: ({ plugin }) => new OctoAgentChatRuntime(plugin),
   displayName: 'Octo Agent',
-  environmentKeyPatterns: [/^OCTO_/i],
   historyService: new OctoAgentConversationHistoryService(),
-  isEnabled: (settings) => {
-    return getOctoAgentProviderSettings(settings).enabled;
-  },
+  // The plugin registers exactly one provider; Obsidian's own plugin toggle is
+  // the enable/disable control, so there is no second in-plugin switch.
+  isEnabled: () => true,
   settingsReconciler: octoAgentSettingsReconciler,
   taskResultInterpreter: new OctoAgentTaskResultInterpreter(),
 };

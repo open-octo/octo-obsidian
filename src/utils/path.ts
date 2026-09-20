@@ -340,3 +340,40 @@ export function normalizePathForVault(
 
   return normalizedRaw.replace(/\\/g, '/');
 }
+
+/**
+ * Resolves a vault-relative note path against the vault root.
+ *
+ * Octo sessions never run with the vault as their working directory — a
+ * project's cwd is octo's own generated workspace, and the vault is mounted as
+ * a source folder the model is told to "address by absolute path". A relative
+ * path would leave the model searching the filesystem for it.
+ *
+ * Returns the input untouched when the vault root is unknown: a path the model
+ * has to hunt for beats a confidently wrong one.
+ */
+export function toAbsoluteVaultPath(
+  vaultPath: string | null | undefined,
+  notePath: string,
+): string {
+  if (!vaultPath || path.isAbsolute(notePath)) {
+    return notePath;
+  }
+  return path.join(vaultPath, notePath);
+}
+
+/**
+ * Compares two directory paths for identity, ignoring a trailing separator and
+ * (on case-insensitive platforms) letter case. Deliberately textual: the octo
+ * server owns the authoritative normalization, and the plugin only needs to
+ * recognize the directory it passed in coming back.
+ */
+export function isSameDirectory(a: string, b: string): boolean {
+  return normalizePathForComparison(a) === normalizePathForComparison(b);
+}
+
+/** Names the octo project for a vault after the vault folder, as octo's own CLI does. */
+export function vaultProjectName(vaultPath: string): string {
+  const base = path.basename(vaultPath.replace(/[/\\]+$/, ''));
+  return base || vaultPath;
+}

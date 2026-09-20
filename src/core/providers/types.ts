@@ -8,7 +8,6 @@ import type { VaultFileAdapter } from '../storage/VaultFileAdapter';
 import type {
   AgentDefinition,
   Conversation,
-  InstructionRefineResult,
   ManagedMcpServer,
   PluginInfo,
   SessionMetadata,
@@ -30,7 +29,6 @@ export interface ProviderCapabilities {
   supportsFork: boolean;
   supportsProviderCommands: boolean;
   supportsImageAttachments: boolean;
-  supportsInstructionMode: boolean;
   supportsMcpTools: boolean;
   supportsTurnSteer?: boolean;
   reasoningControl: 'effort' | 'token-budget' | 'none';
@@ -50,18 +48,16 @@ export interface CreateChatRuntimeOptions {
  * This is intentionally limited to chat-facing services.
  * Shared bootstrap (defaults, storage) is in `src/core/bootstrap/`.
  * Provider-owned workspace services (CLI resolution, commands, agents,
- * MCP, settings tabs) live behind `src/providers/<id>/app/`.
+ * MCP) live behind `src/providers/<id>/app/`.
  */
 export interface ProviderRegistration {
   displayName: string;
   blankTabOrder: number;
   isEnabled: (settings: Record<string, unknown>) => boolean;
   capabilities: ProviderCapabilities;
-  environmentKeyPatterns?: RegExp[];
   chatUIConfig: ProviderChatUIConfig;
   settingsReconciler: ProviderSettingsReconciler;
   createRuntime: (options: Omit<CreateChatRuntimeOptions, 'providerId'>) => ChatRuntime;
-  createInstructionRefineService: (plugin: ClaudianPlugin) => InstructionRefineService;
   createInlineEditService: (plugin: ClaudianPlugin) => InlineEditService;
   historyService: ProviderConversationHistoryService;
   taskResultInterpreter: ProviderTaskResultInterpreter;
@@ -368,23 +364,7 @@ export interface ProviderWorkspaceServices {
   runtimeCommandLoader?: ProviderRuntimeCommandLoader | null;
   tabWarmupPolicy?: ProviderTabWarmupPolicy | null;
   mcpServerManager?: McpServerManager | null;
-  settingsTabRenderer?: ProviderSettingsTabRenderer | null;
   refreshAgentMentions?(): Promise<void>;
-}
-
-export interface ProviderSettingsTabRendererContext {
-  plugin: ClaudianPlugin;
-  renderHiddenProviderCommandSetting(
-    container: HTMLElement,
-    providerId: ProviderId,
-    copy: { name: string; desc: string; placeholder: string },
-  ): void;
-  refreshModelSelectors(): void;
-  renderCustomContextLimits(container: HTMLElement, providerId?: ProviderId): void;
-}
-
-export interface ProviderSettingsTabRenderer {
-  render(container: HTMLElement, context: ProviderSettingsTabRendererContext): void;
 }
 
 export interface ProviderWorkspaceInitContext {
@@ -470,25 +450,6 @@ export interface ProviderSubagentLifecycleAdapter {
 // ---------------------------------------------------------------------------
 // Auxiliary service contracts
 // ---------------------------------------------------------------------------
-
-// -- Instruction refinement --
-
-export type RefineProgressCallback = (update: InstructionRefineResult) => void;
-
-export interface InstructionRefineService {
-  setModelOverride?(model?: string): void;
-  resetConversation(): void;
-  refineInstruction(
-    rawInstruction: string,
-    existingInstructions: string,
-    onProgress?: RefineProgressCallback
-  ): Promise<InstructionRefineResult>;
-  continueConversation(
-    message: string,
-    onProgress?: RefineProgressCallback
-  ): Promise<InstructionRefineResult>;
-  cancel(): void;
-}
 
 // -- Inline edit --
 

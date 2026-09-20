@@ -3,6 +3,7 @@ import '@/providers';
 import { ProviderRegistry } from '@/core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from '@/core/providers/ProviderSettingsCoordinator';
 import type { Conversation } from '@/core/types';
+import { octoAgentSettingsReconciler } from '@/providers/octo-agent/env/OctoAgentSettingsReconciler';
 
 describe('ProviderSettingsCoordinator', () => {
   describe('reconcileAllProviders', () => {
@@ -48,19 +49,13 @@ describe('ProviderSettingsCoordinator', () => {
       expect(typeof result).toBe('boolean');
     });
 
-    it('migrates the active octo-agent model in place when the cached model list no longer offers it', () => {
-      const settings: Record<string, unknown> = {
-        model: 'octo-agent/gpt-legacy',
-        providerConfigs: {
-          'octo-agent': { enabled: true },
-        },
-        octoAgentModels: [
-          { label: 'Kimi For Coding', value: 'octo-agent/kimi-for-coding' },
-        ],
-      };
+    it('keeps any octo-agent model the server may have resolved', () => {
+      // The plugin no longer curates a model list, so an unfamiliar
+      // octo-agent/* value must survive rather than snap back to a default.
+      const settings: Record<string, unknown> = { model: 'octo-agent/k3' };
 
-      expect(ProviderSettingsCoordinator.normalizeAllModelVariants(settings)).toBe(true);
-      expect(settings.model).toBe('octo-agent/kimi-for-coding');
+      expect(ProviderSettingsCoordinator.normalizeAllModelVariants(settings)).toBe(false);
+      expect(settings.model).toBe('octo-agent/k3');
     });
   });
 
@@ -188,28 +183,30 @@ describe('ProviderSettingsCoordinator', () => {
   });
 
   describe('provider-scoped reconciliation', () => {
-    it('invalidates a bound conversation session when octo-agent is disabled', () => {
+    it('leaves bound conversation sessions alone — they are server-resident', () => {
       const octoConv = {
         providerId: 'octo-agent',
         sessionId: 'session-1',
+        providerState: { sessionId: 'session-1' },
         messages: [],
       } as unknown as Conversation;
 
       const settings: Record<string, unknown> = {
-        providerConfigs: {
-          'octo-agent': { enabled: false },
-        },
         model: 'octo-agent/kimi-for-coding',
         effortLevel: 'high',
         serviceTier: 'default',
         thinkingBudget: 'off',
       };
 
+      const reconcileSpy = jest.spyOn(octoAgentSettingsReconciler, 'reconcileModelWithEnvironment');
       const result = ProviderSettingsCoordinator.reconcileAllProviders(settings, [octoConv]);
 
-      expect(result.changed).toBe(true);
-      expect(octoConv.sessionId).toBeNull();
-      expect(octoConv.providerState).toBeUndefined();
+      // The outcome is a no-op, so assert the conversation still reached the
+      // provider's reconciler — otherwise a broken dispatch would pass too.
+      expect(reconcileSpy).toHaveBeenCalledWith(settings, [octoConv]);
+      expect(result).toEqual({ changed: false, invalidatedConversations: [] });
+      expect(octoConv.sessionId).toBe('session-1');
+      reconcileSpy.mockRestore();
     });
   });
 });

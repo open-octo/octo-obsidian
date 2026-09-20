@@ -1,32 +1,15 @@
 import type { ProviderSettingsReconciler } from '../../../core/providers/types';
-import type { Conversation } from '../../../core/types';
-import { getOctoAgentProviderSettings } from '../settings';
 import { octoAgentChatUIConfig } from '../ui/OctoAgentChatUIConfig';
 
 export const octoAgentSettingsReconciler: ProviderSettingsReconciler = {
+  // Octo Agent sessions are server-resident and survive any settings change the
+  // plugin can make, so neither hook ever invalidates a conversation.
   handleEnvironmentChange(): boolean {
     return false;
   },
 
-  reconcileModelWithEnvironment(
-    settings: Record<string, unknown>,
-    conversations: Conversation[],
-  ): { changed: boolean; invalidatedConversations: Conversation[] } {
-    const octoSettings = getOctoAgentProviderSettings(settings);
-    const invalidatedConversations: Conversation[] = [];
-
-    if (!octoSettings.enabled) {
-      for (const conversation of conversations) {
-        if (conversation.providerId === 'octo-agent' && conversation.sessionId) {
-          conversation.sessionId = null;
-          conversation.providerState = undefined;
-          invalidatedConversations.push(conversation);
-        }
-      }
-      return { changed: invalidatedConversations.length > 0, invalidatedConversations };
-    }
-
-    return { changed: false, invalidatedConversations };
+  reconcileModelWithEnvironment(): { changed: boolean; invalidatedConversations: [] } {
+    return { changed: false, invalidatedConversations: [] };
   },
 
   normalizeModelVariantSettings(settings: Record<string, unknown>): boolean {

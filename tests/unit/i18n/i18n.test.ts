@@ -15,8 +15,8 @@ describe('i18n', () => {
 
   describe('t (translate)', () => {
     it('returns translated string for valid key', () => {
-      const result = t('common.save' as TranslationKey);
-      expect(result).toBe('Save');
+      const result = t('common.cancel' as TranslationKey);
+      expect(result).toBe('Cancel');
     });
 
     it('returns string with parameter interpolation', () => {
@@ -43,13 +43,13 @@ describe('i18n', () => {
     });
 
     it('handles nested keys correctly', () => {
-      const result = t('settings.userName.name' as TranslationKey);
-      expect(result).toBe('What should Octo call you?');
+      const result = t('settings.mediaFolder.name' as TranslationKey);
+      expect(result).toBe('Media folder');
     });
 
     it('handles deeply nested keys', () => {
-      const result = t('settings.userName.desc' as TranslationKey);
-      expect(result).toBe('Your name for personalized greetings (leave empty for generic greetings)');
+      const result = t('chat.greeting.morning' as TranslationKey);
+      expect(result).toBe('Good morning');
     });
 
     it('returns key when value is not a string', () => {

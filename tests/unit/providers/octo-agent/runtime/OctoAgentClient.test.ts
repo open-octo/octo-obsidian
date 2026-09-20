@@ -33,6 +33,150 @@ describe('OctoAgentClient', () => {
     });
   });
 
+  describe('createSession', () => {
+    it('sends an empty model so the server applies its own default', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '', model: 'k3' } }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      await client.createSession({ source: 'claudian' });
+
+      const body = JSON.parse(requestUrlMock.mock.calls[0][0].body);
+      expect(body.model).toBe('');
+    });
+
+    it('reports the model the server resolved', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '', model: 'k3' } }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      const session = await client.createSession();
+
+      expect(session.model).toBe('k3');
+    });
+
+    it('leaves the model undefined when the server omits it', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '' } }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      const session = await client.createSession();
+
+      expect(session.model).toBeUndefined();
+    });
+  });
+
+  describe('createSession defaults', () => {
+    beforeEach(() => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '' } }),
+      });
+    });
+
+    it("defaults agent_profile to 'default', not a sub-agent profile", async () => {
+      // 'general' is octo's delegated sub-agent profile ("return a
+      // self-contained result the caller can act on"); a chat session is not
+      // that, it is the default profile.
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      await client.createSession();
+
+      expect(JSON.parse(requestUrlMock.mock.calls[0][0].body).agent_profile).toBe('default');
+    });
+
+    it('passes an explicit agent profile through', async () => {
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      await client.createSession({ agentProfile: 'code-review' });
+
+      expect(JSON.parse(requestUrlMock.mock.calls[0][0].body).agent_profile).toBe('code-review');
+    });
+  });
+
+  describe('session groups', () => {
+    it('files a new session under a project when given one', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '' } }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      await client.createSession({ groupId: 'g-123', source: 'claudian' });
+
+      const body = JSON.parse(requestUrlMock.mock.calls[0][0].body);
+      expect(body.group_id).toBe('g-123');
+    });
+
+    it('omits group_id entirely when there is no project', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({ session: { id: 's1', name: '' } }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      await client.createSession({ source: 'claudian' });
+
+      const body = JSON.parse(requestUrlMock.mock.calls[0][0].body);
+      expect('group_id' in body).toBe(false);
+    });
+
+    it('reads the mounted source folders of each project', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({
+          groups: [
+            {
+              id: 'g-1',
+              name: 'vault',
+              working_dir: '/Users/me/Octo/vault',
+              source_dirs: ['/Users/me/vault'],
+            },
+            { id: 'g-2', name: 'no-dirs' },
+          ],
+        }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      const groups = await client.listSessionGroups();
+
+      expect(groups[0]).toEqual({
+        id: 'g-1',
+        name: 'vault',
+        sourceDirs: ['/Users/me/vault'],
+        workingDir: '/Users/me/Octo/vault',
+      });
+      // A group with no mounts is still a group; it just matches no vault.
+      expect(groups[1].sourceDirs).toEqual([]);
+    });
+
+    it('creates a project that mounts the given folders', async () => {
+      requestUrlMock.mockResolvedValue({
+        status: 200,
+        text: JSON.stringify({
+          group: { id: 'g-9', name: 'vault', source_dirs: ['/Users/me/vault'] },
+        }),
+      });
+      const client = new OctoAgentClient({ baseUrl: 'http://127.0.0.1:8088' });
+
+      const group = await client.createSessionGroup('vault', ['/Users/me/vault']);
+
+      const call = requestUrlMock.mock.calls[0][0];
+      expect(call.method).toBe('POST');
+      expect(JSON.parse(call.body)).toEqual({
+        name: 'vault',
+        source_dirs: ['/Users/me/vault'],
+      });
+      expect(group.id).toBe('g-9');
+    });
+  });
+
   describe('parseEvent', () => {
     let client: OctoAgentClient;
 

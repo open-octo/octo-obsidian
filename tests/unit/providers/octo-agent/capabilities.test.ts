@@ -7,7 +7,6 @@ describe('OCTO_AGENT_PROVIDER_CAPABILITIES', () => {
       reasoningControl: 'effort',
       supportsFork: true,
       supportsImageAttachments: true,
-      supportsInstructionMode: true,
       supportsMcpTools: false,
       supportsPersistentRuntime: true,
       supportsPlanMode: false,

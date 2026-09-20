@@ -57,7 +57,6 @@ const mockGetCapabilities = jest.fn().mockReturnValue({
   supportsFork: true,
   supportsProviderCommands: true,
   supportsImageAttachments: true,
-  supportsInstructionMode: true,
   supportsMcpTools: true,
   reasoningControl: 'effort',
 });

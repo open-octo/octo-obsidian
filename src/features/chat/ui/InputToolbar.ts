@@ -16,7 +16,7 @@ import type {
   ManagedMcpServer,
   UsageInfo,
 } from '../../../core/types';
-import { appendCheckIcon, appendMcpIcon, createProviderIconSvg } from '../../../shared/icons';
+import { appendCheckIcon, appendMcpIcon } from '../../../shared/icons';
 import { filterValidPaths, findConflictingPath, isDuplicatePath, isValidDirectoryPath, validateDirectoryPath } from '../../../utils/externalContext';
 import { expandHomePath, normalizePathForFilesystem } from '../../../utils/path';
 
@@ -47,7 +47,6 @@ export interface ToolbarSettings {
 }
 
 export interface ToolbarCallbacks {
-  onModelChange: (model: string) => Promise<void>;
   onModeChange: (mode: string) => Promise<void>;
   onThinkingBudgetChange: (budget: string) => Promise<void>;
   onEffortLevelChange: (effort: string) => Promise<void>;
@@ -57,97 +56,6 @@ export interface ToolbarCallbacks {
   getEnvironmentVariables?: () => string;
   getUIConfig: () => ProviderChatUIConfig;
   getCapabilities: () => ProviderCapabilities;
-}
-
-export class ModelSelector {
-  private container: HTMLElement;
-  private buttonEl: HTMLElement | null = null;
-  private dropdownEl: HTMLElement | null = null;
-  private callbacks: ToolbarCallbacks;
-  constructor(parentEl: HTMLElement, callbacks: ToolbarCallbacks) {
-    this.callbacks = callbacks;
-    this.container = parentEl.createDiv({ cls: 'claudian-model-selector' });
-    this.render();
-  }
-
-  private getAvailableModels() {
-    const settings = this.callbacks.getSettings();
-    const uiConfig = this.callbacks.getUIConfig();
-    return uiConfig.getModelOptions({
-      ...settings,
-      environmentVariables: this.callbacks.getEnvironmentVariables?.(),
-    });
-  }
-
-  private render() {
-    this.container.empty();
-
-    this.buttonEl = this.container.createDiv({ cls: 'claudian-model-btn' });
-    this.updateDisplay();
-
-    this.dropdownEl = this.container.createDiv({ cls: 'claudian-model-dropdown' });
-    this.renderOptions();
-  }
-
-  updateDisplay() {
-    if (!this.buttonEl) return;
-    const currentModel = this.callbacks.getSettings().model;
-    const models = this.getAvailableModels();
-    const modelInfo = models.find(m => m.value === currentModel);
-
-    const displayModel = modelInfo || models[0];
-
-    this.buttonEl.empty();
-
-    const labelEl = this.buttonEl.createSpan({ cls: 'claudian-model-label' });
-    labelEl.setText(displayModel?.label || 'Unknown');
-  }
-
-  renderOptions() {
-    if (!this.dropdownEl) return;
-    this.dropdownEl.empty();
-
-    const currentModel = this.callbacks.getSettings().model;
-    const models = this.getAvailableModels();
-    const reversed = [...models].reverse();
-
-    let lastGroup: string | undefined;
-    for (const model of reversed) {
-      if (model.group && model.group !== lastGroup) {
-        const separator = this.dropdownEl.createDiv({ cls: 'claudian-model-group' });
-        separator.setText(model.group);
-        lastGroup = model.group;
-      }
-
-      const option = this.dropdownEl.createDiv({ cls: 'claudian-model-option' });
-      if (model.value === currentModel) {
-        option.addClass('selected');
-      }
-
-      const icon = model.providerIcon ?? this.callbacks.getUIConfig().getProviderIcon?.();
-      if (icon) {
-        option.appendChild(createProviderIconSvg(icon, {
-          className: 'claudian-model-provider-icon',
-          height: 12,
-          ownerDocument: option.ownerDocument,
-          width: 12,
-        }));
-      }
-      option.createSpan({ text: model.label });
-      if (model.description) {
-        option.setAttribute('title', model.description);
-      }
-
-      option.addEventListener('click', (e) => {
-        e.stopPropagation();
-        runToolbarAction(async () => {
-          await this.callbacks.onModelChange(model.value);
-          this.updateDisplay();
-          this.renderOptions();
-        }, 'Failed to change model');
-      });
-    }
-  }
 }
 
 export class ModeSelector {
@@ -1213,7 +1121,6 @@ export function createInputToolbar(
   parentEl: HTMLElement,
   callbacks: ToolbarCallbacks
 ): {
-  modelSelector: ModelSelector;
   modeSelector: ModeSelector;
   thinkingBudgetSelector: ThinkingBudgetSelector;
   contextUsageMeter: ContextUsageMeter | null;
@@ -1222,7 +1129,6 @@ export function createInputToolbar(
   permissionToggle: PermissionToggle;
   serviceTierToggle: ServiceTierToggle;
 } {
-  const modelSelector = new ModelSelector(parentEl, callbacks);
   const thinkingBudgetSelector = new ThinkingBudgetSelector(parentEl, callbacks);
   const serviceTierToggle = new ServiceTierToggle(parentEl, callbacks);
   const contextUsageMeter = new ContextUsageMeter(parentEl);
@@ -1232,7 +1138,6 @@ export function createInputToolbar(
   const modeSelector = new ModeSelector(parentEl, callbacks);
 
   return {
-    modelSelector,
     modeSelector,
     thinkingBudgetSelector,
     serviceTierToggle,

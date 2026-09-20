@@ -6,7 +6,6 @@ import type {
   ProviderCliResolver,
   ProviderId,
   ProviderRuntimeCommandLoader,
-  ProviderSettingsTabRenderer,
   ProviderTabWarmupPolicy,
   ProviderWorkspaceRegistration,
   ProviderWorkspaceServices,
@@ -111,9 +110,5 @@ export class ProviderWorkspaceRegistry {
 
   static getMcpServerManager(providerId: ProviderId) {
     return this.getServices(providerId)?.mcpServerManager ?? null;
-  }
-
-  static getSettingsTabRenderer(providerId: ProviderId): ProviderSettingsTabRenderer | null {
-    return this.getServices(providerId)?.settingsTabRenderer ?? null;
   }
 }

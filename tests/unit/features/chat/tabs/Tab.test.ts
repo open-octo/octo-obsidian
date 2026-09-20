@@ -84,14 +84,6 @@ const createMockSlashCommandDropdown = () => ({
   destroy: jest.fn(),
 });
 
-const createMockInstructionModeManager = () => ({
-  handleTriggerKey: jest.fn().mockReturnValue(false),
-  handleKeydown: jest.fn().mockReturnValue(false),
-  handleInputChange: jest.fn(),
-  isActive: jest.fn().mockReturnValue(false),
-  destroy: jest.fn(),
-});
-
 const createMockBangBashModeManager = () => ({
   handleTriggerKey: jest.fn().mockReturnValue(false),
   handleKeydown: jest.fn().mockReturnValue(false),
@@ -105,12 +97,6 @@ const createMockStatusPanel = () => ({
   remount: jest.fn(),
   updateTodos: jest.fn(),
   destroy: jest.fn(),
-});
-
-const createMockModelSelector = () => ({
-  updateDisplay: jest.fn(),
-  renderOptions: jest.fn(),
-  setReady: jest.fn(),
 });
 
 const createMockModeSelector = () => ({
@@ -137,7 +123,6 @@ const createMockOctoAgentService = (overrides?: {
     supportsFork: true,
     supportsProviderCommands: false,
     supportsImageAttachments: true,
-    supportsInstructionMode: true,
     supportsMcpTools: false,
     reasoningControl: 'effort',
   }),
@@ -184,10 +169,8 @@ const createMockServiceTierToggle = () => ({
 let mockFileContextManager: ReturnType<typeof createMockFileContextManager>;
 let mockImageContextManager: ReturnType<typeof createMockImageContextManager>;
 let mockSlashCommandDropdown: ReturnType<typeof createMockSlashCommandDropdown>;
-let mockInstructionModeManager: ReturnType<typeof createMockInstructionModeManager>;
 let mockBangBashModeManager: ReturnType<typeof createMockBangBashModeManager>;
 let mockStatusPanel: ReturnType<typeof createMockStatusPanel>;
-let mockModelSelector: ReturnType<typeof createMockModelSelector>;
 let mockModeSelector: ReturnType<typeof createMockModeSelector>;
 let mockThinkingBudgetSelector: ReturnType<typeof createMockThinkingBudgetSelector>;
 let mockContextUsageMeter: ReturnType<typeof createMockContextUsageMeter>;
@@ -229,7 +212,6 @@ const createMockCanvasSelectionController = () => ({
 const createMockInputController = () => ({
   sendMessage: jest.fn(),
   cancelStreaming: jest.fn(),
-  handleInstructionSubmit: jest.fn(),
   updateQueueIndicator: jest.fn(),
   handleResumeKeydown: jest.fn().mockReturnValue(false),
   isResumeDropdownVisible: jest.fn().mockReturnValue(false),
@@ -251,13 +233,6 @@ jest.mock('@/features/chat/ui/ImageContext', () => ({
   }),
 }));
 
-jest.mock('@/features/chat/ui/InstructionModeManager', () => ({
-  InstructionModeManager: jest.fn().mockImplementation(() => {
-    mockInstructionModeManager = createMockInstructionModeManager();
-    return mockInstructionModeManager;
-  }),
-}));
-
 jest.mock('@/features/chat/ui/StatusPanel', () => ({
   StatusPanel: jest.fn().mockImplementation(() => {
     mockStatusPanel = createMockStatusPanel();
@@ -267,7 +242,6 @@ jest.mock('@/features/chat/ui/StatusPanel', () => ({
 
 jest.mock('@/features/chat/ui/InputToolbar', () => ({
   createInputToolbar: jest.fn().mockImplementation(() => {
-    mockModelSelector = createMockModelSelector();
     mockModeSelector = createMockModeSelector();
     mockThinkingBudgetSelector = createMockThinkingBudgetSelector();
     mockContextUsageMeter = createMockContextUsageMeter();
@@ -276,7 +250,6 @@ jest.mock('@/features/chat/ui/InputToolbar', () => ({
     mockPermissionToggle = createMockPermissionToggle();
     mockServiceTierToggle = createMockServiceTierToggle();
     return {
-      modelSelector: mockModelSelector,
       modeSelector: mockModeSelector,
       thinkingBudgetSelector: mockThinkingBudgetSelector,
       contextUsageMeter: mockContextUsageMeter,
@@ -369,13 +342,6 @@ jest.mock('@/features/chat/services/SubagentManager', () => ({
     orphanAllActive: jest.fn(),
     setCallback: jest.fn(),
     clear: jest.fn(),
-  })),
-}));
-
-jest.mock('@/providers/octo-agent/auxiliary/OctoAgentInstructionRefineService', () => ({
-  OctoAgentInstructionRefineService: jest.fn().mockImplementation(() => ({
-    cancel: jest.fn(),
-    resetConversation: jest.fn(),
   })),
 }));
 
@@ -677,7 +643,6 @@ describe('Tab - Service Initialization', () => {
     it('should initialize toolbar config for the tab provider', () => {
       const getChatUIConfigSpy = jest.spyOn(ProviderRegistry, 'getChatUIConfig');
       const getCapabilitiesSpy = jest.spyOn(ProviderRegistry, 'getCapabilities');
-      jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
       jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
       getChatUIConfigSpy.mockReturnValue({
         getModelOptions: jest.fn().mockReturnValue([]),
@@ -700,7 +665,6 @@ describe('Tab - Service Initialization', () => {
         supportsFork: false,
         supportsProviderCommands: false,
         supportsImageAttachments: true,
-        supportsInstructionMode: false,
         supportsMcpTools: false,
         reasoningControl: 'none',
       });
@@ -734,7 +698,6 @@ describe('Tab - Service Initialization', () => {
     });
 
     it('resolves the agent mention service through the provider-specific lookup', () => {
-      jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
       jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
       const agentMentionProvider = { searchAgents: jest.fn().mockReturnValue([]) };
@@ -761,7 +724,6 @@ describe('Tab - Service Initialization', () => {
     });
 
     it('resets to blank state when the new-conversation callback fires', () => {
-      jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
       jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
       const plugin = createMockPlugin();
@@ -790,7 +752,6 @@ describe('Tab - Service Initialization', () => {
     });
 
     it('cleans up the active runtime when resetting to a new blank session', () => {
-      jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
       jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
       const plugin = createMockPlugin();
@@ -989,16 +950,12 @@ describe('Tab - Destruction', () => {
 
       const destroyFileContext = jest.fn();
       const destroySlashDropdown = jest.fn();
-      const destroyInstructionMode = jest.fn();
-      const cancelInstructionRefine = jest.fn();
       const destroyTodoPanel = jest.fn();
       const destroyResumeDropdown = jest.fn();
 
       tab.controllers.inputController = { destroyResumeDropdown, dismissPendingApproval: jest.fn() } as any;
       tab.ui.fileContextManager = { destroy: destroyFileContext } as any;
       tab.ui.slashCommandDropdown = { destroy: destroySlashDropdown } as any;
-      tab.ui.instructionModeManager = { destroy: destroyInstructionMode } as any;
-      tab.services.instructionRefineService = { cancel: cancelInstructionRefine, resetConversation: jest.fn() } as any;
       tab.ui.statusPanel = { destroy: destroyTodoPanel } as any;
 
       await destroyTab(tab);
@@ -1006,8 +963,6 @@ describe('Tab - Destruction', () => {
       expect(destroyResumeDropdown).toHaveBeenCalled();
       expect(destroyFileContext).toHaveBeenCalled();
       expect(destroySlashDropdown).toHaveBeenCalled();
-      expect(destroyInstructionMode).toHaveBeenCalled();
-      expect(cancelInstructionRefine).toHaveBeenCalled();
       expect(destroyTodoPanel).toHaveBeenCalled();
     });
   });
@@ -1246,24 +1201,6 @@ describe('Tab - UI Initialization', () => {
       expect(tab.ui.slashCommandDropdown).toBeDefined();
     });
 
-    it('should create InstructionRefineService', () => {
-      const options = createMockOptions();
-      const tab = createTab(options);
-
-      initializeTabUI(tab, options.plugin);
-
-      expect(tab.services.instructionRefineService).toBeDefined();
-    });
-
-    it('should create InstructionModeManager', () => {
-      const options = createMockOptions();
-      const tab = createTab(options);
-
-      initializeTabUI(tab, options.plugin);
-
-      expect(tab.ui.instructionModeManager).toBeDefined();
-    });
-
     it('should create and mount StatusPanel', () => {
       const options = createMockOptions();
       const tab = createTab(options);
@@ -1280,7 +1217,6 @@ describe('Tab - UI Initialization', () => {
 
       initializeTabUI(tab, options.plugin);
 
-      expect(tab.ui.modelSelector).toBeDefined();
       expect(tab.ui.thinkingBudgetSelector).toBeDefined();
       expect(tab.ui.contextUsageMeter).toBeDefined();
       expect(tab.ui.externalContextSelector).toBeDefined();
@@ -1556,7 +1492,6 @@ describe('Tab - Event Handler Behavior', () => {
     Platform.isMacOS = true;
     mockFileContextManager = createMockFileContextManager();
     mockSlashCommandDropdown = createMockSlashCommandDropdown();
-    mockInstructionModeManager = createMockInstructionModeManager();
     mockBangBashModeManager = createMockBangBashModeManager();
     mockInputController = createMockInputController();
     mockSelectionController = createMockSelectionController();
@@ -1571,7 +1506,6 @@ describe('Tab - Event Handler Behavior', () => {
     const tab = createTab(options);
 
     tab.ui.bangBashModeManager = (overrides?.bangBashManager ?? mockBangBashModeManager) as any;
-    tab.ui.instructionModeManager = mockInstructionModeManager as any;
     tab.ui.slashCommandDropdown = mockSlashCommandDropdown as any;
     tab.ui.fileContextManager = mockFileContextManager as any;
     tab.controllers.inputController = mockInputController as any;
@@ -1591,7 +1525,6 @@ describe('Tab - Event Handler Behavior', () => {
       const tab = createTab(options);
 
       tab.ui.bangBashModeManager = mockBangBashModeManager as any;
-      tab.ui.instructionModeManager = mockInstructionModeManager as any;
       tab.ui.slashCommandDropdown = mockSlashCommandDropdown as any;
       tab.ui.fileContextManager = mockFileContextManager as any;
       tab.controllers.inputController = mockInputController as any;
@@ -1607,7 +1540,6 @@ describe('Tab - Event Handler Behavior', () => {
       keydownHandler(event);
 
       expect(mockBangBashModeManager.handleKeydown).toHaveBeenCalled();
-      expect(mockInstructionModeManager.handleTriggerKey).not.toHaveBeenCalled();
       expect(mockSlashCommandDropdown.handleKeydown).not.toHaveBeenCalled();
       expect(mockFileContextManager.handleMentionKeydown).not.toHaveBeenCalled();
     });
@@ -1636,15 +1568,10 @@ describe('Tab - Event Handler Behavior', () => {
         handleInputChange: jest.fn(),
         destroy: jest.fn(),
       } as any;
-
-      tab.ui.instructionModeManager = mockInstructionModeManager as any;
       tab.ui.slashCommandDropdown = mockSlashCommandDropdown as any;
       tab.ui.fileContextManager = mockFileContextManager as any;
       tab.controllers.inputController = mockInputController as any;
       tab.controllers.selectionController = mockSelectionController as any;
-
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
 
       wireTabInputEvents(tab, options.plugin);
 
@@ -1659,28 +1586,7 @@ describe('Tab - Event Handler Behavior', () => {
       expect(mockSlashCommandDropdown.setEnabled).toHaveBeenCalledWith(true);
     });
 
-    it('should handle instruction mode trigger key', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValueOnce(true);
-      const { fireKeydown } = setupKeydownTab();
-
-      fireKeydown({ key: '#', preventDefault: jest.fn() });
-
-      expect(mockInstructionModeManager.handleTriggerKey).toHaveBeenCalled();
-    });
-
-    it('should handle instruction mode keydown', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValueOnce(true);
-      const { fireKeydown } = setupKeydownTab();
-
-      fireKeydown({ key: 'Tab', preventDefault: jest.fn() });
-
-      expect(mockInstructionModeManager.handleKeydown).toHaveBeenCalled();
-    });
-
     it('should handle slash command dropdown keydown', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValueOnce(true);
       const { fireKeydown } = setupKeydownTab();
 
@@ -1690,8 +1596,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should let explicit Command+Enter send before slash dropdown handles Enter', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(true);
       mockFileContextManager.handleMentionKeydown.mockReturnValue(false);
       const { fireKeydown } = setupKeydownTab();
@@ -1714,8 +1618,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should keep plain Enter routed to visible slash dropdown before sending', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(true);
       mockFileContextManager.handleMentionKeydown.mockReturnValue(false);
       const { fireKeydown } = setupKeydownTab();
@@ -1736,8 +1638,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should handle resume dropdown keydown', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockInputController.handleResumeKeydown.mockReturnValueOnce(true);
       const { fireKeydown } = setupKeydownTab();
 
@@ -1749,8 +1649,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should handle file context mention keydown', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(false);
       mockFileContextManager.handleMentionKeydown.mockReturnValueOnce(true);
       const { fireKeydown } = setupKeydownTab();
@@ -1761,8 +1659,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should cancel streaming on Escape when streaming', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(false);
       mockFileContextManager.handleMentionKeydown.mockReturnValue(false);
       const { tab, fireKeydown } = setupKeydownTab();
@@ -1776,8 +1672,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should not cancel streaming on Escape when isComposing (IME)', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(false);
       mockFileContextManager.handleMentionKeydown.mockReturnValue(false);
       const { tab, fireKeydown } = setupKeydownTab();
@@ -1791,8 +1685,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should send message on Enter (without Shift)', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(false);
       mockFileContextManager.handleMentionKeydown.mockReturnValue(false);
       const { fireKeydown } = setupKeydownTab();
@@ -1805,8 +1697,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should not send message on Shift+Enter (newline)', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(false);
       mockFileContextManager.handleMentionKeydown.mockReturnValue(false);
       const { fireKeydown } = setupKeydownTab();
@@ -1819,8 +1709,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should require Command+Enter on macOS when the send shortcut setting is enabled', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(false);
       mockFileContextManager.handleMentionKeydown.mockReturnValue(false);
       const { options, fireKeydown } = setupKeydownTab();
@@ -1847,8 +1735,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should require Ctrl+Enter off macOS when the send shortcut setting is enabled', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(false);
       mockFileContextManager.handleMentionKeydown.mockReturnValue(false);
       const { options, fireKeydown } = setupKeydownTab();
@@ -1869,8 +1755,6 @@ describe('Tab - Event Handler Behavior', () => {
     });
 
     it('should not send message on Enter when isComposing (IME)', () => {
-      mockInstructionModeManager.handleTriggerKey.mockReturnValue(false);
-      mockInstructionModeManager.handleKeydown.mockReturnValue(false);
       mockSlashCommandDropdown.handleKeydown.mockReturnValue(false);
       mockFileContextManager.handleMentionKeydown.mockReturnValue(false);
       const { fireKeydown } = setupKeydownTab();
@@ -1889,7 +1773,6 @@ describe('Tab - Event Handler Behavior', () => {
       const tab = createTab(options);
 
       tab.ui.fileContextManager = mockFileContextManager as any;
-      tab.ui.instructionModeManager = mockInstructionModeManager as any;
       tab.controllers.inputController = mockInputController as any;
       tab.controllers.selectionController = mockSelectionController as any;
 
@@ -1900,7 +1783,6 @@ describe('Tab - Event Handler Behavior', () => {
       inputHandler();
 
       expect(mockFileContextManager.handleInputChange).toHaveBeenCalled();
-      expect(mockInstructionModeManager.handleInputChange).toHaveBeenCalled();
     });
   });
 
@@ -1910,7 +1792,6 @@ describe('Tab - Event Handler Behavior', () => {
       const tab = createTab(options);
 
       tab.ui.bangBashModeManager = mockBangBashModeManager as any;
-      tab.ui.instructionModeManager = mockInstructionModeManager as any;
       tab.ui.slashCommandDropdown = mockSlashCommandDropdown as any;
       tab.ui.fileContextManager = mockFileContextManager as any;
 
@@ -2125,40 +2006,6 @@ describe('Tab - UI Callback Wiring', () => {
       expect(mockStatusPanel.updateTodos).toHaveBeenCalledWith(todos);
     });
 
-    it('should wire instruction mode onSubmit to input controller', async () => {
-      const options = createMockOptions();
-      const tab = createTab(options);
-      const mockComponent = {} as any;
-
-      initializeTabUI(tab, options.plugin);
-      initializeTabControllers(tab, options.plugin, mockComponent, options.mcpManager);
-
-      // Get the InstructionModeManager constructor arguments
-      const { InstructionModeManager } = jest.requireMock('@/features/chat/ui/InstructionModeManager');
-      const constructorCall = InstructionModeManager.mock.calls[0];
-      const callbacks = constructorCall[1]; // 2nd argument is callbacks
-
-      // Trigger onSubmit
-      await callbacks.onSubmit('refined instruction');
-
-      expect(mockInputController.handleInstructionSubmit).toHaveBeenCalledWith('refined instruction');
-    });
-
-    it('should wire getInputWrapper to return input wrapper element', () => {
-      const options = createMockOptions();
-      const tab = createTab(options);
-
-      initializeTabUI(tab, options.plugin);
-
-      const { InstructionModeManager } = jest.requireMock('@/features/chat/ui/InstructionModeManager');
-      const constructorCall = InstructionModeManager.mock.calls[0];
-      const callbacks = constructorCall[1];
-
-      const wrapper = callbacks.getInputWrapper();
-
-      expect(wrapper).toBe(tab.dom.inputWrapper);
-    });
-
     it('should wire provider catalog config when provided in options', async () => {
       const mockEntries = [{
         id: 'cmd-review',
@@ -2334,8 +2181,6 @@ describe('Tab - Controller Configuration', () => {
       expect(config.getImageContextManager()).toBe(tab.ui.imageContextManager);
       expect(config.getMcpServerSelector()).toBe(tab.ui.mcpServerSelector);
       expect(config.getExternalContextSelector()).toBe(tab.ui.externalContextSelector);
-      expect(config.getInstructionModeManager()).toBe(tab.ui.instructionModeManager);
-      expect(config.getInstructionRefineService()).toBe(tab.services.instructionRefineService);
     });
 
   });
@@ -2404,12 +2249,7 @@ describe('Tab - Controller Configuration', () => {
       const constructorCall = NavigationController.mock.calls[0];
       const config = constructorCall[0];
 
-      // Test when instruction mode is active
-      mockInstructionModeManager.isActive.mockReturnValue(true);
-      expect(config.shouldSkipEscapeHandling()).toBe(true);
-
       // Test when slash command dropdown is visible
-      mockInstructionModeManager.isActive.mockReturnValue(false);
       mockSlashCommandDropdown.isVisible.mockReturnValue(true);
       expect(config.shouldSkipEscapeHandling()).toBe(true);
 
@@ -3031,121 +2871,6 @@ describe('Tab - Blank Tab Model Selector', () => {
   });
 });
 
-describe('Tab - Same-Provider Model Change', () => {
-  it('allows same-provider model change on bound tab', async () => {
-    (Notice as unknown as jest.Mock).mockClear();
-    jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-    jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
-    jest.spyOn(ProviderRegistry, 'getChatUIConfig').mockReturnValue({
-      getModelOptions: jest.fn().mockReturnValue([]),
-      ownsModel: jest.fn((model: string) => model.startsWith('octo-agent/')),
-      isAdaptiveReasoningModel: jest.fn().mockReturnValue(false),
-      getReasoningOptions: jest.fn().mockReturnValue([]),
-      getDefaultReasoningValue: jest.fn().mockReturnValue('off'),
-      getContextWindowSize: jest.fn().mockReturnValue(200000),
-      isDefaultModel: jest.fn().mockReturnValue(false),
-      applyModelDefaults: jest.fn(),
-      normalizeModelVariant: jest.fn((model: string) => model),
-      getCustomModelIds: jest.fn().mockReturnValue(new Set()),
-    } as any);
-
-    const plugin = createMockPlugin();
-    const tab = createTab(createMockOptions({ plugin }));
-    initializeTabUI(tab, plugin);
-
-    // Simulate bound tab
-    tab.lifecycleState = 'bound_cold';
-    tab.providerId = 'octo-agent';
-    tab.conversationId = 'conv-1';
-
-    const toolbarModule = jest.requireMock('@/features/chat/ui/InputToolbar') as {
-      createInputToolbar: jest.Mock;
-    };
-    const toolbarCallbacks = toolbarModule.createInputToolbar.mock.calls.at(-1)?.[1];
-
-    // Same-provider model change
-    await toolbarCallbacks.onModelChange('octo-agent/other-model');
-
-    expect(Notice).not.toHaveBeenCalled();
-    expect(plugin.updateConversation).toHaveBeenCalledWith('conv-1', {
-      selectedModel: 'octo-agent/other-model',
-    });
-    expect(plugin.saveSettings).not.toHaveBeenCalled();
-  });
-});
-
-describe('Tab - Blank Tab Draft Model Change', () => {
-  it('updates draft model without creating a runtime', async () => {
-    jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-    jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
-    jest.spyOn(ProviderRegistry, 'getChatUIConfig').mockReturnValue({
-      getModelOptions: jest.fn().mockReturnValue([]),
-      ownsModel: jest.fn((model: string) => model.startsWith('octo-agent/')),
-      isAdaptiveReasoningModel: jest.fn().mockReturnValue(false),
-      getReasoningOptions: jest.fn().mockReturnValue([]),
-      getDefaultReasoningValue: jest.fn().mockReturnValue('off'),
-      getContextWindowSize: jest.fn().mockReturnValue(200000),
-      isDefaultModel: jest.fn().mockReturnValue(false),
-      applyModelDefaults: jest.fn(),
-      normalizeModelVariant: jest.fn((model: string) => model),
-      getCustomModelIds: jest.fn().mockReturnValue(new Set()),
-    } as any);
-
-    const plugin = createMockPlugin();
-    const tab = createTab(createMockOptions({ plugin }));
-    initializeTabUI(tab, plugin);
-
-    expect(tab.lifecycleState).toBe('blank');
-    expect(tab.service).toBeNull();
-
-    const toolbarModule = jest.requireMock('@/features/chat/ui/InputToolbar') as {
-      createInputToolbar: jest.Mock;
-    };
-    const toolbarCallbacks = toolbarModule.createInputToolbar.mock.calls.at(-1)?.[1];
-
-    await toolbarCallbacks.onModelChange('octo-agent/other-model');
-
-    expect(tab.draftModel).toBe('octo-agent/other-model');
-    expect(tab.providerId).toBe('octo-agent');
-    // No runtime should have been created
-    expect(tab.service).toBeNull();
-    expect(tab.serviceInitialized).toBe(false);
-    expect(tab.lifecycleState).toBe('blank');
-  });
-
-  it('refreshes the service-tier toggle when the model changes on a blank tab', async () => {
-    jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
-    jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
-    jest.spyOn(ProviderRegistry, 'getChatUIConfig').mockReturnValue({
-      getModelOptions: jest.fn().mockReturnValue([]),
-      ownsModel: jest.fn((model: string) => model.startsWith('octo-agent/')),
-      isAdaptiveReasoningModel: jest.fn().mockReturnValue(false),
-      getReasoningOptions: jest.fn().mockReturnValue([]),
-      getDefaultReasoningValue: jest.fn().mockReturnValue('off'),
-      getContextWindowSize: jest.fn().mockReturnValue(200000),
-      isDefaultModel: jest.fn().mockReturnValue(false),
-      applyModelDefaults: jest.fn(),
-      normalizeModelVariant: jest.fn((model: string) => model),
-      getCustomModelIds: jest.fn().mockReturnValue(new Set()),
-    } as any);
-
-    const plugin = createMockPlugin();
-    const tab = createTab(createMockOptions({ plugin }));
-    initializeTabUI(tab, plugin);
-
-    const toolbarModule = jest.requireMock('@/features/chat/ui/InputToolbar') as {
-      createInputToolbar: jest.Mock;
-    };
-    const toolbarCallbacks = toolbarModule.createInputToolbar.mock.calls.at(-1)?.[1];
-
-    mockServiceTierToggle.updateDisplay.mockClear();
-
-    await toolbarCallbacks.onModelChange('octo-agent/other-model');
-
-    expect(mockServiceTierToggle.updateDisplay).toHaveBeenCalled();
-  });
-});
-
 describe('Tab - First Send Binding', () => {
   it('derives provider from draft model on first send', async () => {
     const mockEnsureReady = jest.fn().mockResolvedValue(true);
@@ -3172,7 +2897,6 @@ describe('Tab - First Send Binding', () => {
 
 describe('Tab - History Bind Without Runtime', () => {
   it('ensureServiceForConversation binds to bound_cold without starting runtime', async () => {
-    jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
     jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
     const plugin = createMockPlugin();
@@ -3203,7 +2927,6 @@ describe('Tab - History Bind Without Runtime', () => {
   });
 
   it('ensureServiceForConversation wires the provider catalog and hidden commands', async () => {
-    jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
     jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
     const octoAgentCatalog = {
@@ -3366,7 +3089,6 @@ describe('Tab - Destroy Lifecycle Transition', () => {
 
 describe('Tab - InputController getTabProviderId wiring', () => {
   it('wires getTabProviderId to InputController deps', () => {
-    jest.spyOn(ProviderRegistry, 'createInstructionRefineService').mockReturnValue({ cancel: jest.fn(), resetConversation: jest.fn() } as any);
     jest.spyOn(ProviderRegistry, 'getTaskResultInterpreter').mockReturnValue({} as any);
 
     const plugin = createMockPlugin();

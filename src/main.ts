@@ -15,9 +15,8 @@ import {
   resolveConversationModel,
 } from './core/providers/conversationModel';
 import {
-  getEnvironmentVariablesForScope as getScopedEnvironmentVariables,
-  getRuntimeEnvironmentText,
-  setEnvironmentVariablesForScope,
+  getProviderEnvironmentVariables,
+  setProviderEnvironmentVariables,
 } from './core/providers/providerEnvironment';
 import { ProviderRegistry } from './core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from './core/providers/ProviderSettingsCoordinator';
@@ -33,7 +32,7 @@ import type {
 import {
   VIEW_TYPE_CLAUDIAN,
 } from './core/types';
-import type { ChatViewPlacement, EnvironmentScope } from './core/types/settings';
+import type { ChatViewPlacement } from './core/types/settings';
 import { ClaudianView } from './features/chat/ClaudianView';
 import { type InlineEditContext, InlineEditModal } from './features/inline-edit/ui/InlineEditModal';
 import { ClaudianSettingTab } from './features/settings/ClaudianSettings';
@@ -371,34 +370,20 @@ export default class ClaudianPlugin extends Plugin {
   }
 
   /** Updates and persists environment variables, restarting processes to apply changes. */
-  async applyEnvironmentVariables(scope: EnvironmentScope, envText: string): Promise<void> {
-    await this.applyEnvironmentVariablesBatch([{ scope, envText }]);
-  }
-
-  async applyEnvironmentVariablesBatch(
-    updates: Array<{ scope: EnvironmentScope; envText: string }>,
+  async applyEnvironmentVariables(
+    envText: string,
+    providerId: ProviderId = ProviderRegistry.resolveSettingsProviderId(this.settings),
   ): Promise<void> {
     const settingsBag = this.settings as unknown as Record<string, unknown>;
-    const nextEnvironmentByScope = new Map<EnvironmentScope, string>();
-    for (const update of updates) {
-      nextEnvironmentByScope.set(update.scope, update.envText);
-    }
+    const unchanged = getProviderEnvironmentVariables(settingsBag, providerId) === envText;
+    setProviderEnvironmentVariables(settingsBag, providerId, envText);
 
-    const changedScopes: EnvironmentScope[] = [];
-    for (const [scope, envText] of nextEnvironmentByScope) {
-      const currentValue = getScopedEnvironmentVariables(settingsBag, scope);
-      if (currentValue !== envText) {
-        changedScopes.push(scope);
-      }
-      setEnvironmentVariablesForScope(settingsBag, scope, envText);
-    }
-
-    if (changedScopes.length === 0) {
+    if (unchanged) {
       await this.saveSettings();
       return;
     }
 
-    const affectedProviderIds = this.getAffectedEnvironmentProviders(changedScopes);
+    const affectedProviderIds = [providerId];
     ProviderSettingsCoordinator.handleEnvironmentChange(settingsBag, affectedProviderIds);
     const { changed, invalidatedConversations } = this.reconcileModelWithEnvironment(affectedProviderIds);
     await this.saveSettings();
@@ -475,7 +460,7 @@ export default class ClaudianPlugin extends Plugin {
 
     for (const openView of this.getAllViews()) {
       openView.invalidateProviderCommandCaches(affectedProviderIds);
-      openView.refreshModelSelector();
+      openView.refreshModelDependentUI();
     }
 
     const noticeText = changed
@@ -490,17 +475,7 @@ export default class ClaudianPlugin extends Plugin {
       this.settings,
     ),
   ): string {
-    return getRuntimeEnvironmentText(
-      this.settings,
-      providerId,
-    );
-  }
-
-  getEnvironmentVariablesForScope(scope: EnvironmentScope): string {
-    return getScopedEnvironmentVariables(
-      this.settings,
-      scope,
-    );
+    return getProviderEnvironmentVariables(this.settings, providerId);
   }
 
   getResolvedProviderCliPath(
@@ -524,27 +499,6 @@ export default class ClaudianPlugin extends Plugin {
       this.conversations,
       providerIds,
     );
-  }
-
-  private getAffectedEnvironmentProviders(scopes: EnvironmentScope[]): ProviderId[] {
-    const registeredProviderIds = new Set(ProviderRegistry.getRegisteredProviderIds());
-    const affectedProviderIds = new Set<ProviderId>();
-
-    for (const scope of scopes) {
-      if (scope === 'shared') {
-        for (const providerId of registeredProviderIds) {
-          affectedProviderIds.add(providerId);
-        }
-        continue;
-      }
-
-      const providerId = scope.slice('provider:'.length);
-      if (registeredProviderIds.has(providerId)) {
-        affectedProviderIds.add(providerId);
-      }
-    }
-
-    return Array.from(affectedProviderIds);
   }
 
   private generateConversationId(): string {

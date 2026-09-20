@@ -8,12 +8,24 @@ export interface OctoAgentClientOptions {
 export interface OctoAgentSession {
   id: string;
   name: string;
+  /** Model the server resolved for this session (its configured default unless overridden). */
+  model?: string;
   status?: string;
   workingDir?: string;
   permissionMode?: string;
   reasoningEffort?: string;
   showReasoning?: boolean;
   contextUsage?: number;
+}
+
+/** An octo "project": a group of sessions sharing a workspace and mounted source folders. */
+export interface OctoAgentSessionGroup {
+  id: string;
+  name: string;
+  /** The project's own generated workspace — never one of the mounted folders. */
+  workingDir?: string;
+  /** External folders mounted as additional roots for the tools. */
+  sourceDirs: string[];
 }
 
 export interface OctoAgentMessage {
@@ -29,31 +41,6 @@ export interface OctoAgentUserFile {
   dataUrl?: string;
   path?: string;
   mimeType?: string;
-}
-
-export interface OctoAgentModelEntry {
-  id: string;
-  model: string;
-  baseURL?: string;
-  apiKeyMasked?: string;
-  provider: string;
-  anthropicFormat?: boolean;
-  reasoningEffort?: string;
-  showReasoning?: boolean;
-  vision?: boolean;
-  type?: string;
-  permissionMode?: string;
-}
-
-export interface OctoAgentConfig {
-  models: OctoAgentModelEntry[];
-  defaultModelIdx: number;
-  fontSize: string;
-  language: string;
-  showReasoning: boolean;
-  coauthor?: boolean;
-  workspaceDir: string;
-  permissionMode: string;
 }
 
 export type OctoAgentEvent =
@@ -210,16 +197,29 @@ export class OctoAgentClient {
   async createSession(options: {
     name?: string;
     model?: string;
+    /**
+     * Octo's agent profile id. Defaults to `default`; the builtin `general`
+     * profile is a delegated SUB-agent ("return a self-contained result the
+     * caller can act on"), which is not what a chat session is.
+     */
     agentProfile?: string;
     source?: string;
+    /**
+     * Files the session under a project at creation time. This is the only
+     * moment it can be done: the server skips seeding a throwaway task
+     * workspace when it already sees the membership, so a session created
+     * without it is stranded in ~/Octo/tasks/<id> for good.
+     */
+    groupId?: string;
   } = {}): Promise<OctoAgentSession> {
     const response = await this.fetchJson('/api/sessions', {
       method: 'POST',
       body: JSON.stringify({
         name: options.name ?? '',
         model: options.model ?? '',
-        agent_profile: options.agentProfile ?? 'general',
+        agent_profile: options.agentProfile ?? 'default',
         source: options.source ?? 'manual',
+        ...(options.groupId ? { group_id: options.groupId } : {}),
       }),
     });
 
@@ -240,13 +240,6 @@ export class OctoAgentClient {
       return record.messages as OctoAgentMessage[];
     }
     return [];
-  }
-
-  async setWorkingDir(sessionId: string, workingDir: string): Promise<void> {
-    await this.fetchJson(`/api/sessions/${encodeURIComponent(sessionId)}/working_dir`, {
-      method: 'PATCH',
-      body: JSON.stringify({ working_dir: workingDir }),
-    });
   }
 
   async setModel(sessionId: string, modelId: string): Promise<void> {
@@ -270,48 +263,35 @@ export class OctoAgentClient {
     });
   }
 
+  async listSessionGroups(): Promise<OctoAgentSessionGroup[]> {
+    const response = await this.fetchJson('/api/session-groups');
+    const record = response as Record<string, any>;
+    const groups = Array.isArray(record.groups) ? record.groups : [];
+    return (groups as Record<string, any>[]).map(normalizeSessionGroup);
+  }
+
+  /**
+   * Creates a project mounting `sourceDirs`. The server generates the
+   * project's own workspace under its workspace root; the directories passed
+   * here become mounted source folders, never the working directory.
+   */
+  async createSessionGroup(name: string, sourceDirs: string[]): Promise<OctoAgentSessionGroup> {
+    const response = await this.fetchJson('/api/session-groups', {
+      method: 'POST',
+      body: JSON.stringify({ name, source_dirs: sourceDirs }),
+    });
+    const record = response as Record<string, any>;
+    if (record.group && typeof record.group === 'object') {
+      return normalizeSessionGroup(record.group as Record<string, any>);
+    }
+    throw new Error('Invalid session group creation response');
+  }
+
   async listSessions(): Promise<OctoAgentSession[]> {
     const response = await this.fetchJson('/api/sessions');
     const record = response as Record<string, any>;
     const sessions = Array.isArray(record.sessions) ? record.sessions : [];
     return sessions.map((session: any) => normalizeSession(session as Record<string, any>));
-  }
-
-  async getConfig(): Promise<OctoAgentConfig | null> {
-    try {
-      const response = await this.fetchJson('/api/config');
-      const record = response as Record<string, any>;
-      const models = Array.isArray(record.models)
-        ? (record.models as Record<string, any>[]).map((m) => ({
-            id: asString(m.id) ?? '',
-            model: asString(m.model) ?? '',
-            baseURL: asString(m.baseURL) ?? asString(m.base_url),
-            apiKeyMasked: asString(m.apiKeyMasked) ?? asString(m.api_key_masked),
-            provider: asString(m.provider) ?? '',
-            anthropicFormat: typeof m.anthropicFormat === 'boolean'
-              ? m.anthropicFormat
-              : undefined,
-            reasoningEffort: asString(m.reasoningEffort),
-            showReasoning: typeof m.showReasoning === 'boolean' ? m.showReasoning : undefined,
-            vision: typeof m.vision === 'boolean' ? m.vision : undefined,
-            type: asString(m.type),
-            permissionMode: asString(m.permissionMode),
-          }))
-        : [];
-      return {
-        coauthor: typeof record.coauthor === 'boolean' ? record.coauthor : undefined,
-        defaultModelIdx: typeof record.defaultModelIdx === 'number' ? record.defaultModelIdx : 0,
-        fontSize: asString(record.fontSize) ?? 'medium',
-        language: asString(record.language) ?? 'en',
-        models,
-        permissionMode: asString(record.permissionMode) ?? 'auto',
-        showReasoning: typeof record.showReasoning === 'boolean' ? record.showReasoning : false,
-        workspaceDir: asString(record.workspaceDir) ?? asString(record.workspace_dir) ?? '',
-      };
-    } catch (error) {
-      console.error('Failed to fetch octo-agent config:', error);
-      return null;
-    }
   }
 
   private openWebSocket(): void {
@@ -571,11 +551,24 @@ function normalizeSession(record: Record<string, any>): OctoAgentSession {
   return {
     contextUsage: typeof record.context_usage === 'number' ? record.context_usage : undefined,
     id: asString(record.id) ?? '',
+    model: asString(record.model) ?? undefined,
     name: asString(record.name) ?? '',
     permissionMode: asString(record.permission_mode) ?? undefined,
     reasoningEffort: asString(record.reasoning_effort) ?? undefined,
     showReasoning: typeof record.show_reasoning === 'boolean' ? record.show_reasoning : undefined,
     status: asString(record.status) ?? undefined,
+    workingDir: asString(record.working_dir) ?? undefined,
+  };
+}
+
+function normalizeSessionGroup(record: Record<string, any>): OctoAgentSessionGroup {
+  const sourceDirs = Array.isArray(record.source_dirs)
+    ? (record.source_dirs as unknown[]).filter((d): d is string => typeof d === 'string')
+    : [];
+  return {
+    id: asString(record.id) ?? '',
+    name: asString(record.name) ?? '',
+    sourceDirs,
     workingDir: asString(record.working_dir) ?? undefined,
   };
 }

@@ -55,7 +55,6 @@ function mockCapabilities(providerId: 'octo-agent' = 'octo-agent') {
     supportsFork: true,
     supportsProviderCommands: true,
     supportsImageAttachments: true,
-    supportsInstructionMode: true,
     supportsMcpTools: true,
     reasoningControl: 'effort' as const,
   });

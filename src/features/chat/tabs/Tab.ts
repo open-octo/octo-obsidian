@@ -9,7 +9,7 @@ import {
   normalizeProviderModelSelection,
   resolveConversationModel,
 } from '../../../core/providers/conversationModel';
-import { getEnabledProviderForModel, getProviderForModel } from '../../../core/providers/modelRouting';
+import { getEnabledProviderForModel } from '../../../core/providers/modelRouting';
 import { ProviderRegistry } from '../../../core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from '../../../core/providers/ProviderSettingsCoordinator';
 import { ProviderWorkspaceRegistry } from '../../../core/providers/ProviderWorkspaceRegistry';
@@ -48,11 +48,9 @@ import { BangBashModeManager as BangBashModeManagerClass } from '../ui/BangBashM
 import { FileContextManager } from '../ui/FileContext';
 import { ImageContextManager } from '../ui/ImageContext';
 import { createInputToolbar } from '../ui/InputToolbar';
-import { InstructionModeManager as InstructionModeManagerClass } from '../ui/InstructionModeManager';
 import { NavigationSidebar } from '../ui/NavigationSidebar';
 import { StatusPanel } from '../ui/StatusPanel';
 import { autoResizeTextarea } from '../ui/textareaResize';
-import { recalculateUsageForModel } from '../utils/usageInfo';
 import { getTabProviderId } from './providerResolution';
 import type { TabData, TabDOMElements, TabId, TabManagerViewHost, TabProviderContext } from './types';
 import { generateTabId } from './types';
@@ -365,8 +363,6 @@ async function updateTabProviderSettings(
 function refreshTabProviderUI(tab: TabData, plugin: ClaudianPlugin): void {
   const capabilities = getTabCapabilities(tab, plugin);
   const permissionMode = getTabPermissionMode(tab, plugin);
-  tab.ui.modelSelector?.updateDisplay();
-  tab.ui.modelSelector?.renderOptions();
   tab.ui.modeSelector?.updateDisplay();
   tab.ui.modeSelector?.renderOptions();
   tab.ui.thinkingBudgetSelector?.updateDisplay();
@@ -409,9 +405,6 @@ function syncTabProviderServices(
   tab: TabData,
   plugin: ClaudianPlugin,
 ): void {
-  tab.services.instructionRefineService?.cancel();
-  tab.services.instructionRefineService?.resetConversation();
-  tab.services.instructionRefineService = ProviderRegistry.createInstructionRefineService(plugin, tab.providerId);
   tab.services.subagentManager.setTaskResultInterpreter?.(
     ProviderRegistry.getTaskResultInterpreter(tab.providerId)
   );
@@ -537,12 +530,10 @@ export function createTab(options: TabCreateOptions): TabData {
     },
     services: {
       subagentManager,
-      instructionRefineService: null,
     },
     ui: {
       fileContextManager: null,
       imageContextManager: null,
-      modelSelector: null,
       modeSelector: null,
       thinkingBudgetSelector: null,
       externalContextSelector: null,
@@ -550,7 +541,6 @@ export function createTab(options: TabCreateOptions): TabData {
       permissionToggle: null,
       serviceTierToggle: null,
       slashCommandDropdown: null,
-      instructionModeManager: null,
       bangBashModeManager: null,
       contextUsageMeter: null,
       statusPanel: null,
@@ -780,21 +770,12 @@ function initializeSlashCommands(
 }
 
 /**
- * Initializes instruction mode and todo panel for a tab.
+ * Initializes bang-bash mode and the todo panel for a tab.
  */
-function initializeInstructionAndTodo(tab: TabData, plugin: ClaudianPlugin): void {
+function initializeBangBashAndTodo(tab: TabData, plugin: ClaudianPlugin): void {
   const { dom } = tab;
 
   syncTabProviderServices(tab, plugin);
-  tab.ui.instructionModeManager = new InstructionModeManagerClass(
-    dom.inputEl,
-    {
-      onSubmit: async (rawInstruction) => {
-        await tab.controllers.inputController?.handleInstructionSubmit(rawInstruction);
-      },
-      getInputWrapper: () => dom.inputWrapper,
-    }
-  );
 
   // Bang bash mode (! command execution)
   if (isBangBashEnabled(plugin.settings)) {
@@ -870,94 +851,6 @@ function initializeInputToolbar(
     getCapabilities: () => getTabCapabilities(tab, plugin),
     getSettings: () => getTabSettingsSnapshot(tab, plugin),
     getEnvironmentVariables: () => plugin.getActiveEnvironmentVariables(),
-    onModelChange: async (model: string) => {
-      // For blank tabs, update draft model and derive provider
-      if (tab.lifecycleState === 'blank') {
-        const previousProvider = tab.providerId;
-        tab.draftModel = model;
-        const newProvider = getEnabledProviderForModel(
-          model,
-          plugin.settings,
-        );
-        const didProviderChange = newProvider !== previousProvider;
-        if (tab.service) {
-          cleanupTabRuntime(tab);
-        }
-        tab.providerId = newProvider;
-        if (didProviderChange) {
-          syncTabProviderServices(tab, plugin);
-        }
-        syncSlashCommandDropdownForProvider(tab, plugin, getProviderCatalogConfig);
-
-        const uiConfig = ProviderRegistry.getChatUIConfig(newProvider);
-        if (didProviderChange) {
-          await onProviderChanged?.(newProvider);
-        }
-        await uiConfig.prepareModelMetadata?.(
-          model,
-          getProviderSettingsSnapshotWithModel(plugin.settings, newProvider, model),
-          { plugin },
-        );
-        tab.ui.thinkingBudgetSelector?.updateDisplay();
-        tab.ui.serviceTierToggle?.updateDisplay();
-        tab.ui.modelSelector?.updateDisplay();
-        tab.ui.modeSelector?.updateDisplay();
-        // Re-render options (provider may have changed reasoning controls)
-        tab.ui.modelSelector?.renderOptions();
-        tab.ui.modeSelector?.renderOptions();
-        applyProviderUIGating(tab, plugin);
-        return;
-      }
-
-      // For bound tabs, reject cross-provider model changes
-      const boundProvider = tab.providerId;
-      const modelProvider = getProviderForModel(model, plugin.settings);
-      if (modelProvider !== boundProvider) {
-        new Notice('Cannot switch provider on a bound session. Start a new tab instead.');
-        tab.ui.modelSelector?.updateDisplay();
-        return;
-      }
-
-      const uiConfig: ProviderChatUIConfig = getTabChatUIConfig(tab, plugin);
-      const normalizedModel = normalizeProviderModelSelection(boundProvider, plugin.settings, model) ?? model;
-      const providerSettings = getProviderSettingsSnapshotWithModel(
-        plugin.settings,
-        boundProvider,
-        normalizedModel,
-      ) as TabProviderSettings;
-
-      if (tab.conversationId) {
-        await plugin.updateConversation(tab.conversationId, {
-          selectedModel: normalizedModel,
-        });
-        const updatedConversation = plugin.getConversationSync(tab.conversationId);
-        if (updatedConversation && tab.service?.providerId === boundProvider) {
-          const hasMessages = updatedConversation.messages.length > 0;
-          const externalContextPaths = tab.ui.externalContextSelector?.getExternalContexts()
-            ?? (hasMessages
-              ? updatedConversation.externalContextPaths ?? []
-              : plugin.settings.persistentExternalContextPaths ?? []);
-          tab.service.syncConversationState(updatedConversation, externalContextPaths);
-        }
-      }
-
-      await uiConfig.prepareModelMetadata?.(normalizedModel, providerSettings, { plugin });
-      tab.ui.thinkingBudgetSelector?.updateDisplay();
-      tab.ui.serviceTierToggle?.updateDisplay();
-      tab.ui.modelSelector?.updateDisplay();
-      tab.ui.modelSelector?.renderOptions();
-
-      // Recalculate context usage percentage for the new model's context window
-      const currentUsage = tab.state.usage;
-      if (currentUsage) {
-        const newContextWindow = uiConfig.getContextWindowSize(
-          normalizedModel,
-          providerSettings.customContextLimits,
-          providerSettings,
-        );
-        tab.state.usage = recalculateUsageForModel(currentUsage, normalizedModel, newContextWindow);
-      }
-    },
     onModeChange: async (mode: string) => {
       await updateTabProviderSettings(tab, plugin, (settings) => {
         getTabChatUIConfig(tab, plugin).applyModeSelection?.(mode, settings);
@@ -1007,7 +900,6 @@ function initializeInputToolbar(
     },
   });
 
-  tab.ui.modelSelector = toolbarComponents.modelSelector;
   tab.ui.modeSelector = toolbarComponents.modeSelector;
   tab.ui.thinkingBudgetSelector = toolbarComponents.thinkingBudgetSelector;
   tab.ui.contextUsageMeter = toolbarComponents.contextUsageMeter;
@@ -1085,7 +977,7 @@ export function initializeTabUI(
     );
   }
 
-  initializeInstructionAndTodo(tab, plugin);
+  initializeBangBashAndTodo(tab, plugin);
   initializeInputToolbar(tab, plugin, options.getProviderCatalogConfig, options.onProviderChanged);
 
   state.callbacks = {
@@ -1500,8 +1392,6 @@ export function initializeTabControllers(
     getImageContextManager: () => ui.imageContextManager,
     getMcpServerSelector: () => ui.mcpServerSelector,
     getExternalContextSelector: () => ui.externalContextSelector,
-    getInstructionModeManager: () => ui.instructionModeManager,
-    getInstructionRefineService: () => services.instructionRefineService,
     getStatusPanel: () => ui.statusPanel,
     generateId: generateMessageId,
     resetInputHeight: () => {
@@ -1531,7 +1421,6 @@ export function initializeTabControllers(
     getSettings: () => plugin.settings.keyboardNavigation,
     isStreaming: () => state.isStreaming,
     shouldSkipEscapeHandling: () => {
-      if (ui.instructionModeManager?.isActive()) return true;
       if (ui.bangBashModeManager?.isActive()) return true;
       if (tab.controllers.inputController?.isResumeDropdownVisible()) return true;
       if (ui.slashCommandDropdown?.isVisible()) return true;
@@ -1569,16 +1458,8 @@ export function wireTabInputEvents(tab: TabData, plugin: ClaudianPlugin): void {
       return;
     }
 
-    if (getTabCapabilities(tab, plugin).supportsInstructionMode && ui.instructionModeManager?.handleTriggerKey(e)) {
-      return;
-    }
-
     if (ui.bangBashModeManager?.handleTriggerKey(e)) {
       syncBangBashSuppression();
-      return;
-    }
-
-    if (getTabCapabilities(tab, plugin).supportsInstructionMode && ui.instructionModeManager?.handleKeydown(e)) {
       return;
     }
 
@@ -1616,7 +1497,6 @@ export function wireTabInputEvents(tab: TabData, plugin: ClaudianPlugin): void {
     if (!ui.bangBashModeManager?.isActive()) {
       ui.fileContextManager?.handleInputChange();
     }
-    ui.instructionModeManager?.handleInputChange();
     ui.bangBashModeManager?.handleInputChange();
     syncBangBashSuppression();
     autoResizeTextarea(dom.inputEl);
@@ -1719,13 +1599,8 @@ export async function destroyTab(tab: TabData): Promise<void> {
   tab.ui.fileContextManager?.destroy();
   tab.ui.slashCommandDropdown?.destroy();
   tab.ui.slashCommandDropdown = null;
-  tab.ui.instructionModeManager?.destroy();
-  tab.ui.instructionModeManager = null;
   tab.ui.bangBashModeManager?.destroy();
   tab.ui.bangBashModeManager = null;
-  tab.services.instructionRefineService?.cancel();
-  tab.services.instructionRefineService?.resetConversation();
-  tab.services.instructionRefineService = null;
   tab.ui.statusPanel?.destroy();
   tab.ui.statusPanel = null;
   tab.ui.navigationSidebar?.destroy();

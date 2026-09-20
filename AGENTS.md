@@ -4,7 +4,9 @@
 
 Octo Agent (Obsidian plugin) embeds the Octo Agent coding assistant in a sidebar and inline-edit flow, talking to a local Octo server/CLI over HTTP. `octo-agent` is the only registered provider, plugging into the conversation model through `Conversation.providerId` and opaque provider-owned `providerState`.
 
-The provider layer (`ProviderRegistry`, `ProviderWorkspaceRegistry`, capabilities, chat UI config) stays generic even with a single registered provider — it is the extension point if another provider is ever added. Don't hardcode `'octo-agent'` in feature code where a capability or registry lookup already expresses the distinction.
+The runtime provider layer (`ProviderRegistry`, `ProviderWorkspaceRegistry`, capabilities, chat UI config) stays generic even with a single registered provider — it is the extension point if another provider is ever added. Don't hardcode `'octo-agent'` in feature code where a capability or registry lookup already expresses the distinction.
+
+The settings UI is the deliberate exception: it is a single page that reads and writes Octo Agent's config directly, with no per-provider tab or renderer indirection. Adding a second provider would mean reintroducing that split.
 
 ## Instruction Map
 
@@ -46,17 +48,18 @@ Tests mirror `src/` under `tests/unit/` and `tests/integration/`.
 | `src/providers/*/` | Provider adaptors, provider-owned runtime protocol, history, storage, settings, and UI |
 | `src/features/chat/` | Sidebar chat orchestration against provider-neutral contracts |
 | `src/features/inline-edit/` | Inline edit modal and provider-backed edit services |
-| `src/features/settings/` | Shared settings shell and provider tab assembly |
+| `src/features/settings/` | The single settings page, including the inlined Octo Agent setup section |
 | `src/shared/` | Reusable UI components |
 | `src/style/` | Modular CSS built into `styles.css` |
 
-The feature layer depends on `core/` contracts, not provider internals. Provider-specific session fields belong behind typed helpers in the owning provider directory.
+The feature layer depends on `core/` contracts, not provider internals — except the settings page, which reads and writes Octo Agent's config directly (see Project above). Provider-specific session fields belong behind typed helpers in the owning provider directory.
 
 ## Provider Rules
 
 - Prefer provider-native behavior over local reimplementation. Adapt provider output at the boundary instead of shadowing provider features.
 - Keep live streaming and history replay responsibilities separate. Live output should come from the provider runtime protocol when available; provider transcript files are the replay source.
-- New provider behavior must be expressed through registries and capabilities: `ProviderRegistry`, `ProviderWorkspaceRegistry`, `ProviderChatUIConfig`, provider capabilities, and provider-owned settings reconciliation.
+- New provider behavior must be expressed through registries and capabilities: `ProviderRegistry`, `ProviderWorkspaceRegistry`, `ProviderChatUIConfig`, provider capabilities, and provider-owned settings reconciliation. The settings UI is exempt — see above.
+- There is no in-plugin provider enable/disable switch. Obsidian's own plugin toggle is the only one, so `isEnabled` is constant. Don't reintroduce a settings flag that can leave the plugin installed but inert.
 - Model, permission, plan-mode, command, MCP, skill, and subagent behavior is provider-specific unless the core contract explicitly makes it shared.
 - When provider behavior is uncertain, inspect real runtime output first. Put throwaway scripts, traces, and handoff notes in `.context/`.
 
@@ -64,7 +67,7 @@ The feature layer depends on `core/` contracts, not provider internals. Provider
 
 | Path | Contents |
 | --- | --- |
-| `.octo-agent/settings.json` | Shared plugin settings and provider-specific configuration |
+| `.octo-agent/settings.json` | Plugin settings, including `providerConfigs['octo-agent']` (server host/port, CLI path, access key, environment variables) |
 | `.octo-agent/sessions/*.meta.json` | Provider-neutral session metadata |
 
 Octo Agent's own conversation/session state is server-resident, owned by the Octo server process rather than vault- or home-directory-backed files — see `src/providers/octo-agent/AGENTS.md`.

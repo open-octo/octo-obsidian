@@ -2,21 +2,7 @@ import { octoAgentChatUIConfig } from '@/providers/octo-agent/ui/OctoAgentChatUI
 
 describe('octoAgentChatUIConfig', () => {
   describe('getModelOptions', () => {
-    it('returns cached octo-agent models when available', () => {
-      const options = octoAgentChatUIConfig.getModelOptions({
-        octoAgentModels: [
-          { value: 'octo-agent/kimi-for-coding', label: 'Kimi for Coding' },
-          { value: 'octo-agent/claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
-        ],
-      });
-
-      expect(options.map((option) => option.value)).toEqual([
-        'octo-agent/kimi-for-coding',
-        'octo-agent/claude-sonnet-4-5',
-      ]);
-    });
-
-    it('falls back to the built-in default when no models are cached', () => {
+    it('returns the built-in default entry', () => {
       const options = octoAgentChatUIConfig.getModelOptions({});
 
       expect(options).toEqual([
@@ -52,31 +38,6 @@ describe('octoAgentChatUIConfig', () => {
       };
 
       expect(octoAgentChatUIConfig.normalizeModelVariant('octo-agent/claude-sonnet-4-5', settings)).toBe(
-        'octo-agent/claude-sonnet-4-5',
-      );
-    });
-
-    it('falls back to the default when the model is not in the cached list', () => {
-      const settings = {
-        octoAgentModels: [
-          { value: 'octo-agent/kimi-for-coding', label: 'Kimi' },
-          { value: 'octo-agent/claude-sonnet-4-5', label: 'Sonnet' },
-        ],
-      };
-
-      expect(octoAgentChatUIConfig.normalizeModelVariant('octo-agent/unknown-model', settings)).toBe(
-        'octo-agent/kimi-for-coding',
-      );
-    });
-
-    it('falls back to the first cached option when no default is available', () => {
-      const settings = {
-        octoAgentModels: [
-          { value: 'octo-agent/claude-sonnet-4-5', label: 'Sonnet' },
-        ],
-      };
-
-      expect(octoAgentChatUIConfig.normalizeModelVariant('octo-agent/unknown-model', settings)).toBe(
         'octo-agent/claude-sonnet-4-5',
       );
     });

@@ -79,7 +79,6 @@ export class MessageRenderer {
       supportsFork: false,
       supportsProviderCommands: false,
       supportsImageAttachments: false,
-      supportsInstructionMode: false,
       supportsMcpTools: false,
       supportsTurnSteer: false,
       reasoningControl: 'none' as const,

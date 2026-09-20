@@ -43,59 +43,9 @@ const localizedKeys = [
   'chat.bangBash.expandOutput',
   'chat.bangBash.running',
   'chat.bangBash.copyFailed',
-  'settings.subagents.name',
-  'settings.subagents.desc',
-  'settings.subagents.noAgents',
-  'settings.subagents.deleteConfirm',
-  'settings.subagents.saveFailed',
-  'settings.subagents.deleteFailed',
-  'settings.subagents.renameCleanupFailed',
-  'settings.subagents.created',
-  'settings.subagents.updated',
-  'settings.subagents.deleted',
-  'settings.subagents.duplicateName',
-  'settings.subagents.descriptionRequired',
-  'settings.subagents.promptRequired',
-  'settings.subagents.modal.titleEdit',
-  'settings.subagents.modal.titleAdd',
-  'settings.subagents.modal.nameDesc',
-  'settings.subagents.modal.descriptionDesc',
-  'settings.subagents.modal.descriptionPlaceholder',
-  'settings.subagents.modal.advancedOptions',
-  'settings.subagents.modal.modelDesc',
-  'settings.subagents.modal.toolsDesc',
-  'settings.subagents.modal.disallowedTools',
-  'settings.subagents.modal.disallowedToolsDesc',
-  'settings.subagents.modal.skills',
-  'settings.subagents.modal.skillsDesc',
-  'settings.subagents.modal.prompt',
-  'settings.subagents.modal.promptDesc',
-  'settings.subagents.modal.promptPlaceholder',
-  'settings.enableBangBash.name',
-  'settings.enableBangBash.desc',
-  'settings.enableBangBash.validation.noNode',
   'settings.requireCommandOrControlEnterToSend.name',
   'settings.requireCommandOrControlEnterToSend.desc',
-  'settings.claudeSafeMode.name',
-  'settings.claudeSafeMode.desc',
-  'settings.codexSafeMode.name',
-  'settings.codexSafeMode.desc',
-  'settings.customModels.name',
-  'settings.customModels.desc',
-  'settings.codex.enableProvider.name',
-  'settings.codex.enableProvider.desc',
-  'settings.codex.customModels.name',
-  'settings.codex.customModels.desc',
-  'settings.codex.reasoningSummary.name',
-  'settings.codex.skills.name',
-  'settings.codex.subagents.name',
-  'settings.codex.environment.name',
-  'settings.codexSkills.noSkills',
-  'settings.codexSubagents.noAgents',
 ] as const;
-
-const staleBangBashDesc =
-  'Type ! on empty input to enter bash mode. Runs commands directly via Node.js child_process.';
 
 function flattenTranslations(
   translations: TranslationTree,
@@ -128,7 +78,7 @@ describe('locale files', () => {
     }
   });
 
-  it('localizes the recent bang bash and subagent additions', () => {
+  it('actually translates these strings rather than copying English', () => {
     for (const translations of Object.values(locales)) {
       const locale = flattenTranslations(translations as unknown as TranslationTree);
 
@@ -136,15 +86,7 @@ describe('locale files', () => {
         expect(locale[key]).toBeDefined();
         expect(locale[key]).not.toBe(english[key]);
       }
-
-      expect(locale['settings.enableBangBash.desc']).not.toBe(staleBangBashDesc);
     }
   });
 
-  it('uses commands-and-skills copy for hidden Claude entries', () => {
-    expect(english['settings.hiddenSlashCommands.name']).toBe('Hidden Commands and Skills');
-    expect(english['settings.hiddenSlashCommands.desc']).toBe(
-      'Hide specific commands and skills from the dropdown. Useful for hiding Claude Code entries that are not relevant to Octo. Enter names without the leading slash, one per line.',
-    );
-  });
 });

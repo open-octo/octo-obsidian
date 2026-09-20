@@ -32,7 +32,12 @@ import {
 } from '../../../core/types';
 import type ClaudianPlugin from '../../../main';
 import { appendContextFiles, appendCurrentNote } from '../../../utils/context';
-import { getVaultPath } from '../../../utils/path';
+import {
+  getVaultPath,
+  isSameDirectory,
+  toAbsoluteVaultPath,
+  vaultProjectName,
+} from '../../../utils/path';
 import { OCTO_AGENT_PROVIDER_CAPABILITIES } from '../capabilities';
 import { toClaudianPermissionMode, toOctoAgentPermissionMode } from '../permissionMode';
 import { getOctoAgentProviderSettings } from '../settings';
@@ -58,6 +63,9 @@ interface ActiveQuery {
 function askQuestionKey(questionId: string, index: number): string {
   return `${questionId}#${index}`;
 }
+
+/** Identifies this client in octo's session list. */
+const SESSION_SOURCE = 'octo-obsidian';
 
 export class OctoAgentChatRuntime implements ChatRuntime {
   readonly providerId: ProviderId = 'octo-agent';
@@ -103,7 +111,10 @@ export class OctoAgentChatRuntime implements ChatRuntime {
 
     let prompt = text;
     if (request.currentNotePath) {
-      prompt = appendCurrentNote(prompt, request.currentNotePath);
+      prompt = appendCurrentNote(
+        prompt,
+        toAbsoluteVaultPath(getVaultPath(this.plugin.app), request.currentNotePath),
+      );
     }
 
     const externalContextPaths = request.externalContextPaths?.filter(
@@ -165,10 +176,6 @@ export class OctoAgentChatRuntime implements ChatRuntime {
     const settings = getOctoAgentProviderSettings(
       this.plugin.settings as unknown as Record<string, unknown>,
     );
-    if (!settings.enabled) {
-      return false;
-    }
-
     // Auto-start octo serve if configured and not already running.
     if (settings.autoStartServer && !this.serverStartPromise) {
       this.serverStartPromise = ensureOctoAgentServerRunning({ plugin: this.plugin }).finally(() => {
@@ -196,7 +203,6 @@ export class OctoAgentChatRuntime implements ChatRuntime {
       }
     }
 
-    await this.refreshConfig();
 
     if (options?.force || !this.sessionId) {
       await this.createSessionIfNeeded(options?.allowSessionCreation !== false);
@@ -398,40 +404,6 @@ export class OctoAgentChatRuntime implements ChatRuntime {
 
   getAuxiliaryModel(): string | null {
     return null;
-  }
-
-  private async refreshConfig(): Promise<void> {
-    if (!this.client) {
-      return;
-    }
-    const config = await this.client.getConfig();
-    if (!config || config.models.length === 0) {
-      return;
-    }
-
-    const pluginSettings = this.plugin.settings as unknown as Record<string, unknown>;
-    const options = config.models.map((entry, index) => {
-      const isDefault = index === config.defaultModelIdx;
-      return {
-        description: isDefault ? 'Default octo-agent model' : undefined,
-        label: entry.id || entry.model,
-        value: `octo-agent/${entry.model}`,
-      };
-    });
-    pluginSettings.octoAgentModels = options;
-
-    const defaultEntry = config.models[config.defaultModelIdx] ?? config.models[0];
-    if (defaultEntry) {
-      const defaultValue = `octo-agent/${defaultEntry.model}`;
-      const currentModel = pluginSettings.model;
-      if (
-        !currentModel
-        || typeof currentModel !== 'string'
-        || !options.some((option) => option.value === currentModel)
-      ) {
-        pluginSettings.model = defaultValue;
-      }
-    }
   }
 
   cleanup(): void {
@@ -679,35 +651,76 @@ export class OctoAgentChatRuntime implements ChatRuntime {
     }
 
     const session = await this.client.createSession({
-      source: 'claudian',
+      groupId: await this.resolveVaultProjectId(),
+      source: SESSION_SOURCE,
     });
     this.sessionId = session.id;
+    this.adoptSessionModel(session.model);
+  }
+
+  /**
+   * Finds, or creates, the octo project that mounts this vault, so a new
+   * session is filed under it at creation time.
+   *
+   * The server refuses PATCH /working_dir ("a session's working directory
+   * comes from its project"), and skips seeding a throwaway task workspace
+   * only when it can already see the membership — so this has to happen
+   * before the session exists, not after.
+   *
+   * Returns undefined on any failure: a session outside a project still
+   * works, it just loses the vault mount and the prompt's source-folder line.
+   */
+  private async resolveVaultProjectId(): Promise<string | undefined> {
+    const vaultPath = getVaultPath(this.plugin.app);
+    if (!vaultPath || !this.client) {
+      return undefined;
+    }
+
+    try {
+      const groups = await this.client.listSessionGroups();
+      const existing = groups.find((group) =>
+        group.sourceDirs.some((dir) => isSameDirectory(dir, vaultPath)),
+      );
+      if (existing) {
+        return existing.id;
+      }
+
+      const created = await this.client.createSessionGroup(
+        vaultProjectName(vaultPath),
+        [vaultPath],
+      );
+      return created.id || undefined;
+    } catch (error) {
+      console.error('Failed to resolve the octo-agent project for this vault:', error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Records the model the server resolved for a session. The plugin does not
+   * choose a model: `POST /api/sessions` with an empty `model` lets octo apply
+   * the default from its own config, and this keeps the plugin's view of it
+   * honest for context-window and usage display.
+   */
+  private adoptSessionModel(model: string | undefined): void {
+    const trimmed = model?.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    const pluginSettings = this.plugin.settings as unknown as Record<string, unknown>;
+    const value = `octo-agent/${trimmed}`;
+    if (pluginSettings.model === value) {
+      return;
+    }
+
+    pluginSettings.model = value;
+    void this.plugin.saveSettings();
   }
 
   private async applySettingsToSession(sessionId: string): Promise<void> {
     if (!this.client) {
       return;
-    }
-
-    const vaultPath = getVaultPath(this.plugin.app);
-    if (vaultPath) {
-      try {
-        await this.client.setWorkingDir(sessionId, vaultPath);
-      } catch (error) {
-        console.error('Failed to set octo-agent working directory:', error);
-      }
-    }
-
-    const pluginSettings = this.plugin.settings as unknown as Record<string, unknown>;
-    if (pluginSettings.model) {
-      try {
-        const modelId = String(pluginSettings.model).replace(/^octo-agent\//, '');
-        if (modelId && modelId !== 'octo-agent') {
-          await this.client.setModel(sessionId, modelId);
-        }
-      } catch (error) {
-        console.error('Failed to set octo-agent model:', error);
-      }
     }
 
     const permissionMode = toOctoAgentPermissionMode(

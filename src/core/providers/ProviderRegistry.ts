@@ -5,7 +5,6 @@ import {
   type CreateChatRuntimeOptions,
   DEFAULT_CHAT_PROVIDER_ID,
   type InlineEditService,
-  type InstructionRefineService,
   type ProviderCapabilities,
   type ProviderChatUIConfig,
   type ProviderConversationHistoryService,
@@ -46,10 +45,6 @@ export class ProviderRegistry {
     return this.getProviderRegistration(providerId).createRuntime(options);
   }
 
-  static createInstructionRefineService(plugin: ClaudianPlugin, providerId: ProviderId = DEFAULT_CHAT_PROVIDER_ID): InstructionRefineService {
-    return this.getProviderRegistration(providerId).createInstructionRefineService(plugin);
-  }
-
   static createInlineEditService(plugin: ClaudianPlugin, providerId: ProviderId = DEFAULT_CHAT_PROVIDER_ID): InlineEditService {
     return this.getProviderRegistration(providerId).createInlineEditService(plugin);
   }
@@ -74,10 +69,6 @@ export class ProviderRegistry {
 
   static getCapabilities(providerId: ProviderId = DEFAULT_CHAT_PROVIDER_ID): ProviderCapabilities {
     return this.getProviderRegistration(providerId).capabilities;
-  }
-
-  static getEnvironmentKeyPatterns(providerId: ProviderId): RegExp[] {
-    return this.getProviderRegistration(providerId).environmentKeyPatterns ?? [];
   }
 
   static getChatUIConfig(providerId: ProviderId = DEFAULT_CHAT_PROVIDER_ID): ProviderChatUIConfig {

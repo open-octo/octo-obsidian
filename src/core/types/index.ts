@@ -18,10 +18,8 @@ export { type ProviderId } from './provider';
 export {
   type ApprovalDecision,
   type ClaudianSettings,
-  type EnvironmentScope,
   type EnvSnippet,
   type HostnameCliPaths,
-  type InstructionRefineResult,
   type KeyboardNavigationSettings,
   type PermissionMode,
   type SlashCommand,

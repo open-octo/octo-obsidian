@@ -105,7 +105,7 @@ export class ClaudianView extends ItemView {
   }
 
   /** Refreshes model-dependent UI across all tabs (used after settings/env changes). */
-  refreshModelSelector(): void {
+  refreshModelDependentUI(): void {
     for (const tab of this.tabManager?.getAllTabs() ?? []) {
       onProviderAvailabilityChanged(tab, this.plugin);
       const providerId = getTabProviderId(tab, this.plugin);
@@ -134,9 +134,6 @@ export class ClaudianView extends ItemView {
       if (tab.state.usage) {
         tab.state.usage = recalculateUsageForModel(tab.state.usage, model, contextWindow);
       }
-
-      tab.ui.modelSelector?.updateDisplay();
-      tab.ui.modelSelector?.renderOptions();
       tab.ui.modeSelector?.updateDisplay();
       tab.ui.modeSelector?.renderOptions();
       tab.ui.thinkingBudgetSelector?.updateDisplay();

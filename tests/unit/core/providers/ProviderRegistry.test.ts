@@ -71,15 +71,13 @@ describe('ProviderRegistry', () => {
     expect(ids).toEqual(['octo-agent']);
   });
 
-  it('filters enabled provider ids using registration metadata', () => {
+  it('reports the sole provider as enabled regardless of stored config', () => {
+    // Obsidian's plugin toggle is the only enable/disable control; a stale
+    // `enabled` key left in settings by an older version must not disable it.
+    expect(ProviderRegistry.getEnabledProviderIds({})).toEqual(['octo-agent']);
     expect(ProviderRegistry.getEnabledProviderIds({
       providerConfigs: {
         'octo-agent': { enabled: false },
-      },
-    })).toEqual([]);
-    expect(ProviderRegistry.getEnabledProviderIds({
-      providerConfigs: {
-        'octo-agent': { enabled: true },
       },
     })).toEqual(['octo-agent']);
   });
