@@ -385,9 +385,15 @@ export interface ProviderConversationHistoryService {
     conversation: Conversation,
     vaultPath: string | null,
   ): Promise<void>;
+  /**
+   * Discards whatever the provider stores for this conversation. Must not
+   * throw: the caller has already dropped the conversation from memory and
+   * still has to delete its metadata.
+   */
   deleteConversationSession(
     conversation: Conversation,
     vaultPath: string | null,
+    plugin: OctoPlugin,
   ): Promise<void>;
   resolveSessionIdForConversation(conversation: Conversation | null): string | null;
   isPendingForkConversation(conversation: Conversation): boolean;

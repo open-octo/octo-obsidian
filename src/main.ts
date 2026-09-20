@@ -603,7 +603,7 @@ export default class OctoPlugin extends Plugin {
 
     await ProviderRegistry
       .getConversationHistoryService(conversation.providerId)
-      .deleteConversationSession(conversation, getVaultPath(this.app));
+      .deleteConversationSession(conversation, getVaultPath(this.app), this);
 
     await this.storage.sessions.deleteMetadata(id);
 

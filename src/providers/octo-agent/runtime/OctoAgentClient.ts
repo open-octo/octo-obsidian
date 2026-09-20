@@ -287,6 +287,13 @@ export class OctoAgentClient {
     throw new Error('Invalid session group creation response');
   }
 
+  /** Deletes the server-side session: its transcript, agent events and task workspace. */
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.fetchJson(`/api/sessions/${encodeURIComponent(sessionId)}`, {
+      method: 'DELETE',
+    });
+  }
+
   async listSessions(): Promise<OctoAgentSession[]> {
     const response = await this.fetchJson('/api/sessions');
     const record = response as Record<string, any>;
