@@ -30,7 +30,7 @@ import {
   type ToolCallInfo,
   type UsageInfo,
 } from '../../../core/types';
-import type ClaudianPlugin from '../../../main';
+import type OctoPlugin from '../../../main';
 import { appendContextFiles, appendCurrentNote } from '../../../utils/context';
 import {
   getVaultPath,
@@ -39,7 +39,7 @@ import {
   vaultProjectName,
 } from '../../../utils/path';
 import { OCTO_AGENT_PROVIDER_CAPABILITIES } from '../capabilities';
-import { toClaudianPermissionMode, toOctoAgentPermissionMode } from '../permissionMode';
+import { toOctoAgentPermissionMode,toOctoPermissionMode } from '../permissionMode';
 import { getOctoAgentProviderSettings } from '../settings';
 import { getOctoAgentState } from '../types';
 import { octoAgentChatUIConfig } from '../ui/OctoAgentChatUIConfig';
@@ -70,7 +70,7 @@ const SESSION_SOURCE = 'octo-obsidian';
 export class OctoAgentChatRuntime implements ChatRuntime {
   readonly providerId: ProviderId = 'octo-agent';
 
-  private plugin: ClaudianPlugin;
+  private plugin: OctoPlugin;
   private client: OctoAgentClient | null = null;
   private ready = false;
   private readyListeners = new Set<(ready: boolean) => void>();
@@ -97,7 +97,7 @@ export class OctoAgentChatRuntime implements ChatRuntime {
   private shouldRetryAfterSessionNotFound = false;
   private serverStartPromise: Promise<boolean> | null = null;
 
-  constructor(plugin: ClaudianPlugin) {
+  constructor(plugin: OctoPlugin) {
     this.plugin = plugin;
   }
 
@@ -898,7 +898,7 @@ export class OctoAgentChatRuntime implements ChatRuntime {
           yield { type: 'usage', usage, sessionId: event.session_id };
         }
         if (event.permission_mode) {
-          this.permissionModeSyncCallback?.(toClaudianPermissionMode(event.permission_mode));
+          this.permissionModeSyncCallback?.(toOctoPermissionMode(event.permission_mode));
         }
         break;
       }

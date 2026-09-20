@@ -1,37 +1,37 @@
 /* Settings page - remove separator lines from setting items */
-.claudian-settings .setting-item {
+.octo-settings .setting-item {
   border-top: none;
 }
 
 /* Settings section headings (via setHeading()) */
-.claudian-settings .setting-item-heading {
+.octo-settings .setting-item-heading {
   padding-top: 18px;
   margin-top: 12px;
   border-top: 1px solid var(--background-modifier-border);
 }
 
-.claudian-settings .setting-item-heading:first-child {
+.octo-settings .setting-item-heading:first-child {
   padding-top: 0;
   margin-top: 0;
   border-top: none;
 }
 
-.claudian-settings .setting-item-heading .setting-item-name {
+.octo-settings .setting-item-heading .setting-item-name {
   font-size: var(--font-ui-medium);
   font-weight: var(--font-semibold);
   color: var(--text-normal);
 }
 
 /* Custom section descriptions - align with items */
-.claudian-sp-settings-desc,
-.claudian-mcp-settings-desc,
-.claudian-plugin-settings-desc,
-.claudian-approved-desc {
+.octo-sp-settings-desc,
+.octo-mcp-settings-desc,
+.octo-plugin-settings-desc,
+.octo-approved-desc {
   padding: 0 12px;
 }
 
 /* Unified icon action buttons for settings */
-.claudian-settings-action-btn {
+.octo-settings-action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,51 +46,51 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.claudian-settings-action-btn:hover {
+.octo-settings-action-btn:hover {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.claudian-settings-action-btn svg {
+.octo-settings-action-btn svg {
   width: 14px;
   height: 14px;
 }
 
-.claudian-settings-delete-btn:hover {
+.octo-settings-delete-btn:hover {
   color: var(--text-error);
 }
 
-.claudian-setting-validation {
+.octo-setting-validation {
   font-size: var(--font-ui-smaller);
   margin-top: -0.5em;
   margin-bottom: 0.5em;
 }
 
-.claudian-setting-validation-error {
+.octo-setting-validation-error {
   color: var(--text-error);
 }
 
-.claudian-setting-validation-warning {
+.octo-setting-validation-warning {
   color: var(--text-warning);
 }
 
-.claudian-settings-cli-path-input {
+.octo-settings-cli-path-input {
   width: 100%;
 }
 
-.claudian-settings-cli-path-input.claudian-input-error {
+.octo-settings-cli-path-input.octo-input-error {
   border-color: var(--text-error);
 }
 
 /* Hotkey grid - 3 columns */
-.claudian-hotkey-grid {
+.octo-hotkey-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px 12px;
   padding: 4px 0;
 }
 
-.claudian-hotkey-item {
+.octo-hotkey-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -99,17 +99,17 @@
   border-radius: 6px;
 }
 
-.claudian-hotkey-item:hover {
+.octo-hotkey-item:hover {
   background: var(--background-modifier-hover);
 }
 
-.claudian-hotkey-name {
+.octo-hotkey-name {
   flex: 1;
   color: var(--text-normal);
   font-size: var(--font-ui-small);
 }
 
-.claudian-hotkey-badge {
+.octo-hotkey-badge {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
   background: var(--background-modifier-hover);
@@ -119,13 +119,13 @@
 }
 
 /* Media folder input width */
-.claudian-settings-media-input {
+.octo-settings-media-input {
   width: 200px;
 }
 
 /* ── Shared settings panel layout (used by slash-settings + agent-settings) ── */
 
-.claudian-sp-header {
+.octo-sp-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -133,18 +133,18 @@
   padding: 0 12px;
 }
 
-.claudian-sp-label {
+.octo-sp-label {
   font-size: var(--font-ui-small);
   color: var(--text-muted);
   font-weight: var(--font-medium);
 }
 
-.claudian-sp-header-actions {
+.octo-sp-header-actions {
   display: flex;
   gap: 4px;
 }
 
-.claudian-sp-empty-state {
+.octo-sp-empty-state {
   padding: 20px;
   text-align: center;
   color: var(--text-muted);
@@ -153,14 +153,14 @@
   margin-top: 8px;
 }
 
-.claudian-sp-list {
+.octo-sp-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
 }
 
-.claudian-sp-item {
+.octo-sp-item {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -169,48 +169,48 @@
   border-radius: 6px;
 }
 
-.claudian-sp-item:hover {
+.octo-sp-item:hover {
   background: var(--background-modifier-hover);
 }
 
-.claudian-sp-info {
+.octo-sp-info {
   flex: 1;
   min-width: 0;
 }
 
-.claudian-sp-item-header {
+.octo-sp-item-header {
   display: flex;
   align-items: baseline;
   gap: 8px;
 }
 
-.claudian-sp-item-name {
+.octo-sp-item-name {
   font-weight: 600;
   font-family: var(--font-monospace);
   color: var(--text-normal);
 }
 
-.claudian-sp-item-desc {
+.octo-sp-item-desc {
   font-size: 13px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
-.claudian-sp-item-actions {
+.octo-sp-item-actions {
   display: flex;
   gap: 4px;
   margin-left: 16px;
   flex-shrink: 0;
 }
 
-.claudian-sp-advanced-section {
+.octo-sp-advanced-section {
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
   padding: 0 12px;
   margin: 8px 0;
 }
 
-.claudian-sp-advanced-summary {
+.octo-sp-advanced-summary {
   cursor: pointer;
   padding: 8px 0;
   font-size: var(--font-ui-small);
@@ -218,16 +218,16 @@
   font-weight: var(--font-medium);
 }
 
-.claudian-sp-advanced-section[open] .claudian-sp-advanced-summary {
+.octo-sp-advanced-section[open] .octo-sp-advanced-summary {
   margin-bottom: 4px;
 }
 
-.claudian-sp-modal .modal-content {
+.octo-sp-modal .modal-content {
   max-width: 600px;
   width: auto;
 }
 
-.claudian-sp-content-area {
+.octo-sp-content-area {
   width: 100%;
   font-family: var(--font-monospace);
   font-size: 13px;
@@ -240,12 +240,12 @@
   margin-top: 8px;
 }
 
-.claudian-sp-content-area:focus {
+.octo-sp-content-area:focus {
   outline: none;
   border-color: var(--interactive-accent);
 }
 
-.claudian-sp-modal-buttons {
+.octo-sp-modal-buttons {
   display: flex;
   gap: 8px;
   margin-top: 16px;

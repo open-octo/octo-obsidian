@@ -1,16 +1,16 @@
 import { buildInlineEditPrompt, getInlineEditSystemPrompt, parseInlineEditResponse } from '../../../core/prompt/inlineEdit';
 import type { InlineEditRequest, InlineEditResult, InlineEditService } from '../../../core/providers/types';
-import type ClaudianPlugin from '../../../main';
+import type OctoPlugin from '../../../main';
 import { appendContextFiles } from '../../../utils/context';
 import { runOctoAgentAuxQuery } from '../runtime/OctoAgentAuxQueryRunner';
 
 export class OctoAgentInlineEditService implements InlineEditService {
-  private plugin: ClaudianPlugin;
+  private plugin: OctoPlugin;
   private abortController: AbortController | null = null;
   private modelOverride: string | undefined;
   private sessionId: string | null = null;
 
-  constructor(plugin: ClaudianPlugin) {
+  constructor(plugin: OctoPlugin) {
     this.plugin = plugin;
   }
 
@@ -64,7 +64,7 @@ export class OctoAgentInlineEditService implements InlineEditService {
           model: this.modelOverride,
           permissionMode: 'interactive',
           resumeSessionId,
-          source: 'claudian-inline-edit',
+          source: 'octo-inline-edit',
           systemPrompt: getInlineEditSystemPrompt(),
         },
         prompt,

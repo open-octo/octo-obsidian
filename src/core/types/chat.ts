@@ -9,7 +9,10 @@ export interface ForkSource {
 }
 
 /** View type identifier for Obsidian. */
-export const VIEW_TYPE_CLAUDIAN = 'claudian-view';
+// The value is registered with Obsidian and recorded in each vault's
+// workspace.json, so it outlives the rename: changing it would blank the chat
+// panel in every layout that already references it.
+export const VIEW_TYPE_OCTO = 'claudian-view';
 
 /** Supported image media types for attachments. */
 export type ImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';

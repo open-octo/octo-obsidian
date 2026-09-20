@@ -179,16 +179,16 @@ class MockElement {
   }
 
   private syncDisplay(): void {
-    if (this.classList.has('claudian-hidden')) {
+    if (this.classList.has('octo-hidden')) {
       this.style.display = 'none';
       return;
     }
     if (
-      this.classList.has('claudian-status-panel-todos')
-      || this.classList.has('claudian-status-panel-content')
-      || this.classList.has('claudian-status-panel-bash')
-      || this.classList.has('claudian-status-panel-bash-content')
-      || this.classList.has('claudian-tool-content')
+      this.classList.has('octo-status-panel-todos')
+      || this.classList.has('octo-status-panel-content')
+      || this.classList.has('octo-status-panel-bash')
+      || this.classList.has('octo-status-panel-bash-content')
+      || this.classList.has('octo-tool-content')
     ) {
       this.style.display = 'block';
       return;
@@ -236,7 +236,7 @@ class MockElement {
         return el.attributes[attrName] !== undefined;
       }
 
-      // Handle class selectors like .claudian-status-panel
+      // Handle class selectors like .octo-status-panel
       const classMatch = selector.match(/\.([a-zA-Z0-9_-]+)/g);
       if (classMatch) {
         for (const cls of classMatch) {
@@ -296,13 +296,13 @@ describe('StatusPanel', () => {
     it('should create panel element when mounted', () => {
       panel.mount(containerEl as unknown as HTMLElement);
 
-      expect(containerEl.querySelector('.claudian-status-panel')).not.toBeNull();
+      expect(containerEl.querySelector('.octo-status-panel')).not.toBeNull();
     });
 
     it('should create hidden todo container initially', () => {
       panel.mount(containerEl as unknown as HTMLElement);
 
-      const todoContainer = containerEl.querySelector('.claudian-status-panel-todos');
+      const todoContainer = containerEl.querySelector('.octo-status-panel-todos');
       expect(todoContainer).not.toBeNull();
       expect(todoContainer!.style.display).toBe('none');
     });
@@ -320,7 +320,7 @@ describe('StatusPanel', () => {
 
       panel.updateTodos(todos);
 
-      const todoContainer = containerEl.querySelector('.claudian-status-panel-todos');
+      const todoContainer = containerEl.querySelector('.octo-status-panel-todos');
       expect(todoContainer!.style.display).toBe('block');
     });
 
@@ -332,7 +332,7 @@ describe('StatusPanel', () => {
       panel.updateTodos(todos);
       panel.updateTodos(null);
 
-      const todoContainer = containerEl.querySelector('.claudian-status-panel-todos');
+      const todoContainer = containerEl.querySelector('.octo-status-panel-todos');
       expect(todoContainer!.style.display).toBe('none');
     });
 
@@ -344,7 +344,7 @@ describe('StatusPanel', () => {
       panel.updateTodos(todos);
       panel.updateTodos([]);
 
-      const todoContainer = containerEl.querySelector('.claudian-status-panel-todos');
+      const todoContainer = containerEl.querySelector('.octo-status-panel-todos');
       expect(todoContainer!.style.display).toBe('none');
     });
 
@@ -357,7 +357,7 @@ describe('StatusPanel', () => {
 
       panel.updateTodos(todos);
 
-      const label = containerEl.querySelector('.claudian-status-panel-label');
+      const label = containerEl.querySelector('.octo-status-panel-label');
       expect(label?.textContent).toBe('Tasks (1/3)');
     });
 
@@ -369,7 +369,7 @@ describe('StatusPanel', () => {
 
       panel.updateTodos(todos);
 
-      const current = containerEl.querySelector('.claudian-status-panel-current');
+      const current = containerEl.querySelector('.octo-status-panel-current');
       expect(current?.textContent).toBe('Working on Task 2');
     });
 
@@ -381,7 +381,7 @@ describe('StatusPanel', () => {
 
       panel.updateTodos(todos);
 
-      const items = containerEl.querySelectorAll('.claudian-todo-item');
+      const items = containerEl.querySelectorAll('.octo-todo-item');
       expect(items.length).toBe(2);
     });
 
@@ -394,9 +394,9 @@ describe('StatusPanel', () => {
 
       panel.updateTodos(todos);
 
-      expect(containerEl.querySelector('.claudian-todo-pending')).not.toBeNull();
-      expect(containerEl.querySelector('.claudian-todo-in_progress')).not.toBeNull();
-      expect(containerEl.querySelector('.claudian-todo-completed')).not.toBeNull();
+      expect(containerEl.querySelector('.octo-todo-pending')).not.toBeNull();
+      expect(containerEl.querySelector('.octo-todo-in_progress')).not.toBeNull();
+      expect(containerEl.querySelector('.octo-todo-completed')).not.toBeNull();
     });
 
     it('should handle updateTodos called before mount with todos to display', () => {
@@ -427,8 +427,8 @@ describe('StatusPanel', () => {
     });
 
     it('should expand content on header click', () => {
-      const header = containerEl.querySelector('.claudian-status-panel-header');
-      const content = containerEl.querySelector('.claudian-status-panel-content');
+      const header = containerEl.querySelector('.octo-status-panel-header');
+      const content = containerEl.querySelector('.octo-status-panel-content');
 
       expect(content!.style.display).toBe('none');
 
@@ -438,8 +438,8 @@ describe('StatusPanel', () => {
     });
 
     it('should collapse content on second click', () => {
-      const header = containerEl.querySelector('.claudian-status-panel-header');
-      const content = containerEl.querySelector('.claudian-status-panel-content');
+      const header = containerEl.querySelector('.octo-status-panel-header');
+      const content = containerEl.querySelector('.octo-status-panel-content');
 
       header!.click();
       expect(content!.style.display).toBe('block');
@@ -449,24 +449,24 @@ describe('StatusPanel', () => {
     });
 
     it('should show list icon in header', () => {
-      const icon = containerEl.querySelector('.claudian-status-panel-icon');
+      const icon = containerEl.querySelector('.octo-status-panel-icon');
       expect(icon).not.toBeNull();
       expect(icon?.getAttribute('data-icon')).toBe('list-checks');
     });
 
     it('should hide current task when expanded', () => {
-      const header = containerEl.querySelector('.claudian-status-panel-header');
+      const header = containerEl.querySelector('.octo-status-panel-header');
 
-      expect(containerEl.querySelector('.claudian-status-panel-current')).not.toBeNull();
+      expect(containerEl.querySelector('.octo-status-panel-current')).not.toBeNull();
 
       header!.click();
 
-      expect(containerEl.querySelector('.claudian-status-panel-current')).toBeNull();
+      expect(containerEl.querySelector('.octo-status-panel-current')).toBeNull();
     });
 
     it('should toggle on Enter key', () => {
-      const header = containerEl.querySelector('.claudian-status-panel-header');
-      const content = containerEl.querySelector('.claudian-status-panel-content');
+      const header = containerEl.querySelector('.octo-status-panel-header');
+      const content = containerEl.querySelector('.octo-status-panel-content');
 
       const event = { type: 'keydown', key: 'Enter', preventDefault: jest.fn() };
       header!.dispatchEvent(event);
@@ -476,8 +476,8 @@ describe('StatusPanel', () => {
     });
 
     it('should toggle on Space key', () => {
-      const header = containerEl.querySelector('.claudian-status-panel-header');
-      const content = containerEl.querySelector('.claudian-status-panel-content');
+      const header = containerEl.querySelector('.octo-status-panel-header');
+      const content = containerEl.querySelector('.octo-status-panel-content');
 
       const event = { type: 'keydown', key: ' ', preventDefault: jest.fn() };
       header!.dispatchEvent(event);
@@ -487,8 +487,8 @@ describe('StatusPanel', () => {
     });
 
     it('should not toggle on other keys', () => {
-      const header = containerEl.querySelector('.claudian-status-panel-header');
-      const content = containerEl.querySelector('.claudian-status-panel-content');
+      const header = containerEl.querySelector('.octo-status-panel-header');
+      const content = containerEl.querySelector('.octo-status-panel-content');
 
       const event = { type: 'keydown', key: 'Tab', preventDefault: jest.fn() };
       header!.dispatchEvent(event);
@@ -504,18 +504,18 @@ describe('StatusPanel', () => {
     });
 
     it('should set tabindex on header', () => {
-      const header = containerEl.querySelector('.claudian-status-panel-header');
+      const header = containerEl.querySelector('.octo-status-panel-header');
       expect(header?.getAttribute('tabindex')).toBe('0');
     });
 
     it('should set role button on header', () => {
-      const header = containerEl.querySelector('.claudian-status-panel-header');
+      const header = containerEl.querySelector('.octo-status-panel-header');
       expect(header?.getAttribute('role')).toBe('button');
     });
 
     it('should update aria-expanded on toggle', () => {
       panel.updateTodos([{ content: 'Task', status: 'pending', activeForm: 'Task' }]);
-      const header = containerEl.querySelector('.claudian-status-panel-header');
+      const header = containerEl.querySelector('.octo-status-panel-header');
 
       expect(header!.getAttribute('aria-expanded')).toBe('false');
 
@@ -532,14 +532,14 @@ describe('StatusPanel', () => {
         { content: 'Task 2', status: 'pending', activeForm: 'Task 2' },
       ]);
 
-      const header = containerEl.querySelector('.claudian-status-panel-header');
+      const header = containerEl.querySelector('.octo-status-panel-header');
       expect(header?.getAttribute('aria-label')).toBe('Expand task list - 1 of 2 completed');
     });
 
     it('should hide status icons from screen readers', () => {
       panel.updateTodos([{ content: 'Task', status: 'pending', activeForm: 'Task' }]);
 
-      const icon = containerEl.querySelector('.claudian-todo-status-icon');
+      const icon = containerEl.querySelector('.octo-todo-status-icon');
       expect(icon?.getAttribute('aria-hidden')).toBe('true');
     });
   });
@@ -555,8 +555,8 @@ describe('StatusPanel', () => {
 
       panel.remount();
 
-      expect(containerEl.querySelector('.claudian-status-panel')).not.toBeNull();
-      const label = containerEl.querySelector('.claudian-status-panel-label');
+      expect(containerEl.querySelector('.octo-status-panel')).not.toBeNull();
+      const label = containerEl.querySelector('.octo-status-panel-label');
       expect(label?.textContent).toBe('Tasks (1/2)');
     });
 
@@ -571,12 +571,12 @@ describe('StatusPanel', () => {
         { content: 'Task 1', status: 'in_progress', activeForm: 'Doing Task 1' },
       ]);
 
-      const header = containerEl.querySelector('.claudian-status-panel-header');
+      const header = containerEl.querySelector('.octo-status-panel-header');
       header!.click();
 
       panel.remount();
 
-      const content = containerEl.querySelector('.claudian-status-panel-content');
+      const content = containerEl.querySelector('.octo-status-panel-content');
       expect(content!.style.display).toBe('none');
     });
   });
@@ -612,11 +612,11 @@ describe('StatusPanel', () => {
     it('should remove panel from DOM', () => {
       panel.mount(containerEl as unknown as HTMLElement);
 
-      expect(containerEl.querySelector('.claudian-status-panel')).not.toBeNull();
+      expect(containerEl.querySelector('.octo-status-panel')).not.toBeNull();
 
       panel.destroy();
 
-      expect(containerEl.querySelector('.claudian-status-panel')).toBeNull();
+      expect(containerEl.querySelector('.octo-status-panel')).toBeNull();
     });
 
     it('should be safe to call multiple times', () => {
@@ -651,17 +651,17 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const bashContainer = containerEl.querySelector('.claudian-status-panel-bash');
+      const bashContainer = containerEl.querySelector('.octo-status-panel-bash');
       expect(bashContainer).not.toBeNull();
       expect(bashContainer!.style.display).toBe('block');
 
-      const header = containerEl.querySelector('.claudian-status-panel-bash-header');
+      const header = containerEl.querySelector('.octo-status-panel-bash-header');
       expect(header).not.toBeNull();
-      const label = header!.querySelector('.claudian-tool-label');
+      const label = header!.querySelector('.octo-tool-label');
       expect(label).not.toBeNull();
       expect(label!.textContent).toBe('Command panel');
 
-      const entries = containerEl.querySelectorAll('.claudian-status-panel-bash-entry');
+      const entries = containerEl.querySelectorAll('.octo-status-panel-bash-entry');
       expect(entries.length).toBe(1);
     });
 
@@ -674,29 +674,29 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const content = containerEl.querySelector('.claudian-status-panel-bash-content');
+      const content = containerEl.querySelector('.octo-status-panel-bash-content');
       expect(content).not.toBeNull();
       expect(content!.style.display).toBe('block');
 
-      const header = containerEl.querySelector('.claudian-status-panel-bash-header');
+      const header = containerEl.querySelector('.octo-status-panel-bash-header');
       expect(header).not.toBeNull();
-      const label = header!.querySelector('.claudian-tool-label');
+      const label = header!.querySelector('.octo-tool-label');
       expect(label).not.toBeNull();
       expect(label!.textContent).toBe('Command panel');
 
       header!.click();
       expect(content!.style.display).toBe('none');
-      const collapsedHeader = containerEl.querySelector('.claudian-status-panel-bash-header');
+      const collapsedHeader = containerEl.querySelector('.octo-status-panel-bash-header');
       expect(collapsedHeader).not.toBeNull();
-      const collapsedLabel = collapsedHeader!.querySelector('.claudian-tool-label');
+      const collapsedLabel = collapsedHeader!.querySelector('.octo-tool-label');
       expect(collapsedLabel).not.toBeNull();
       expect(collapsedLabel!.textContent).toBe('echo hello');
 
       header!.click();
       expect(content!.style.display).toBe('block');
-      const expandedHeaderAgain = containerEl.querySelector('.claudian-status-panel-bash-header');
+      const expandedHeaderAgain = containerEl.querySelector('.octo-status-panel-bash-header');
       expect(expandedHeaderAgain).not.toBeNull();
-      const expandedLabelAgain = expandedHeaderAgain!.querySelector('.claudian-tool-label');
+      const expandedLabelAgain = expandedHeaderAgain!.querySelector('.octo-tool-label');
       expect(expandedLabelAgain).not.toBeNull();
       expect(expandedLabelAgain!.textContent).toBe('Command panel');
     });
@@ -710,11 +710,11 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const entry = containerEl.querySelector('.claudian-status-panel-bash-entry');
+      const entry = containerEl.querySelector('.octo-status-panel-bash-entry');
       expect(entry).not.toBeNull();
 
-      const entryHeader = entry!.querySelector('.claudian-tool-header');
-      const entryContent = entry!.querySelector('.claudian-tool-content');
+      const entryHeader = entry!.querySelector('.octo-tool-header');
+      const entryContent = entry!.querySelector('.octo-tool-content');
 
       expect(entryContent).not.toBeNull();
       expect(entryContent!.style.display).toBe('block');
@@ -722,9 +722,9 @@ describe('StatusPanel', () => {
 
       entryHeader!.click();
 
-      const entryAfterClick = containerEl.querySelector('.claudian-status-panel-bash-entry');
-      const contentAfterClick = entryAfterClick!.querySelector('.claudian-tool-content');
-      const headerAfterClick = entryAfterClick!.querySelector('.claudian-tool-header');
+      const entryAfterClick = containerEl.querySelector('.octo-status-panel-bash-entry');
+      const contentAfterClick = entryAfterClick!.querySelector('.octo-tool-content');
+      const headerAfterClick = entryAfterClick!.querySelector('.octo-tool-header');
 
       expect(contentAfterClick!.style.display).toBe('none');
       expect(headerAfterClick!.getAttribute('aria-expanded')).toBe('false');
@@ -732,9 +732,9 @@ describe('StatusPanel', () => {
       const event = { type: 'keydown', key: 'Enter', preventDefault: jest.fn() };
       headerAfterClick!.dispatchEvent(event);
 
-      const entryAfterKeydown = containerEl.querySelector('.claudian-status-panel-bash-entry');
-      const contentAfterKeydown = entryAfterKeydown!.querySelector('.claudian-tool-content');
-      const headerAfterKeydown = entryAfterKeydown!.querySelector('.claudian-tool-header');
+      const entryAfterKeydown = containerEl.querySelector('.octo-status-panel-bash-entry');
+      const contentAfterKeydown = entryAfterKeydown!.querySelector('.octo-tool-content');
+      const headerAfterKeydown = entryAfterKeydown!.querySelector('.octo-tool-header');
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(contentAfterKeydown!.style.display).toBe('block');
@@ -750,12 +750,12 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const clearButton = containerEl.querySelector('.claudian-status-panel-bash-action-clear');
+      const clearButton = containerEl.querySelector('.octo-status-panel-bash-action-clear');
       expect(clearButton).not.toBeNull();
 
       clearButton!.click();
 
-      const bashContainer = containerEl.querySelector('.claudian-status-panel-bash');
+      const bashContainer = containerEl.querySelector('.octo-status-panel-bash');
       expect(bashContainer).not.toBeNull();
       expect(bashContainer!.style.display).toBe('none');
     });
@@ -769,10 +769,10 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const content = containerEl.querySelector('.claudian-status-panel-bash-content');
+      const content = containerEl.querySelector('.octo-status-panel-bash-content');
       expect(content!.style.display).toBe('block');
 
-      const clearButton = containerEl.querySelector('.claudian-status-panel-bash-action-clear');
+      const clearButton = containerEl.querySelector('.octo-status-panel-bash-action-clear');
       expect(clearButton).not.toBeNull();
 
       const event = { type: 'keydown', key: 'Enter', preventDefault: jest.fn(), stopPropagation: jest.fn() };
@@ -791,7 +791,7 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const copyButton = containerEl.querySelector('.claudian-status-panel-bash-action-copy');
+      const copyButton = containerEl.querySelector('.octo-status-panel-bash-action-copy');
       expect(copyButton).not.toBeNull();
 
       copyButton!.click();
@@ -809,10 +809,10 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const content = containerEl.querySelector('.claudian-status-panel-bash-content');
+      const content = containerEl.querySelector('.octo-status-panel-bash-content');
       expect(content!.style.display).toBe('block');
 
-      const copyButton = containerEl.querySelector('.claudian-status-panel-bash-action-copy');
+      const copyButton = containerEl.querySelector('.octo-status-panel-bash-action-copy');
       expect(copyButton).not.toBeNull();
 
       const event = { type: 'keydown', key: ' ', preventDefault: jest.fn(), stopPropagation: jest.fn() };
@@ -836,7 +836,7 @@ describe('StatusPanel', () => {
         });
       }
 
-      const entries = containerEl.querySelectorAll('.claudian-status-panel-bash-entry');
+      const entries = containerEl.querySelectorAll('.octo-status-panel-bash-entry');
       expect(entries.length).toBe(50);
     });
 
@@ -849,7 +849,7 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const content = containerEl.querySelector('.claudian-status-panel-bash-content');
+      const content = containerEl.querySelector('.octo-status-panel-bash-content');
       expect(content).not.toBeNull();
       expect((content as any).scrollTop).toBe((content as any).scrollHeight);
     });
@@ -862,17 +862,17 @@ describe('StatusPanel', () => {
         output: '',
       });
 
-      let entry = containerEl.querySelector('.claudian-status-panel-bash-entry');
-      let text = entry!.querySelector('.claudian-tool-result-text');
+      let entry = containerEl.querySelector('.octo-status-panel-bash-entry');
+      let text = entry!.querySelector('.octo-tool-result-text');
       expect(text!.textContent).toBe('Running...');
 
       panel.updateBashOutput('bash-1', { status: 'completed', output: 'hello', exitCode: 0 });
 
-      entry = containerEl.querySelector('.claudian-status-panel-bash-entry');
-      text = entry!.querySelector('.claudian-tool-result-text');
+      entry = containerEl.querySelector('.octo-status-panel-bash-entry');
+      text = entry!.querySelector('.octo-tool-result-text');
       expect(text!.textContent).toBe('hello');
 
-      const statusEl = entry!.querySelector('.claudian-tool-status');
+      const statusEl = entry!.querySelector('.octo-tool-status');
       expect(statusEl!.classList.contains('status-completed')).toBe(true);
     });
 
@@ -886,11 +886,11 @@ describe('StatusPanel', () => {
 
       panel.updateBashOutput('bash-1', { status: 'error', output: 'command not found', exitCode: 127 });
 
-      const entry = containerEl.querySelector('.claudian-status-panel-bash-entry');
-      const text = entry!.querySelector('.claudian-tool-result-text');
+      const entry = containerEl.querySelector('.octo-status-panel-bash-entry');
+      const text = entry!.querySelector('.octo-tool-result-text');
       expect(text!.textContent).toBe('command not found');
 
-      const statusEl = entry!.querySelector('.claudian-tool-status');
+      const statusEl = entry!.querySelector('.octo-tool-status');
       expect(statusEl!.classList.contains('status-error')).toBe(true);
     });
 
@@ -904,8 +904,8 @@ describe('StatusPanel', () => {
 
       panel.updateBashOutput('nonexistent', { status: 'completed', output: 'done' });
 
-      const entry = containerEl.querySelector('.claudian-status-panel-bash-entry');
-      const text = entry!.querySelector('.claudian-tool-result-text');
+      const entry = containerEl.querySelector('.octo-status-panel-bash-entry');
+      const text = entry!.querySelector('.octo-tool-result-text');
       expect(text!.textContent).toBe('Running...');
     });
 
@@ -918,15 +918,15 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const header = containerEl.querySelector('.claudian-status-panel-bash-header');
+      const header = containerEl.querySelector('.octo-status-panel-bash-header');
       expect(header!.getAttribute('aria-expanded')).toBe('true');
 
       header!.click();
-      const headerAfterCollapse = containerEl.querySelector('.claudian-status-panel-bash-header');
+      const headerAfterCollapse = containerEl.querySelector('.octo-status-panel-bash-header');
       expect(headerAfterCollapse!.getAttribute('aria-expanded')).toBe('false');
 
       headerAfterCollapse!.click();
-      const headerAfterExpand = containerEl.querySelector('.claudian-status-panel-bash-header');
+      const headerAfterExpand = containerEl.querySelector('.octo-status-panel-bash-header');
       expect(headerAfterExpand!.getAttribute('aria-expanded')).toBe('true');
     });
 
@@ -941,7 +941,7 @@ describe('StatusPanel', () => {
         exitCode: 0,
       });
 
-      const copyButton = containerEl.querySelector('.claudian-status-panel-bash-action-copy');
+      const copyButton = containerEl.querySelector('.octo-status-panel-bash-action-copy');
       expect(copyButton).not.toBeNull();
 
       copyButton!.click();

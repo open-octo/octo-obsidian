@@ -68,30 +68,30 @@ export interface MockElement {
 }
 
 const CLASS_DISPLAY: Record<string, string> = {
-  'claudian-browser-selection-indicator': 'block',
-  'claudian-canvas-indicator': 'block',
-  'claudian-context-meter': 'flex',
-  'claudian-file-indicator': 'none',
-  'claudian-image-preview': 'none',
-  'claudian-mcp-selector': 'flex',
-  'claudian-mode-selector': 'flex',
-  'claudian-permission-toggle': 'flex',
-  'claudian-selection-indicator': 'block',
-  'claudian-service-tier-toggle': 'flex',
-  'claudian-status-panel-bash': 'block',
-  'claudian-status-panel-bash-content': 'block',
-  'claudian-status-panel-bash-entry-content': 'block',
-  'claudian-status-panel-content': 'block',
-  'claudian-status-panel-todos': 'block',
-  'claudian-tab-content': 'flex',
-  'claudian-thinking-budget': 'flex',
-  'claudian-thinking-effort': 'flex',
+  'octo-browser-selection-indicator': 'block',
+  'octo-canvas-indicator': 'block',
+  'octo-context-meter': 'flex',
+  'octo-file-indicator': 'none',
+  'octo-image-preview': 'none',
+  'octo-mcp-selector': 'flex',
+  'octo-mode-selector': 'flex',
+  'octo-permission-toggle': 'flex',
+  'octo-selection-indicator': 'block',
+  'octo-service-tier-toggle': 'flex',
+  'octo-status-panel-bash': 'block',
+  'octo-status-panel-bash-content': 'block',
+  'octo-status-panel-bash-entry-content': 'block',
+  'octo-status-panel-content': 'block',
+  'octo-status-panel-todos': 'block',
+  'octo-tab-content': 'flex',
+  'octo-thinking-budget': 'flex',
+  'octo-thinking-effort': 'flex',
 };
 
 const DISPLAY_CLASSES = new Set([
-  'claudian-hidden',
-  'claudian-visible-block',
-  'claudian-visible-flex',
+  'octo-hidden',
+  'octo-visible-block',
+  'octo-visible-flex',
   ...Object.keys(CLASS_DISPLAY),
 ]);
 
@@ -105,9 +105,9 @@ export function createMockEl(tag = 'div'): any {
   let textContent = '';
 
   const resolveDisplay = (): string | null => {
-    if (classes.has('claudian-hidden')) return 'none';
-    if (classes.has('claudian-visible-flex')) return 'flex';
-    if (classes.has('claudian-visible-block')) return 'block';
+    if (classes.has('octo-hidden')) return 'none';
+    if (classes.has('octo-visible-flex')) return 'flex';
+    if (classes.has('octo-visible-block')) return 'block';
 
     for (const [cls, display] of Object.entries(CLASS_DISPLAY)) {
       if (classes.has(cls)) return display;

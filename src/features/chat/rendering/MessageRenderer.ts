@@ -13,7 +13,7 @@ import {
 import { extractToolResultContent } from '../../../core/tools/toolResultContent';
 import type { ChatMessage, ImageAttachment, SubagentInfo, ToolCallInfo } from '../../../core/types';
 import { t } from '../../../i18n/i18n';
-import type ClaudianPlugin from '../../../main';
+import type OctoPlugin from '../../../main';
 import { extractUserDisplayContent } from '../../../utils/context';
 import { formatDurationMmSs } from '../../../utils/date';
 import { processFileLinks, registerFileLinkHandler } from '../../../utils/fileLink';
@@ -48,7 +48,7 @@ function runRendererAction(action: () => Promise<void>): void {
 
 export class MessageRenderer {
   private app: App;
-  private plugin: ClaudianPlugin;
+  private plugin: OctoPlugin;
   private component: Component;
   private messagesEl: HTMLElement;
   private rewindCallback?: (messageId: string, mode?: ChatRewindMode) => Promise<void>;
@@ -57,7 +57,7 @@ export class MessageRenderer {
   private liveMessageEls = new Map<string, HTMLElement>();
 
   constructor(
-    plugin: ClaudianPlugin,
+    plugin: OctoPlugin,
     component: Component,
     messagesEl: HTMLElement,
     rewindCallback?: (messageId: string, mode?: ChatRewindMode) => Promise<void>,
@@ -139,19 +139,19 @@ export class MessageRenderer {
     }
 
     const msgEl = this.messagesEl.createDiv({
-      cls: `claudian-message claudian-message-${msg.role}`,
+      cls: `octo-message octo-message-${msg.role}`,
       attr: {
         'data-message-id': msg.id,
         'data-role': msg.role,
       },
     });
 
-    const contentEl = msgEl.createDiv({ cls: 'claudian-message-content', attr: { dir: 'auto' } });
+    const contentEl = msgEl.createDiv({ cls: 'octo-message-content', attr: { dir: 'auto' } });
 
     if (msg.role === 'user') {
       const textToShow = this.getUserMessageTextToShow(msg);
       if (textToShow) {
-        const textEl = contentEl.createDiv({ cls: 'claudian-text-block' });
+        const textEl = contentEl.createDiv({ cls: 'octo-text-block' });
         void this.renderContent(textEl, textToShow);
         this.addUserCopyButton(msgEl, textToShow);
         this.applyTocTitle(msgEl, textToShow);
@@ -176,7 +176,7 @@ export class MessageRenderer {
       return;
     }
 
-    const contentEl = msgEl.querySelector<HTMLElement>('.claudian-message-content');
+    const contentEl = msgEl.querySelector<HTMLElement>('.octo-message-content');
     if (!contentEl) {
       return;
     }
@@ -185,16 +185,16 @@ export class MessageRenderer {
 
     const textToShow = this.getUserMessageTextToShow(msg);
     if (textToShow) {
-      const textEl = contentEl.createDiv({ cls: 'claudian-text-block' });
+      const textEl = contentEl.createDiv({ cls: 'octo-text-block' });
       void this.renderContent(textEl, textToShow);
       this.applyTocTitle(msgEl, textToShow);
     } else {
       msgEl.removeAttribute('data-toc-title');
     }
 
-    const toolbar = msgEl.querySelector<HTMLElement>('.claudian-user-msg-actions');
+    const toolbar = msgEl.querySelector<HTMLElement>('.octo-user-msg-actions');
     if (toolbar) {
-      toolbar.querySelectorAll('.claudian-user-msg-copy-btn').forEach((el) => el.remove());
+      toolbar.querySelectorAll('.octo-user-msg-copy-btn').forEach((el) => el.remove());
     }
 
     if (textToShow) {
@@ -231,8 +231,8 @@ export class MessageRenderer {
     this.liveMessageEls.clear();
 
     // Recreate welcome element after clearing
-    const newWelcomeEl = this.messagesEl.createDiv({ cls: 'claudian-welcome' });
-    newWelcomeEl.createDiv({ cls: 'claudian-welcome-greeting', text: getGreeting() });
+    const newWelcomeEl = this.messagesEl.createDiv({ cls: 'octo-welcome' });
+    newWelcomeEl.createDiv({ cls: 'octo-welcome-greeting', text: getGreeting() });
 
     for (let i = 0; i < messages.length; i++) {
       this.renderStoredMessage(messages[i], messages, i);
@@ -274,19 +274,19 @@ export class MessageRenderer {
     }
 
     const msgEl = this.messagesEl.createDiv({
-      cls: `claudian-message claudian-message-${msg.role}`,
+      cls: `octo-message octo-message-${msg.role}`,
       attr: {
         'data-message-id': msg.id,
         'data-role': msg.role,
       },
     });
 
-    const contentEl = msgEl.createDiv({ cls: 'claudian-message-content', attr: { dir: 'auto' } });
+    const contentEl = msgEl.createDiv({ cls: 'octo-message-content', attr: { dir: 'auto' } });
 
     if (msg.role === 'user') {
       const textToShow = this.getUserMessageTextToShow(msg);
       if (textToShow) {
-        const textEl = contentEl.createDiv({ cls: 'claudian-text-block' });
+        const textEl = contentEl.createDiv({ cls: 'octo-text-block' });
         void this.renderContent(textEl, textToShow);
         this.addUserCopyButton(msgEl, textToShow);
         this.applyTocTitle(msgEl, textToShow);
@@ -338,17 +338,17 @@ export class MessageRenderer {
   }
 
   private renderInterruptMessage(): void {
-    const msgEl = this.messagesEl.createDiv({ cls: 'claudian-message claudian-message-assistant' });
-    const contentEl = msgEl.createDiv({ cls: 'claudian-message-content', attr: { dir: 'auto' } });
+    const msgEl = this.messagesEl.createDiv({ cls: 'octo-message octo-message-assistant' });
+    const contentEl = msgEl.createDiv({ cls: 'octo-message-content', attr: { dir: 'auto' } });
     this.appendInterruptIndicator(contentEl);
   }
 
   private appendInterruptIndicator(contentEl: HTMLElement): void {
-    const textEl = contentEl.createDiv({ cls: 'claudian-text-block' });
-    textEl.createSpan({ cls: 'claudian-interrupted', text: 'Interrupted' });
+    const textEl = contentEl.createDiv({ cls: 'octo-text-block' });
+    textEl.createSpan({ cls: 'octo-interrupted', text: 'Interrupted' });
     textEl.appendText(' ');
     textEl.createSpan({
-      cls: 'claudian-interrupted-hint',
+      cls: 'octo-interrupted-hint',
       text: '\u00B7 What should Octo do instead?',
     });
   }
@@ -372,7 +372,7 @@ export class MessageRenderer {
           if (!block.content || !block.content.trim()) {
             continue;
           }
-          const textEl = contentEl.createDiv({ cls: 'claudian-text-block' });
+          const textEl = contentEl.createDiv({ cls: 'octo-text-block' });
           void this.renderContent(textEl, block.content);
           this.addTextCopyButton(textEl, block.content);
         } else if (block.type === 'tool_use') {
@@ -382,8 +382,8 @@ export class MessageRenderer {
             renderedToolIds.add(toolCall.id);
           }
         } else if (block.type === 'context_compacted') {
-          const boundaryEl = contentEl.createDiv({ cls: 'claudian-compact-boundary' });
-          boundaryEl.createSpan({ cls: 'claudian-compact-boundary-label', text: 'Conversation compacted' });
+          const boundaryEl = contentEl.createDiv({ cls: 'octo-compact-boundary' });
+          boundaryEl.createSpan({ cls: 'octo-compact-boundary-label', text: 'Conversation compacted' });
         } else if (block.type === 'subagent') {
           const taskToolCall = msg.toolCalls?.find(
             tc => tc.id === block.subagentId && isSubagentToolName(tc.name)
@@ -406,7 +406,7 @@ export class MessageRenderer {
     } else {
       // Fallback for old conversations without contentBlocks
       if (msg.content) {
-        const textEl = contentEl.createDiv({ cls: 'claudian-text-block' });
+        const textEl = contentEl.createDiv({ cls: 'octo-text-block' });
         void this.renderContent(textEl, msg.content);
         this.addTextCopyButton(textEl, msg.content);
       }
@@ -421,10 +421,10 @@ export class MessageRenderer {
     const hasCompactBoundary = msg.contentBlocks?.some(b => b.type === 'context_compacted');
     if (msg.durationSeconds && msg.durationSeconds > 0 && !hasCompactBoundary) {
       const flavorWord = msg.durationFlavorWord || 'Baked';
-      const footerEl = contentEl.createDiv({ cls: 'claudian-response-footer' });
+      const footerEl = contentEl.createDiv({ cls: 'octo-response-footer' });
       footerEl.createSpan({
         text: `* ${flavorWord} for ${formatDurationMmSs(msg.durationSeconds)}`,
-        cls: 'claudian-baked-duration',
+        cls: 'octo-baked-duration',
       });
     }
   }
@@ -584,10 +584,10 @@ export class MessageRenderer {
    * Renders image attachments above a message.
    */
   renderMessageImages(containerEl: HTMLElement, images: ImageAttachment[]): void {
-    const imagesEl = containerEl.createDiv({ cls: 'claudian-message-images' });
+    const imagesEl = containerEl.createDiv({ cls: 'octo-message-images' });
 
     for (const image of images) {
-      const imageWrapper = imagesEl.createDiv({ cls: 'claudian-message-image' });
+      const imageWrapper = imagesEl.createDiv({ cls: 'octo-message-image' });
       const imgEl = imageWrapper.createEl('img', {
         attr: {
           alt: image.name,
@@ -610,8 +610,8 @@ export class MessageRenderer {
     const dataUri = `data:${image.mediaType};base64,${image.data}`;
 
     const ownerDocument = this.messagesEl.ownerDocument ?? window.document;
-    const overlay = ownerDocument.body.createDiv({ cls: 'claudian-image-modal-overlay' });
-    const modal = overlay.createDiv({ cls: 'claudian-image-modal' });
+    const overlay = ownerDocument.body.createDiv({ cls: 'octo-image-modal-overlay' });
+    const modal = overlay.createDiv({ cls: 'octo-image-modal' });
 
     modal.createEl('img', {
       attr: {
@@ -620,7 +620,7 @@ export class MessageRenderer {
       },
     });
 
-    const closeBtn = modal.createDiv({ cls: 'claudian-image-modal-close' });
+    const closeBtn = modal.createDiv({ cls: 'octo-image-modal-close' });
     closeBtn.setText('\u00D7');
 
     const handleEsc = (e: KeyboardEvent) => {
@@ -684,10 +684,10 @@ export class MessageRenderer {
       // Wrap pre elements and move buttons outside scroll area
       el.querySelectorAll('pre').forEach((pre) => {
         // Skip if already wrapped
-        if (pre.parentElement?.classList.contains('claudian-code-wrapper')) return;
+        if (pre.parentElement?.classList.contains('octo-code-wrapper')) return;
 
         // Create wrapper
-        const wrapper = createEl('div', { cls: 'claudian-code-wrapper' });
+        const wrapper = createEl('div', { cls: 'octo-code-wrapper' });
         pre.parentElement?.insertBefore(wrapper, pre);
         wrapper.appendChild(pre);
 
@@ -698,7 +698,7 @@ export class MessageRenderer {
           if (match) {
             wrapper.classList.add('has-language');
             const label = createEl('span', {
-              cls: 'claudian-code-lang-label',
+              cls: 'octo-code-lang-label',
               text: match[1],
             });
             wrapper.appendChild(label);
@@ -732,7 +732,7 @@ export class MessageRenderer {
       }
     } catch {
       el.createDiv({
-        cls: 'claudian-render-error',
+        cls: 'octo-render-error',
         text: 'Failed to render message content.',
       });
     }
@@ -749,7 +749,7 @@ export class MessageRenderer {
    * @param markdown The original markdown content to copy
    */
   addTextCopyButton(textEl: HTMLElement, markdown: string): void {
-    const copyBtn = textEl.createSpan({ cls: 'claudian-text-copy-btn' });
+    const copyBtn = textEl.createSpan({ cls: 'octo-text-copy-btn' });
     setIcon(copyBtn, 'copy');
 
     let feedbackTimeout: number | null = null;
@@ -793,10 +793,10 @@ export class MessageRenderer {
     const msgEl = this.liveMessageEls.get(msg.id);
     if (!msgEl) return;
 
-    if (canRewind && this.rewindCallback && !msgEl.querySelector('.claudian-message-rewind-btn')) {
+    if (canRewind && this.rewindCallback && !msgEl.querySelector('.octo-message-rewind-btn')) {
       this.addRewindButton(msgEl, msg.id);
     }
-    if (canFork && this.forkCallback && !msgEl.querySelector('.claudian-message-fork-btn')) {
+    if (canFork && this.forkCallback && !msgEl.querySelector('.octo-message-fork-btn')) {
       this.addForkButton(msgEl, msg.id);
     }
     this.cleanupLiveMessageEl(msg.id, msgEl, { canRewind, canFork });
@@ -809,24 +809,24 @@ export class MessageRenderer {
   ): void {
     const needsRewind = expectedActions.canRewind
       && this.rewindCallback
-      && !msgEl.querySelector('.claudian-message-rewind-btn');
+      && !msgEl.querySelector('.octo-message-rewind-btn');
     const needsFork = expectedActions.canFork
       && this.forkCallback
-      && !msgEl.querySelector('.claudian-message-fork-btn');
+      && !msgEl.querySelector('.octo-message-fork-btn');
     if (!needsRewind && !needsFork) {
       this.liveMessageEls.delete(msgId);
     }
   }
 
   private getOrCreateActionsToolbar(msgEl: HTMLElement): HTMLElement {
-    const existing = msgEl.querySelector<HTMLElement>('.claudian-user-msg-actions');
+    const existing = msgEl.querySelector<HTMLElement>('.octo-user-msg-actions');
     if (existing) return existing;
-    return msgEl.createDiv({ cls: 'claudian-user-msg-actions' });
+    return msgEl.createDiv({ cls: 'octo-user-msg-actions' });
   }
 
   private addUserCopyButton(msgEl: HTMLElement, content: string): void {
     const toolbar = this.getOrCreateActionsToolbar(msgEl);
-    const copyBtn = toolbar.createSpan({ cls: 'claudian-user-msg-copy-btn' });
+    const copyBtn = toolbar.createSpan({ cls: 'octo-user-msg-copy-btn' });
     setIcon(copyBtn, 'copy');
     copyBtn.setAttribute('aria-label', 'Copy message');
 
@@ -857,7 +857,7 @@ export class MessageRenderer {
   private addRewindButton(msgEl: HTMLElement, messageId: string): void {
     if (!this.getCapabilities().supportsRewind) return;
     const toolbar = this.getOrCreateActionsToolbar(msgEl);
-    const btn = toolbar.createSpan({ cls: 'claudian-message-rewind-btn' });
+    const btn = toolbar.createSpan({ cls: 'octo-message-rewind-btn' });
     if (toolbar.firstChild !== btn) toolbar.insertBefore(btn, toolbar.firstChild);
     setIcon(btn, 'rotate-ccw');
     btn.setAttribute('aria-label', t('chat.rewind.ariaLabel'));
@@ -898,7 +898,7 @@ export class MessageRenderer {
   private addForkButton(msgEl: HTMLElement, messageId: string): void {
     if (!this.getCapabilities().supportsFork) return;
     const toolbar = this.getOrCreateActionsToolbar(msgEl);
-    const btn = toolbar.createSpan({ cls: 'claudian-message-fork-btn' });
+    const btn = toolbar.createSpan({ cls: 'octo-message-fork-btn' });
     if (toolbar.firstChild !== btn) toolbar.insertBefore(btn, toolbar.firstChild);
     setIcon(btn, 'git-fork');
     btn.setAttribute('aria-label', t('chat.fork.ariaLabel'));

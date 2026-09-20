@@ -1,12 +1,12 @@
 /* Header - logo and title */
-.claudian-header {
+.octo-header {
   position: relative;
   display: flex;
   align-items: center;
   padding: 0 12px 12px 12px;
 }
 
-.claudian-title {
+.octo-title {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -14,14 +14,14 @@
   min-width: 0;
 }
 
-.claudian-title-text {
+.octo-title-text {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
 }
 
-.claudian-logo {
+.octo-logo {
   display: flex;
   align-items: center;
-  color: var(--claudian-brand);
+  color: var(--octo-brand);
 }

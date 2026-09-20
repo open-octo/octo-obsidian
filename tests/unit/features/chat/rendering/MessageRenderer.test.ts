@@ -109,7 +109,7 @@ describe('MessageRenderer', () => {
 
     expect(emptySpy).toHaveBeenCalled();
     expect(renderStoredSpy).toHaveBeenCalledTimes(1);
-    expect(welcomeEl.hasClass('claudian-welcome')).toBe(true);
+    expect(welcomeEl.hasClass('octo-welcome')).toBe(true);
     expect(welcomeEl.children[0].textContent).toBe('Hello');
   });
 
@@ -120,7 +120,7 @@ describe('MessageRenderer', () => {
     const welcomeEl = renderer.renderMessages([], () => 'Welcome!');
 
     expect(renderStoredSpy).not.toHaveBeenCalled();
-    expect(welcomeEl.hasClass('claudian-welcome')).toBe(true);
+    expect(welcomeEl.hasClass('octo-welcome')).toBe(true);
   });
 
   // ============================================
@@ -145,12 +145,12 @@ describe('MessageRenderer', () => {
     // Should create assistant-style message with interrupt content
     expect(messagesEl.children.length).toBe(1);
     const msgEl = messagesEl.children[0];
-    expect(msgEl.hasClass('claudian-message-assistant')).toBe(true);
+    expect(msgEl.hasClass('octo-message-assistant')).toBe(true);
     // Check the content contains interrupt styling
     const contentEl = msgEl.children[0];
     const textEl = contentEl.children[0];
     const interruptedEl = textEl.children[0];
-    expect(interruptedEl.hasClass('claudian-interrupted')).toBe(true);
+    expect(interruptedEl.hasClass('octo-interrupted')).toBe(true);
     expect(interruptedEl.textContent).toBe('Interrupted');
   });
 
@@ -172,13 +172,13 @@ describe('MessageRenderer', () => {
     // Should create an assistant message (not a bare interrupt marker)
     expect(messagesEl.children.length).toBe(1);
     const msgEl = messagesEl.children[0];
-    expect(msgEl.hasClass('claudian-message-assistant')).toBe(true);
+    expect(msgEl.hasClass('octo-message-assistant')).toBe(true);
 
     // The content div should have both content rendering and an interrupt indicator
     const contentEl = msgEl.children[0];
     const lastChild = contentEl.children[contentEl.children.length - 1];
     const interruptedEl = lastChild.children[0];
-    expect(interruptedEl.hasClass('claudian-interrupted')).toBe(true);
+    expect(interruptedEl.hasClass('octo-interrupted')).toBe(true);
     expect(interruptedEl.textContent).toBe('Interrupted');
   });
 
@@ -200,10 +200,10 @@ describe('MessageRenderer', () => {
     // Should create a bare interrupt marker (same as Claude-style)
     expect(messagesEl.children.length).toBe(1);
     const msgEl = messagesEl.children[0];
-    expect(msgEl.hasClass('claudian-message-assistant')).toBe(true);
+    expect(msgEl.hasClass('octo-message-assistant')).toBe(true);
     const contentEl = msgEl.children[0];
     const textEl = contentEl.children[0];
-    expect(textEl.children[0].hasClass('claudian-interrupted')).toBe(true);
+    expect(textEl.children[0].hasClass('octo-interrupted')).toBe(true);
   });
 
   it('skips rebuilt context messages', () => {
@@ -239,7 +239,7 @@ describe('MessageRenderer', () => {
 
     expect(messagesEl.children.length).toBe(1);
     const msgEl = messagesEl.children[0];
-    expect(msgEl.hasClass('claudian-message-user')).toBe(true);
+    expect(msgEl.hasClass('octo-message-user')).toBe(true);
   });
 
   it('renders user message with displayContent instead of content', () => {
@@ -296,7 +296,7 @@ describe('MessageRenderer', () => {
     expect(renderer.renderMessageImages).toHaveBeenCalled();
     // Only the images container, no message bubble
     const bubbles = messagesEl.children.filter(
-      (c: any) => c.hasClass('claudian-message')
+      (c: any) => c.hasClass('octo-message')
     );
     expect(bubbles.length).toBe(0);
   });
@@ -338,7 +338,7 @@ describe('MessageRenderer', () => {
 
     renderer.renderStoredMessage(allMessages[1], allMessages, 1);
 
-    expect(messagesEl.querySelector('.claudian-message-rewind-btn')).not.toBeNull();
+    expect(messagesEl.querySelector('.octo-message-rewind-btn')).not.toBeNull();
   });
 
   it('adds rewind but not fork for a completed first user message', () => {
@@ -362,8 +362,8 @@ describe('MessageRenderer', () => {
 
     renderer.renderStoredMessage(allMessages[0], allMessages, 0);
 
-    expect(messagesEl.querySelector('.claudian-message-rewind-btn')).not.toBeNull();
-    expect(messagesEl.querySelector('.claudian-message-fork-btn')).toBeNull();
+    expect(messagesEl.querySelector('.octo-message-rewind-btn')).not.toBeNull();
+    expect(messagesEl.querySelector('.octo-message-fork-btn')).toBeNull();
     expect((renderer as any).liveMessageEls.has('u1')).toBe(false);
   });
 
@@ -383,7 +383,7 @@ describe('MessageRenderer', () => {
 
     renderer.renderStoredMessage(msg);
 
-    expect(messagesEl.querySelector('.claudian-message-rewind-btn')).toBeNull();
+    expect(messagesEl.querySelector('.octo-message-rewind-btn')).toBeNull();
   });
 
   it('shows rewind mode menu for eligible streamed user messages', async () => {
@@ -409,7 +409,7 @@ describe('MessageRenderer', () => {
 
     renderer.refreshActionButtons(userMsg, allMessages, 1);
 
-    const btn = messagesEl.querySelector('.claudian-message-rewind-btn');
+    const btn = messagesEl.querySelector('.octo-message-rewind-btn');
     expect(btn).not.toBeNull();
 
     btn!.click();
@@ -453,8 +453,8 @@ describe('MessageRenderer', () => {
       { id: 'a1', role: 'assistant', content: 'response', timestamp: 2, assistantMessageId: 'resp-a' },
     ], 0);
 
-    expect(messagesEl.querySelector('.claudian-message-rewind-btn')).not.toBeNull();
-    expect(messagesEl.querySelector('.claudian-message-fork-btn')).toBeNull();
+    expect(messagesEl.querySelector('.octo-message-rewind-btn')).not.toBeNull();
+    expect(messagesEl.querySelector('.octo-message-fork-btn')).toBeNull();
   });
 
   // ============================================
@@ -610,8 +610,8 @@ describe('MessageRenderer', () => {
 
     // Find the footer element
     const msgEl = messagesEl.children[0];
-    const contentEl = msgEl.children[0]; // claudian-message-content
-    const footerEl = contentEl.children.find((c: any) => c.hasClass('claudian-response-footer'));
+    const contentEl = msgEl.children[0]; // octo-message-content
+    const footerEl = contentEl.children.find((c: any) => c.hasClass('octo-response-footer'));
     expect(footerEl).toBeDefined();
     const durationSpan = footerEl!.children[0];
     expect(durationSpan.textContent).toContain('Baked');
@@ -638,7 +638,7 @@ describe('MessageRenderer', () => {
 
     const msgEl = messagesEl.children[0];
     const contentEl = msgEl.children[0];
-    const footerEl = contentEl.children.find((c: any) => c.hasClass('claudian-response-footer'));
+    const footerEl = contentEl.children.find((c: any) => c.hasClass('octo-response-footer'));
     expect(footerEl).toBeUndefined();
   });
 
@@ -662,7 +662,7 @@ describe('MessageRenderer', () => {
 
     const msgEl = messagesEl.children[0];
     const contentEl = msgEl.children[0];
-    const footerEl = contentEl.children.find((c: any) => c.hasClass('claudian-response-footer'));
+    const footerEl = contentEl.children.find((c: any) => c.hasClass('octo-response-footer'));
     expect(footerEl).toBeDefined();
     expect(footerEl!.children[0].textContent).toContain('Baked');
   });
@@ -853,7 +853,7 @@ describe('MessageRenderer', () => {
 
     const msgEl = renderer.addMessage(msg);
 
-    expect(msgEl.hasClass('claudian-message-user')).toBe(true);
+    expect(msgEl.hasClass('octo-message-user')).toBe(true);
   });
 
   it('addMessage stores a truncated first-line table-of-contents title for user messages', () => {
@@ -930,7 +930,7 @@ describe('MessageRenderer', () => {
 
     const msgEl = renderer.addMessage(msg);
 
-    expect(msgEl.hasClass('claudian-message-assistant')).toBe(true);
+    expect(msgEl.hasClass('octo-message-assistant')).toBe(true);
   });
 
   // ============================================
@@ -969,7 +969,7 @@ describe('MessageRenderer', () => {
     // Should create images container with 2 image wrappers
     expect(containerEl.children.length).toBe(1);
     const imagesContainer = containerEl.children[0];
-    expect(imagesContainer.hasClass('claudian-message-images')).toBe(true);
+    expect(imagesContainer.hasClass('octo-message-images')).toBe(true);
     expect(imagesContainer.children.length).toBe(2);
   });
 
@@ -1010,7 +1010,7 @@ describe('MessageRenderer', () => {
 
     try {
       renderer.showFullImage(image);
-      expect(mockBody.createDiv).toHaveBeenCalledWith({ cls: 'claudian-image-modal-overlay' });
+      expect(mockBody.createDiv).toHaveBeenCalledWith({ cls: 'octo-image-modal-overlay' });
     } finally {
       (globalThis as any).document = origDocument;
     }
@@ -1028,7 +1028,7 @@ describe('MessageRenderer', () => {
 
     expect(textEl.children.length).toBe(1);
     const copyBtn = textEl.children[0];
-    expect(copyBtn.hasClass('claudian-text-copy-btn')).toBe(true);
+    expect(copyBtn.hasClass('octo-text-copy-btn')).toBe(true);
   });
 
   // ============================================
@@ -1167,7 +1167,7 @@ describe('MessageRenderer', () => {
       renderer.addTextCopyButton(textEl, 'markdown content');
 
       const copyBtn = textEl.children[0];
-      expect(copyBtn.hasClass('claudian-text-copy-btn')).toBe(true);
+      expect(copyBtn.hasClass('octo-text-copy-btn')).toBe(true);
 
       // Simulate click
       const clickHandlers = copyBtn._eventListeners.get('click');
@@ -1222,7 +1222,7 @@ describe('MessageRenderer', () => {
     const welcomeEl = renderer.renderMessages(messages, () => 'Good morning!');
 
     expect(welcomeEl).toBeDefined();
-    expect(welcomeEl!.hasClass('claudian-welcome')).toBe(true);
+    expect(welcomeEl!.hasClass('octo-welcome')).toBe(true);
   });
 
   it('renderMessages should store table-of-contents title from displayContent before content', () => {
@@ -1242,7 +1242,7 @@ describe('MessageRenderer', () => {
 
     renderer.renderMessages(messages, () => 'Hello');
 
-    const msgEl = messagesEl.querySelector('.claudian-message-user');
+    const msgEl = messagesEl.querySelector('.octo-message-user');
     expect(msgEl?.getAttribute('data-toc-title')).toBe('Visible slash command');
   });
 
@@ -1269,7 +1269,7 @@ describe('MessageRenderer', () => {
     const welcomeEl = renderer.renderMessages([], () => 'Welcome');
 
     expect(welcomeEl).toBeDefined();
-    expect(welcomeEl!.hasClass('claudian-welcome')).toBe(true);
+    expect(welcomeEl!.hasClass('octo-welcome')).toBe(true);
   });
   // ============================================
   // showFullImage - close behaviors
@@ -1317,10 +1317,10 @@ describe('MessageRenderer', () => {
         renderer.showFullImage(image);
 
         // The overlay has a modal child, which has a close button child
-        const modalEl = overlayEl.children[0]; // claudian-image-modal
+        const modalEl = overlayEl.children[0]; // octo-image-modal
         // Children: img (index 0), closeBtn (index 1)
         const closeBtn = modalEl.children[1];
-        expect(closeBtn.hasClass('claudian-image-modal-close')).toBe(true);
+        expect(closeBtn.hasClass('octo-image-modal-close')).toBe(true);
 
         const removeSpy = jest.spyOn(overlayEl, 'remove');
         closeBtn.click();
@@ -1392,7 +1392,7 @@ describe('MessageRenderer', () => {
       await renderer.renderContent(el, '**broken markdown**');
 
       const errorDiv = el.children.find(
-        (c: any) => c.hasClass('claudian-render-error')
+        (c: any) => c.hasClass('octo-render-error')
       );
       expect(errorDiv).toBeDefined();
       expect(errorDiv!.textContent).toBe('Failed to render message content.');
@@ -1521,7 +1521,7 @@ describe('MessageRenderer', () => {
 
       await renderer.renderContent(el, '```js\nconsole.log("hello")\n```');
 
-      // The pre should be wrapped in a claudian-code-wrapper
+      // The pre should be wrapped in a octo-code-wrapper
       // Due to mock limitations, check that querySelectorAll was called on el
       // The actual wrapping logic runs on real DOM, but the mock captures calls
       expect(MarkdownRenderer.renderMarkdown).toHaveBeenCalled();
@@ -1535,7 +1535,7 @@ describe('MessageRenderer', () => {
       // Mock renderMarkdown to create an already-wrapped pre element
       (MarkdownRenderer.renderMarkdown as jest.Mock).mockImplementationOnce(
         async (_md: string, container: any) => {
-          const wrapper = container.createDiv({ cls: 'claudian-code-wrapper' });
+          const wrapper = container.createDiv({ cls: 'octo-code-wrapper' });
           wrapper.createEl('pre');
         }
       );

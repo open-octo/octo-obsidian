@@ -8,17 +8,17 @@ import type { VaultFileAdapter } from '../../core/storage/VaultFileAdapter';
 import {
   CHAT_VIEW_PLACEMENTS,
   type ChatViewPlacement,
-  type ClaudianSettings,
   type EnvSnippet,
+  type OctoSettings,
   type ProviderConfigMap,
 } from '../../core/types/settings';
-import { DEFAULT_CLAUDIAN_SETTINGS } from './defaultSettings';
+import { DEFAULT_OCTO_SETTINGS } from './defaultSettings';
 
 export {
   SETTINGS_PATH,
 };
 
-export type StoredClaudianSettings = ClaudianSettings;
+export type StoredOctoSettings = OctoSettings;
 
 const LEGACY_PROJECTION_KEYS = [
   'settingsProvider',
@@ -35,7 +35,7 @@ function isChatViewPlacement(value: unknown): value is ChatViewPlacement {
 }
 
 function normalizeChatViewPlacement(value: unknown): ChatViewPlacement {
-  return isChatViewPlacement(value) ? value : DEFAULT_CLAUDIAN_SETTINGS.chatViewPlacement;
+  return isChatViewPlacement(value) ? value : DEFAULT_OCTO_SETTINGS.chatViewPlacement;
 }
 
 function normalizeProviderConfigs(value: unknown): ProviderConfigMap {
@@ -126,10 +126,10 @@ function normalizeEnvSnippets(value: unknown): EnvSnippet[] {
   return snippets;
 }
 
-export class ClaudianSettingsStorage {
+export class OctoSettingsStorage {
   constructor(private adapter: VaultFileAdapter) {}
 
-  async load(): Promise<StoredClaudianSettings> {
+  async load(): Promise<StoredOctoSettings> {
     if (!(await this.adapter.exists(SETTINGS_PATH))) {
       return this.getDefaults();
     }
@@ -155,7 +155,7 @@ export class ClaudianSettingsStorage {
     };
   }
 
-  async save(settings: StoredClaudianSettings): Promise<void> {
+  async save(settings: StoredOctoSettings): Promise<void> {
     await this.adapter.write(SETTINGS_PATH, JSON.stringify(settings, null, 2));
   }
 
@@ -163,12 +163,12 @@ export class ClaudianSettingsStorage {
     return this.adapter.exists(SETTINGS_PATH);
   }
 
-  async update(updates: Partial<StoredClaudianSettings>): Promise<void> {
+  async update(updates: Partial<StoredOctoSettings>): Promise<void> {
     const current = await this.load();
     await this.save({ ...current, ...updates });
   }
 
-  private getDefaults(): StoredClaudianSettings {
-    return DEFAULT_CLAUDIAN_SETTINGS;
+  private getDefaults(): StoredOctoSettings {
+    return DEFAULT_OCTO_SETTINGS;
   }
 }

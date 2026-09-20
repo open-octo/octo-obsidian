@@ -1,21 +1,21 @@
 /* Status Panel - persistent bottom panel for todos and command output */
 
-.claudian-status-panel-container {
+.octo-status-panel-container {
   flex-shrink: 0;
   padding: 0 14px;
 }
 
-.claudian-status-panel {
+.octo-status-panel {
   padding-top: 12px;
 }
 
 /* Todo Section */
 
-.claudian-status-panel-todos {
+.octo-status-panel-todos {
   margin-top: 4px;
 }
 
-.claudian-status-panel-header {
+.octo-status-panel-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -26,35 +26,35 @@
   overflow: hidden;
 }
 
-.claudian-status-panel-header:hover {
+.octo-status-panel-header:hover {
   background: var(--background-modifier-hover);
 }
 
-.claudian-status-panel-header:focus-visible {
+.octo-status-panel-header:focus-visible {
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
 }
 
-.claudian-status-panel-icon {
+.octo-status-panel-icon {
   display: flex;
   align-items: center;
   color: var(--text-accent);
   flex-shrink: 0;
 }
 
-.claudian-status-panel-icon svg {
+.octo-status-panel-icon svg {
   width: 16px;
   height: 16px;
 }
 
-.claudian-status-panel-label {
+.octo-status-panel-label {
   font-family: var(--font-monospace);
   font-size: 13px;
   font-weight: 500;
   color: var(--text-normal);
 }
 
-.claudian-status-panel-current {
+.octo-status-panel-current {
   flex: 1;
   font-family: var(--font-monospace);
   font-size: 13px;
@@ -64,44 +64,44 @@
   white-space: nowrap;
 }
 
-.claudian-status-panel-status {
+.octo-status-panel-status {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.claudian-status-panel-status svg {
+.octo-status-panel-status svg {
   width: 14px;
   height: 14px;
 }
 
-.claudian-status-panel-status.status-completed {
+.octo-status-panel-status.status-completed {
   color: var(--color-green);
 }
 
-.claudian-status-panel-content {
+.octo-status-panel-content {
   padding: 2px 0;
 }
 
-/* Individual todo item - shared by status panel and inline tool via .claudian-todo-list-container */
-.claudian-todo-list-container .claudian-todo-item {
+/* Individual todo item - shared by status panel and inline tool via .octo-todo-list-container */
+.octo-todo-list-container .octo-todo-item {
   display: flex;
   align-items: flex-start;
   padding: 1px 0;
 }
 
-.claudian-todo-list-container .claudian-todo-status-icon {
+.octo-todo-list-container .octo-todo-status-icon {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.claudian-todo-list-container .claudian-todo-status-icon svg {
+.octo-todo-list-container .octo-todo-status-icon svg {
   width: 12px;
   height: 12px;
 }
 
-.claudian-todo-list-container .claudian-todo-text {
+.octo-todo-list-container .octo-todo-text {
   font-family: var(--font-monospace);
   font-size: 12px;
   line-height: 1.4;
@@ -109,55 +109,55 @@
   padding-left: 12px;
 }
 
-.claudian-todo-list-container .claudian-todo-pending .claudian-todo-status-icon {
+.octo-todo-list-container .octo-todo-pending .octo-todo-status-icon {
   color: var(--text-normal);
 }
 
-.claudian-todo-list-container .claudian-todo-pending .claudian-todo-status-icon svg {
+.octo-todo-list-container .octo-todo-pending .octo-todo-status-icon svg {
   transform: scale(2);
 }
 
-.claudian-todo-list-container .claudian-todo-pending .claudian-todo-text {
+.octo-todo-list-container .octo-todo-pending .octo-todo-text {
   color: var(--text-normal);
 }
 
-.claudian-todo-list-container .claudian-todo-in_progress .claudian-todo-status-icon {
+.octo-todo-list-container .octo-todo-in_progress .octo-todo-status-icon {
   color: var(--interactive-accent);
 }
 
-.claudian-todo-list-container .claudian-todo-in_progress .claudian-todo-status-icon svg {
+.octo-todo-list-container .octo-todo-in_progress .octo-todo-status-icon svg {
   transform: scale(2);
 }
 
-.claudian-todo-list-container .claudian-todo-in_progress .claudian-todo-text {
+.octo-todo-list-container .octo-todo-in_progress .octo-todo-text {
   color: var(--text-normal);
 }
 
-.claudian-todo-list-container .claudian-todo-completed .claudian-todo-status-icon {
+.octo-todo-list-container .octo-todo-completed .octo-todo-status-icon {
   color: var(--color-green);
 }
 
-.claudian-todo-list-container .claudian-todo-completed .claudian-todo-text {
+.octo-todo-list-container .octo-todo-completed .octo-todo-text {
   color: var(--text-muted);
 }
 
 /* Bash Output Section */
 
-.claudian-status-panel-bash {
+.octo-status-panel-bash {
   margin-bottom: 4px;
 }
 
-.claudian-status-panel-bash-header {
+.octo-status-panel-bash-header {
   padding: 4px 0;
 }
 
-.claudian-status-panel-bash-actions {
+.octo-status-panel-bash-actions {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.claudian-status-panel-bash-action {
+.octo-status-panel-bash-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -167,35 +167,35 @@
   color: var(--text-muted);
 }
 
-.claudian-status-panel-bash-action:hover {
+.octo-status-panel-bash-action:hover {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.claudian-status-panel-bash-content {
+.octo-status-panel-bash-content {
   padding-top: 2px;
   max-height: min(40vh, 320px);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
-.claudian-status-panel-bash-entry {
+.octo-status-panel-bash-entry {
   margin: 4px 0;
 }
 
-.claudian-status-panel-bash-entry .claudian-tool-icon svg {
+.octo-status-panel-bash-entry .octo-tool-icon svg {
   width: 14px;
   height: 14px;
   position: relative;
   top: -1px;
 }
 
-.claudian-status-panel-bash-entry .claudian-tool-call {
+.octo-status-panel-bash-entry .octo-tool-call {
   margin: 0;
 }
 
 /* Keep bash output blocks from growing without bound */
-.claudian-status-panel-bash-entry .claudian-tool-result-text {
+.octo-status-panel-bash-entry .octo-tool-result-text {
   max-height: 200px;
   overflow-y: auto;
   word-break: break-word;

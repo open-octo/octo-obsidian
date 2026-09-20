@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 
 import { requestUrl } from 'obsidian';
 
-import type ClaudianPlugin from '../../../main';
+import type OctoPlugin from '../../../main';
 import { getEnhancedPath, parseEnvironmentVariables } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
 import { getOctoAgentProviderSettings } from '../settings';
@@ -13,7 +13,7 @@ const HEALTH_POLL_INTERVAL_MS = 300;
 const HEALTH_POLL_TIMEOUT_MS = 15_000;
 
 export interface OctoAgentServerLauncherOptions {
-  plugin: ClaudianPlugin;
+  plugin: OctoPlugin;
 }
 
 export interface OctoAgentServerProbeResult {

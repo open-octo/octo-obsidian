@@ -617,7 +617,7 @@ describe('ConversationController', () => {
 
         expect(dropdown.children.length).toBe(2);
         const list = dropdown.children[1];
-        expect(list.hasClass('claudian-history-list')).toBe(true);
+        expect(list.hasClass('octo-history-list')).toBe(true);
         expect(list.children.length).toBe(2);
       });
 
@@ -627,7 +627,7 @@ describe('ConversationController', () => {
         controller.updateHistoryDropdown();
 
         const list = dropdown.children[1];
-        expect(list.children[0].hasClass('claudian-history-empty')).toBe(true);
+        expect(list.children[0].hasClass('octo-history-empty')).toBe(true);
       });
 
       it('should sort conversations by lastResponseAt descending', () => {
@@ -640,7 +640,7 @@ describe('ConversationController', () => {
         controller.updateHistoryDropdown();
 
         const list = dropdown.children[1];
-        const firstTitle = list.children[0].querySelector('.claudian-history-item-title');
+        const firstTitle = list.children[0].querySelector('.octo-history-item-title');
         expect(firstTitle?.textContent).toBe('New');
       });
 
@@ -671,7 +671,7 @@ describe('ConversationController', () => {
 
         const list = dropdown.children[1];
         const item = list.children[0];
-        const content = item.querySelector('.claudian-history-item-content');
+        const content = item.querySelector('.octo-history-item-content');
         const listeners = content?._eventListeners?.get('click');
         expect(listeners).toBeUndefined();
       });
@@ -689,7 +689,7 @@ describe('ConversationController', () => {
         const list = dropdown.children[1];
         // conv-2 is the non-current one (sorted second by lastResponseAt)
         const otherItem = list.children[1];
-        const content = otherItem.querySelector('.claudian-history-item-content');
+        const content = otherItem.querySelector('.octo-history-item-content');
         const listeners = content?._eventListeners?.get('click');
         expect(listeners).toBeDefined();
         expect(listeners!.length).toBe(1);
@@ -706,7 +706,7 @@ describe('ConversationController', () => {
 
         const list = dropdown.children[1];
         const item = list.children[0];
-        const deleteBtn = item.querySelector('.claudian-delete-btn');
+        const deleteBtn = item.querySelector('.octo-delete-btn');
         expect(deleteBtn).toBeTruthy();
 
         const clickHandlers = deleteBtn!._eventListeners?.get('click');
@@ -747,7 +747,7 @@ describe('ConversationController', () => {
 
         const list = container.children[1];
         const openItem = list.children[1];
-        const openItemDate = openItem.querySelector('.claudian-history-item-date');
+        const openItemDate = openItem.querySelector('.octo-history-item-date');
 
         expect(openItem.hasClass('open')).toBe(true);
         expect(openItem.hasClass('active')).toBe(false);
@@ -775,7 +775,7 @@ describe('ConversationController', () => {
 
         const list = container.children[1];
         const currentItem = list.children[0];
-        const currentItemDate = currentItem.querySelector('.claudian-history-item-date');
+        const currentItemDate = currentItem.querySelector('.octo-history-item-date');
 
         expect(currentItem.getAttribute('data-tab-index')).toBe('1');
         expect(currentItem.getAttribute('data-tab-location')).toBe('current-view');
@@ -800,7 +800,7 @@ describe('ConversationController', () => {
 
         const list = container.children[1];
         const openItem = list.children[1];
-        const openItemDate = openItem.querySelector('.claudian-history-item-date');
+        const openItemDate = openItem.querySelector('.octo-history-item-date');
 
         expect(openItem.getAttribute('data-tab-index')).toBe('2');
         expect(openItem.getAttribute('data-tab-location')).toBe('current-view');
@@ -825,7 +825,7 @@ describe('ConversationController', () => {
 
         const list = container.children[1];
         const currentItem = list.children[0];
-        const currentItemDate = currentItem.querySelector('.claudian-history-item-date');
+        const currentItemDate = currentItem.querySelector('.octo-history-item-date');
 
         expect(currentItem.hasClass('active')).toBe(true);
         expect(currentItem.hasClass('running')).toBe(true);
@@ -851,7 +851,7 @@ describe('ConversationController', () => {
 
         const list = container.children[1];
         const runningItem = list.children[1];
-        const runningItemDate = runningItem.querySelector('.claudian-history-item-date');
+        const runningItemDate = runningItem.querySelector('.octo-history-item-date');
 
         expect(runningItem.hasClass('open')).toBe(true);
         expect(runningItem.hasClass('running')).toBe(true);
@@ -886,8 +886,8 @@ describe('ConversationController', () => {
         const list = container.children[1];
         const openOtherPaneItem = list.children[1];
         const runningOtherPaneItem = list.children[2];
-        const runningOtherPaneDate = runningOtherPaneItem.querySelector('.claudian-history-item-date');
-        const openOtherPaneDate = openOtherPaneItem.querySelector('.claudian-history-item-date');
+        const runningOtherPaneDate = runningOtherPaneItem.querySelector('.octo-history-item-date');
+        const openOtherPaneDate = openOtherPaneItem.querySelector('.octo-history-item-date');
 
         expect(runningOtherPaneItem.getAttribute('data-tab-location')).toBe('other-view');
         expect(runningOtherPaneItem.getAttribute('data-tab-index')).toBeNull();
@@ -914,7 +914,7 @@ describe('ConversationController', () => {
 
         const list = container.children[1];
         const closedItem = list.children[1];
-        const openInNewTabBtn = closedItem.querySelector('.claudian-open-new-tab-btn');
+        const openInNewTabBtn = closedItem.querySelector('.octo-open-new-tab-btn');
         const clickHandlers = openInNewTabBtn?._eventListeners?.get('click');
 
         expect(openInNewTabBtn).toBeTruthy();
@@ -944,7 +944,7 @@ describe('ConversationController', () => {
         const list = container.children[1];
         const openItem = list.children[1];
 
-        expect(openItem.querySelector('.claudian-open-new-tab-btn')).toBeNull();
+        expect(openItem.querySelector('.octo-open-new-tab-btn')).toBeNull();
       });
 
       it('should open a conversation in a new tab on modifier click when supported', async () => {
@@ -966,7 +966,7 @@ describe('ConversationController', () => {
 
         const list = container.children[1];
         const otherItem = list.children[1];
-        const content = otherItem.querySelector('.claudian-history-item-content');
+        const content = otherItem.querySelector('.octo-history-item-content');
         const clickHandlers = content?._eventListeners?.get('click');
         expect(clickHandlers).toBeDefined();
 
@@ -1002,7 +1002,7 @@ describe('ConversationController', () => {
 
         const list = container.children[1];
         const otherItem = list.children[1];
-        const content = otherItem.querySelector('.claudian-history-item-content');
+        const content = otherItem.querySelector('.octo-history-item-content');
         const auxClickHandlers = content?._eventListeners?.get('auxclick');
         expect(auxClickHandlers).toBeDefined();
 
@@ -1134,7 +1134,7 @@ describe('ConversationController', () => {
 
       const list = dropdown.children[1];
       const otherItem = list.children[1];
-      const content = otherItem.querySelector('.claudian-history-item-content');
+      const content = otherItem.querySelector('.octo-history-item-content');
       const clickHandlers = content?._eventListeners?.get('click');
       expect(clickHandlers).toBeDefined();
 
@@ -1153,7 +1153,7 @@ describe('ConversationController', () => {
 
       const list = dropdown.children[1];
       const item = list.children[0];
-      const actions = item.querySelector('.claudian-history-item-actions');
+      const actions = item.querySelector('.octo-history-item-actions');
       expect(actions).toBeTruthy();
       // For non-failed items: rename is children[0], delete is children[1]
       const rBtn = actions!.children[0];
@@ -1168,7 +1168,7 @@ describe('ConversationController', () => {
       (mockInput as any).focus = jest.fn();
       (mockInput as any).select = jest.fn();
 
-      const titleEl = item.querySelector('.claudian-history-item-title');
+      const titleEl = item.querySelector('.octo-history-item-title');
       if (titleEl) {
         (titleEl as any).replaceWith = jest.fn();
       }
@@ -1198,7 +1198,7 @@ describe('ConversationController', () => {
 
       const list = dropdown.children[1];
       const item = list.children[0];
-      const deleteBtn = item.querySelector('.claudian-delete-btn');
+      const deleteBtn = item.querySelector('.octo-delete-btn');
       expect(deleteBtn).toBeTruthy();
 
       const clickHandlers = deleteBtn!._eventListeners?.get('click');
@@ -1221,7 +1221,7 @@ describe('ConversationController', () => {
 
       const list = dropdown.children[1];
       const otherItem = list.children[1]; // conv-2
-      const deleteBtn = otherItem.querySelector('.claudian-delete-btn');
+      const deleteBtn = otherItem.querySelector('.octo-delete-btn');
       const clickHandlers = deleteBtn!._eventListeners?.get('click');
 
       await clickHandlers![0]({ stopPropagation: jest.fn() });

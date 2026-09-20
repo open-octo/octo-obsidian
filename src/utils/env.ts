@@ -7,6 +7,8 @@ import { parsePathEntries, resolveNvmDefaultBin } from './path';
 const isWindows = process.platform === 'win32';
 const PATH_SEPARATOR = isWindows ? ';' : ':';
 const NODE_EXECUTABLE = isWindows ? 'node.exe' : 'node';
+// localStorage key kept from before the rename: a new one would silently
+// discard the value already stored on every existing device.
 const DEVICE_SETTINGS_STORAGE_KEY = 'claudian.deviceSettingsKey';
 let cachedDeviceSettingsKey: string | null = null;
 

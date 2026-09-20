@@ -58,7 +58,7 @@ export const CHAT_VIEW_PLACEMENTS = [
   'main-tab',
 ] as const;
 
-/** Workspace location used when opening the Claudian chat view. */
+/** Workspace location used when opening the Octo chat view. */
 export type ChatViewPlacement = typeof CHAT_VIEW_PLACEMENTS[number];
 
 /** Permission mode for tool execution. */
@@ -77,7 +77,7 @@ export type ProviderConfigMap = Partial<Record<string, Record<string, unknown>>>
  * `string` here.  The active provider casts internally when it needs
  * narrower types.
  */
-export interface ClaudianSettings {
+export interface OctoSettings {
   // Security
   permissionMode: PermissionMode;
 

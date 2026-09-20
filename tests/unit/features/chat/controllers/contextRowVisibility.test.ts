@@ -4,19 +4,19 @@ import { updateContextRowHasContent } from '@/features/chat/controllers/contextR
 
 function createContextRow(browserIndicator: HTMLElement | null): HTMLElement {
   const editorIndicator = createMockEl();
-  editorIndicator.addClass('claudian-selection-indicator claudian-hidden');
+  editorIndicator.addClass('octo-selection-indicator octo-hidden');
   const canvasIndicator = createMockEl();
-  canvasIndicator.addClass('claudian-canvas-indicator claudian-hidden');
+  canvasIndicator.addClass('octo-canvas-indicator octo-hidden');
   const fileIndicator = createMockEl();
-  fileIndicator.addClass('claudian-file-indicator claudian-hidden');
+  fileIndicator.addClass('octo-file-indicator octo-hidden');
   const imagePreview = createMockEl();
-  imagePreview.addClass('claudian-image-preview claudian-hidden');
+  imagePreview.addClass('octo-image-preview octo-hidden');
   const lookup = new Map<string, unknown>([
-    ['.claudian-selection-indicator', editorIndicator],
-    ['.claudian-browser-selection-indicator', browserIndicator],
-    ['.claudian-canvas-indicator', canvasIndicator],
-    ['.claudian-file-indicator', fileIndicator],
-    ['.claudian-image-preview', imagePreview],
+    ['.octo-selection-indicator', editorIndicator],
+    ['.octo-browser-selection-indicator', browserIndicator],
+    ['.octo-canvas-indicator', canvasIndicator],
+    ['.octo-file-indicator', fileIndicator],
+    ['.octo-image-preview', imagePreview],
   ]);
 
   const contextRow = createMockEl();
@@ -36,7 +36,7 @@ describe('updateContextRowHasContent', () => {
 
   it('treats browser indicator as visible only when it is not hidden', () => {
     const browserIndicator = createMockEl();
-    browserIndicator.addClass('claudian-browser-selection-indicator');
+    browserIndicator.addClass('octo-browser-selection-indicator');
     const contextRowEl = createContextRow(browserIndicator);
 
     updateContextRowHasContent(contextRowEl);

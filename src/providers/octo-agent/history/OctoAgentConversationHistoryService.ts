@@ -3,7 +3,7 @@ import type { Conversation } from '../../../core/types';
 import { buildPersistedOctoAgentState, getOctoAgentState } from '../types';
 
 export class OctoAgentConversationHistoryService implements ProviderConversationHistoryService {
-  // octo-agent stores conversation history on the server. Claudian keeps the
+  // octo-agent stores conversation history on the server. Octo keeps the
   // session id in Conversation.providerState; the runtime re-subscribes to the
   // session and continues from there. We do not eagerly hydrate the full history
   // because the server is the source of truth and the client is owned by the runtime.

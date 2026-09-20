@@ -1,24 +1,24 @@
-.claudian-subagent-list {
+.octo-subagent-list {
   margin: 8px 0;
 }
 
-.claudian-text-block+.claudian-subagent-list {
+.octo-text-block+.octo-subagent-list {
   margin-top: 8px;
 }
 
-.claudian-subagent-list+.claudian-text-block {
+.octo-subagent-list+.octo-text-block {
   margin-top: 8px;
 }
 
-.claudian-tool-call+.claudian-subagent-list {
+.octo-tool-call+.octo-subagent-list {
   margin-top: 8px;
 }
 
-.claudian-subagent-list+.claudian-tool-call {
+.octo-subagent-list+.octo-tool-call {
   margin-top: 8px;
 }
 
-.claudian-subagent-header {
+.octo-subagent-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -27,19 +27,19 @@
   overflow: hidden;
 }
 
-.claudian-subagent-icon {
+.octo-subagent-icon {
   display: flex;
   align-items: center;
   color: var(--interactive-accent);
   flex-shrink: 0;
 }
 
-.claudian-subagent-icon svg {
+.octo-subagent-icon svg {
   width: 16px;
   height: 16px;
 }
 
-.claudian-subagent-label {
+.octo-subagent-label {
   flex: 1;
   font-family: var(--font-monospace);
   font-size: 13px;
@@ -47,41 +47,41 @@
   color: var(--text-normal);
 }
 
-.claudian-subagent-status {
+.octo-subagent-status {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.claudian-subagent-status svg {
+.octo-subagent-status svg {
   width: 14px;
   height: 14px;
 }
 
-.claudian-subagent-status.status-running {
+.octo-subagent-status.status-running {
   color: var(--text-accent);
 }
 
-.claudian-subagent-status.status-completed {
+.octo-subagent-status.status-completed {
   color: var(--color-green);
 }
 
-.claudian-subagent-status.status-error {
+.octo-subagent-status.status-error {
   color: var(--color-red);
 }
 
-.claudian-subagent-content {
+.octo-subagent-content {
   padding: 4px 0;
   padding-inline-start: 16px;
   margin-inline-start: 7px;
   border-inline-start: 2px solid var(--background-modifier-border);
 }
 
-.claudian-subagent-section {
+.octo-subagent-section {
   margin: 2px 0 6px;
 }
 
-.claudian-subagent-section-header {
+.octo-subagent-section-header {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -93,21 +93,21 @@
   padding: 2px 0;
 }
 
-.claudian-subagent-section-header:hover {
+.octo-subagent-section-header:hover {
   color: var(--text-normal);
 }
 
-.claudian-subagent-section-title {
+.octo-subagent-section-title {
   flex: 1;
   min-width: 0;
 }
 
-.claudian-subagent-section-body {
+.octo-subagent-section-body {
   padding-inline-start: 6px;
 }
 
-.claudian-subagent-prompt-text,
-.claudian-subagent-result-output {
+.octo-subagent-prompt-text,
+.octo-subagent-result-output {
   font-family: var(--font-monospace);
   font-size: 12px;
   line-height: 1.4;
@@ -116,22 +116,22 @@
   word-break: break-word;
 }
 
-.claudian-subagent-result-output {
+.octo-subagent-result-output {
   max-height: 220px;
   overflow-y: auto;
 }
 
-.claudian-subagent-tools {
+.octo-subagent-tools {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.claudian-subagent-tool-item {
+.octo-subagent-tool-item {
   display: block;
 }
 
-.claudian-subagent-tool-header {
+.octo-subagent-tool-header {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -140,23 +140,23 @@
   padding: 2px 0;
 }
 
-.claudian-subagent-tool-header:hover {
+.octo-subagent-tool-header:hover {
   opacity: 0.85;
 }
 
-.claudian-subagent-tool-icon {
+.octo-subagent-tool-icon {
   display: flex;
   align-items: center;
   color: var(--text-accent);
   flex-shrink: 0;
 }
 
-.claudian-subagent-tool-icon svg {
+.octo-subagent-tool-icon svg {
   width: 13px;
   height: 13px;
 }
 
-.claudian-subagent-tool-name {
+.octo-subagent-tool-name {
   font-family: var(--font-monospace);
   font-size: 12px;
   color: var(--text-normal);
@@ -164,7 +164,7 @@
   flex-shrink: 0;
 }
 
-.claudian-subagent-tool-summary {
+.octo-subagent-tool-summary {
   font-family: var(--font-monospace);
   font-size: 12px;
   color: var(--text-muted);
@@ -175,35 +175,35 @@
   min-width: 0;
 }
 
-.claudian-subagent-tool-status {
+.octo-subagent-tool-status {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.claudian-subagent-tool-status svg {
+.octo-subagent-tool-status svg {
   width: 12px;
   height: 12px;
 }
 
-.claudian-subagent-tool-status.status-running {
+.octo-subagent-tool-status.status-running {
   color: var(--text-accent);
 }
 
-.claudian-subagent-tool-status.status-completed {
+.octo-subagent-tool-status.status-completed {
   color: var(--color-green);
 }
 
-.claudian-subagent-tool-status.status-error,
-.claudian-subagent-tool-status.status-blocked {
+.octo-subagent-tool-status.status-error,
+.octo-subagent-tool-status.status-blocked {
   color: var(--color-red);
 }
 
-.claudian-subagent-tool-content {
+.octo-subagent-tool-content {
   padding: 2px 0 2px 16px;
 }
 
-.claudian-subagent-tool-empty {
+.octo-subagent-tool-empty {
   color: var(--text-faint);
   font-style: italic;
   font-family: var(--font-monospace);
@@ -211,7 +211,7 @@
   padding: 2px 0;
 }
 
-.claudian-subagent-status-text {
+.octo-subagent-status-text {
   font-size: 11px;
   font-family: var(--font-monospace);
   color: var(--text-muted);
@@ -219,30 +219,30 @@
   padding-inline-start: 8px;
 }
 
-.claudian-subagent-list.async .claudian-subagent-icon {
+.octo-subagent-list.async .octo-subagent-icon {
   color: var(--interactive-accent);
 }
 
-.claudian-subagent-list.async.pending .claudian-subagent-status-text {
+.octo-subagent-list.async.pending .octo-subagent-status-text {
   color: var(--text-muted);
 }
 
-.claudian-subagent-list.async.running .claudian-subagent-status-text {
+.octo-subagent-list.async.running .octo-subagent-status-text {
   color: var(--text-accent);
 }
 
-.claudian-subagent-list.async.awaiting .claudian-subagent-status-text {
+.octo-subagent-list.async.awaiting .octo-subagent-status-text {
   color: var(--color-yellow);
 }
 
-.claudian-subagent-list.async.completed .claudian-subagent-status-text {
+.octo-subagent-list.async.completed .octo-subagent-status-text {
   color: var(--color-green);
 }
 
-.claudian-subagent-list.async.error .claudian-subagent-status-text {
+.octo-subagent-list.async.error .octo-subagent-status-text {
   color: var(--color-red);
 }
 
-.claudian-subagent-list.async.orphaned .claudian-subagent-status-text {
+.octo-subagent-list.async.orphaned .octo-subagent-status-text {
   color: var(--color-orange);
 }

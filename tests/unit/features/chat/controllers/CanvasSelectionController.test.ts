@@ -4,20 +4,20 @@ import { CanvasSelectionController } from '@/features/chat/controllers/CanvasSel
 
 function createMockIndicator() {
   const indicator = createMockEl();
-  indicator.addClass('claudian-canvas-indicator');
-  indicator.addClass('claudian-hidden');
+  indicator.addClass('octo-canvas-indicator');
+  indicator.addClass('octo-hidden');
   return indicator;
 }
 
 function createMockContextRow() {
   const elements: Record<string, any> = {
-    '.claudian-selection-indicator': createMockEl(),
-    '.claudian-canvas-indicator': createMockIndicator(),
-    '.claudian-file-indicator': null,
-    '.claudian-image-preview': null,
+    '.octo-selection-indicator': createMockEl(),
+    '.octo-canvas-indicator': createMockIndicator(),
+    '.octo-file-indicator': null,
+    '.octo-image-preview': null,
   };
-  elements['.claudian-selection-indicator'].addClass('claudian-selection-indicator');
-  elements['.claudian-selection-indicator'].addClass('claudian-hidden');
+  elements['.octo-selection-indicator'].addClass('octo-selection-indicator');
+  elements['.octo-selection-indicator'].addClass('octo-hidden');
 
   const contextRow = createMockEl();
   const toggle = contextRow.classList.toggle;
@@ -152,9 +152,9 @@ describe('CanvasSelectionController', () => {
 
   it('keeps context row visible when editor selection indicator is visible', () => {
     const editorIndicator = createMockEl();
-    editorIndicator.addClass('claudian-selection-indicator');
+    editorIndicator.addClass('octo-selection-indicator');
     contextRowEl.querySelector.mockImplementation((selector: string) => {
-      if (selector === '.claudian-selection-indicator') return editorIndicator;
+      if (selector === '.octo-selection-indicator') return editorIndicator;
       return null;
     });
 

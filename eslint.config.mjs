@@ -45,8 +45,8 @@ const stagedObsidianRules = {
   'obsidianmd/ui/sentence-case': [
     obsidianRuleSeverity,
     {
-      ignoreWords: ['Claudian', 'Octo', 'Codex', 'OpenCode', 'Pi', 'WSL'],
-      brands: [...DEFAULT_BRANDS, 'Claudian', 'Codex', 'OpenCode', 'Pi'],
+      ignoreWords: ['Octo', 'Codex', 'OpenCode', 'Pi', 'WSL'],
+      brands: [...DEFAULT_BRANDS, 'Codex', 'OpenCode', 'Pi'],
       acronyms: [...DEFAULT_ACRONYMS, 'TOML', 'WSL'],
       ignoreRegex: ['\\.(?:claude|codex|opencode)/'],
       enforceCamelCaseLower: true,
@@ -104,16 +104,7 @@ export default defineConfig([
     rules: stagedObsidianRules,
   },
   {
-    files: [
-      'src/ClaudianService.ts',
-      'src/InlineEditService.ts',
-      'src/InstructionRefineService.ts',
-      'src/images/**/*.ts',
-      'src/prompt/**/*.ts',
-      'src/sdk/**/*.ts',
-      'src/security/**/*.ts',
-      'src/tools/**/*.ts',
-    ],
+    files: ['src/core/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -124,7 +115,7 @@ export default defineConfig([
               message: 'Service and shared modules must not import UI modules.',
             },
             {
-              group: ['./ClaudianView', '../ClaudianView'],
+              group: ['**/OctoView'],
               message: 'Service and shared modules must not import the view.',
             },
           ],

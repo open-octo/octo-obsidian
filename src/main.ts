@@ -7,7 +7,7 @@ import './providers';
 import type { Editor, WorkspaceLeaf } from 'obsidian';
 import { addIcon, MarkdownView, Notice, Plugin } from 'obsidian';
 
-import { DEFAULT_CLAUDIAN_SETTINGS } from './app/settings/defaultSettings';
+import { DEFAULT_OCTO_SETTINGS } from './app/settings/defaultSettings';
 import { SharedStorageService } from './app/storage/SharedStorageService';
 import type { SharedAppStorage } from './core/bootstrap/storage';
 import {
@@ -25,17 +25,17 @@ import type { ProviderCliResolutionContext, ProviderId } from './core/providers/
 import type { AppTabManagerState } from './core/providers/types';
 import { DEFAULT_CHAT_PROVIDER_ID } from './core/providers/types';
 import type {
-  ClaudianSettings,
   Conversation,
   ConversationMeta,
+  OctoSettings,
 } from './core/types';
 import {
-  VIEW_TYPE_CLAUDIAN,
+  VIEW_TYPE_OCTO,
 } from './core/types';
 import type { ChatViewPlacement } from './core/types/settings';
-import { ClaudianView } from './features/chat/ClaudianView';
+import { OctoView } from './features/chat/OctoView';
 import { type InlineEditContext, InlineEditModal } from './features/inline-edit/ui/InlineEditModal';
-import { ClaudianSettingTab } from './features/settings/ClaudianSettings';
+import { OctoSettingTab } from './features/settings/OctoSettings';
 import { setLocale } from './i18n/i18n';
 import type { Locale } from './i18n/types';
 import { OCTO_APP_ICON_ID, OCTO_APP_ICON_SVG } from './shared/icons';
@@ -44,14 +44,14 @@ import { buildCursorContext } from './utils/editor';
 import { revealWorkspaceLeaf } from './utils/obsidianCompat';
 import { getVaultPath } from './utils/path';
 
-function isClaudianView(value: unknown): value is ClaudianView {
+function isOctoView(value: unknown): value is OctoView {
   return !!value
     && typeof value === 'object'
     && typeof (value as { getTabManager?: unknown }).getTabManager === 'function';
 }
 
-export default class ClaudianPlugin extends Plugin {
-  settings!: ClaudianSettings;
+export default class OctoPlugin extends Plugin {
+  settings!: OctoSettings;
   storage!: SharedAppStorage;
   private conversations: Conversation[] = [];
   private lastKnownTabManagerState: AppTabManagerState | null = null;
@@ -63,8 +63,8 @@ export default class ClaudianPlugin extends Plugin {
     addIcon(OCTO_APP_ICON_ID, OCTO_APP_ICON_SVG);
 
     this.registerView(
-      VIEW_TYPE_CLAUDIAN,
-      (leaf) => new ClaudianView(leaf, this)
+      VIEW_TYPE_OCTO,
+      (leaf) => new OctoView(leaf, this)
     );
 
     this.addRibbonIcon(OCTO_APP_ICON_ID, 'Open Octo', () => {
@@ -180,7 +180,7 @@ export default class ClaudianPlugin extends Plugin {
       },
     });
 
-    this.addSettingTab(new ClaudianSettingTab(this.app, this));
+    this.addSettingTab(new OctoSettingTab(this.app, this));
   }
 
   onunload(): void {
@@ -200,13 +200,13 @@ export default class ClaudianPlugin extends Plugin {
 
   async activateView() {
     const { workspace } = this.app;
-    let leaf = workspace.getLeavesOfType(VIEW_TYPE_CLAUDIAN)[0];
+    let leaf = workspace.getLeavesOfType(VIEW_TYPE_OCTO)[0];
 
     if (!leaf) {
       const newLeaf = this.getLeafForPlacement(this.settings.chatViewPlacement);
       if (newLeaf) {
         await newLeaf.setViewState({
-          type: VIEW_TYPE_CLAUDIAN,
+          type: VIEW_TYPE_OCTO,
           active: true,
         });
         leaf = newLeaf;
@@ -231,7 +231,7 @@ export default class ClaudianPlugin extends Plugin {
   }
 
   private canCreateNewTab(): boolean {
-    const hasClaudianLeaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_CLAUDIAN).length > 0;
+    const hasOctoLeaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_OCTO).length > 0;
     const view = this.getView();
     const tabManager = view?.getTabManager();
 
@@ -239,14 +239,14 @@ export default class ClaudianPlugin extends Plugin {
       return tabManager.canCreateTab();
     }
 
-    if (hasClaudianLeaf) {
+    if (hasOctoLeaf) {
       return false;
     }
 
     return this.getLastKnownOpenTabCount() < this.getMaxTabsLimit();
   }
 
-  private async ensureViewOpen(): Promise<ClaudianView | null> {
+  private async ensureViewOpen(): Promise<OctoView | null> {
     const existingView = this.getView();
     if (existingView) {
       return existingView;
@@ -280,12 +280,12 @@ export default class ClaudianPlugin extends Plugin {
 
   async loadSettings() {
     this.storage = new SharedStorageService(this);
-    const { claudian } = await this.storage.initialize();
+    const { octo } = await this.storage.initialize();
     this.lastKnownTabManagerState = await this.storage.getTabManagerState();
 
     this.settings = {
-      ...DEFAULT_CLAUDIAN_SETTINGS,
-      ...claudian,
+      ...DEFAULT_OCTO_SETTINGS,
+      ...octo,
     };
 
     // Plan mode is ephemeral — normalize back to normal on load so the app
@@ -366,7 +366,7 @@ export default class ClaudianPlugin extends Plugin {
   }
 
   async saveSettings() {
-    await this.storage.saveClaudianSettings(this.settings);
+    await this.storage.saveOctoSettings(this.settings);
   }
 
   /** Updates and persists environment variables, restarting processes to apply changes. */
@@ -719,17 +719,17 @@ export default class ClaudianPlugin extends Plugin {
     await this.storage.setTabManagerState(state);
   }
 
-  getView(): ClaudianView | null {
-    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CLAUDIAN);
-    return leaves.map(leaf => leaf.view).find(isClaudianView) ?? null;
+  getView(): OctoView | null {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_OCTO);
+    return leaves.map(leaf => leaf.view).find(isOctoView) ?? null;
   }
 
-  getAllViews(): ClaudianView[] {
-    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CLAUDIAN);
-    return leaves.map(leaf => leaf.view).filter(isClaudianView);
+  getAllViews(): OctoView[] {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_OCTO);
+    return leaves.map(leaf => leaf.view).filter(isOctoView);
   }
 
-  findConversationAcrossViews(conversationId: string): { view: ClaudianView; tabId: string } | null {
+  findConversationAcrossViews(conversationId: string): { view: OctoView; tabId: string } | null {
     for (const view of this.getAllViews()) {
       const tabManager = view.getTabManager();
       if (!tabManager) continue;

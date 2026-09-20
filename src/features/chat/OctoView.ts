@@ -9,8 +9,8 @@ import {
 import { ProviderRegistry } from '../../core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from '../../core/providers/ProviderSettingsCoordinator';
 import { type AppTabManagerState, DEFAULT_CHAT_PROVIDER_ID, type ProviderId } from '../../core/providers/types';
-import { VIEW_TYPE_CLAUDIAN } from '../../core/types';
-import type ClaudianPlugin from '../../main';
+import { VIEW_TYPE_OCTO } from '../../core/types';
+import type OctoPlugin from '../../main';
 import { createProviderIconSvg, OCTO_APP_ICON_ID } from '../../shared/icons';
 import {
   cancelScheduledAnimationFrame,
@@ -34,8 +34,8 @@ type LoadableView = {
   load: () => Promise<void> | void;
 };
 
-export class ClaudianView extends ItemView {
-  private plugin: ClaudianPlugin;
+export class OctoView extends ItemView {
+  private plugin: OctoPlugin;
 
   // Tab management
   private tabManager: TabManager | null = null;
@@ -65,12 +65,12 @@ export class ClaudianView extends ItemView {
   // Debouncing for tab state persistence
   private pendingPersist: number | null = null;
 
-  constructor(leaf: WorkspaceLeaf, plugin: ClaudianPlugin) {
+  constructor(leaf: WorkspaceLeaf, plugin: OctoPlugin) {
     super(leaf);
     this.plugin = plugin;
 
     // Hover Editor compatibility: Define load as an instance method that can't be
-    // overwritten by prototype patching. Hover Editor patches ClaudianView.prototype.load
+    // overwritten by prototype patching. Hover Editor patches OctoView.prototype.load
     // after our class is defined, but instance methods take precedence over prototype methods.
     const prototype = Object.getPrototypeOf(this) as LoadableView;
     const originalLoad = prototype.load.bind(this);
@@ -93,7 +93,7 @@ export class ClaudianView extends ItemView {
   }
 
   getViewType(): string {
-    return VIEW_TYPE_CLAUDIAN;
+    return VIEW_TYPE_OCTO;
   }
 
   getDisplayText(): string {
@@ -140,7 +140,7 @@ export class ClaudianView extends ItemView {
       tab.ui.permissionToggle?.updateDisplay();
       tab.ui.serviceTierToggle?.updateDisplay();
       tab.dom.inputWrapper.toggleClass(
-        'claudian-input-plan-mode',
+        'octo-input-plan-mode',
         providerSettings.permissionMode === 'plan' && capabilities.supportsPlanMode,
       );
     }
@@ -181,13 +181,13 @@ export class ClaudianView extends ItemView {
 
     this.viewContainerEl = container;
     this.viewContainerEl.empty();
-    this.viewContainerEl.addClass('claudian-container');
+    this.viewContainerEl.addClass('octo-container');
 
-    const header = this.viewContainerEl.createDiv({ cls: 'claudian-header' });
+    const header = this.viewContainerEl.createDiv({ cls: 'octo-header' });
     this.buildHeader(header);
 
     this.navRowContent = this.buildNavRowContent();
-    this.tabContentEl = this.viewContainerEl.createDiv({ cls: 'claudian-tab-content-container' });
+    this.tabContentEl = this.viewContainerEl.createDiv({ cls: 'octo-tab-content-container' });
     this.buildInputFooter();
 
     this.tabManager = new TabManager(
@@ -276,12 +276,12 @@ export class ClaudianView extends ItemView {
   // ============================================
 
   private buildHeader(header: HTMLElement): void {
-    const titleEl = header.createDiv({ cls: 'claudian-title' });
+    const titleEl = header.createDiv({ cls: 'octo-title' });
 
-    this.logoEl = titleEl.createSpan({ cls: 'claudian-logo' });
+    this.logoEl = titleEl.createSpan({ cls: 'octo-logo' });
     this.syncHeaderLogo(DEFAULT_CHAT_PROVIDER_ID);
 
-    titleEl.createEl('h4', { text: 'Octo', cls: 'claudian-title-text' });
+    titleEl.createEl('h4', { text: 'Octo', cls: 'octo-title-text' });
   }
 
   /**
@@ -294,7 +294,7 @@ export class ClaudianView extends ItemView {
     const fragment = activeDocument.createDocumentFragment();
 
     this.tabBarContainerEl = activeDocument.createElement('div');
-    this.tabBarContainerEl.className = 'claudian-tab-bar-container';
+    this.tabBarContainerEl.className = 'octo-tab-bar-container';
     this.tabBar = new TabBar(this.tabBarContainerEl, {
       onTabClick: (tabId) => this.handleTabClick(tabId),
       onTabClose: (tabId) => {
@@ -308,16 +308,16 @@ export class ClaudianView extends ItemView {
     fragment.appendChild(this.tabBarContainerEl);
 
     const navActionsEl = activeDocument.createElement('div');
-    navActionsEl.className = 'claudian-input-nav-actions';
+    navActionsEl.className = 'octo-input-nav-actions';
 
-    this.newTabButtonEl = navActionsEl.createDiv({ cls: 'claudian-input-nav-btn claudian-new-tab-btn' });
+    this.newTabButtonEl = navActionsEl.createDiv({ cls: 'octo-input-nav-btn octo-new-tab-btn' });
     setIcon(this.newTabButtonEl, 'square-plus');
     this.newTabButtonEl.setAttribute('aria-label', 'New tab');
     this.newTabButtonEl.addEventListener('click', () => {
       void this.createNewTab().catch(() => new Notice('Failed to create tab'));
     });
 
-    const newBtn = navActionsEl.createDiv({ cls: 'claudian-input-nav-btn' });
+    const newBtn = navActionsEl.createDiv({ cls: 'octo-input-nav-btn' });
     setIcon(newBtn, 'square-pen');
     newBtn.setAttribute('aria-label', 'New conversation');
     newBtn.addEventListener('click', () => {
@@ -328,12 +328,12 @@ export class ClaudianView extends ItemView {
     });
 
     // History dropdown
-    const historyContainer = navActionsEl.createDiv({ cls: 'claudian-history-container' });
-    const historyBtn = historyContainer.createDiv({ cls: 'claudian-input-nav-btn' });
+    const historyContainer = navActionsEl.createDiv({ cls: 'octo-history-container' });
+    const historyBtn = historyContainer.createDiv({ cls: 'octo-input-nav-btn' });
     setIcon(historyBtn, 'history');
     historyBtn.setAttribute('aria-label', 'Chat history');
 
-    this.historyDropdown = historyContainer.createDiv({ cls: 'claudian-history-menu' });
+    this.historyDropdown = historyContainer.createDiv({ cls: 'octo-history-menu' });
 
     historyBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -343,7 +343,7 @@ export class ClaudianView extends ItemView {
     fragment.appendChild(navActionsEl);
 
     const wrapper = activeDocument.createElement('div');
-    wrapper.className = 'claudian-input-nav-content';
+    wrapper.className = 'octo-input-nav-content';
     wrapper.appendChild(fragment);
     return wrapper;
   }
@@ -351,11 +351,11 @@ export class ClaudianView extends ItemView {
   private buildInputFooter(): void {
     if (!this.viewContainerEl) return;
 
-    this.inputFooterEl = this.viewContainerEl.createDiv({ cls: 'claudian-input-footer' });
+    this.inputFooterEl = this.viewContainerEl.createDiv({ cls: 'octo-input-footer' });
     this.inputNavRowHostEl = this.inputFooterEl.createDiv({
-      cls: 'claudian-input-nav-row claudian-view-input-nav-row',
+      cls: 'octo-input-nav-row octo-view-input-nav-row',
     });
-    this.activeInputSlotEl = this.inputFooterEl.createDiv({ cls: 'claudian-active-input-slot' });
+    this.activeInputSlotEl = this.inputFooterEl.createDiv({ cls: 'octo-active-input-slot' });
   }
 
   private attachNavRowContentToInputFooter(): void {
@@ -475,7 +475,7 @@ export class ClaudianView extends ItemView {
     const tabCount = this.tabManager.getTabCount();
     const showTabBar = tabCount >= 2;
 
-    this.tabBarContainerEl.toggleClass('claudian-hidden', !showTabBar);
+    this.tabBarContainerEl.toggleClass('octo-hidden', !showTabBar);
 
     this.updateNewTabButtonVisibility();
   }
@@ -484,7 +484,7 @@ export class ClaudianView extends ItemView {
     if (!this.newTabButtonEl || !this.tabManager) return;
 
     const canCreateTab = this.tabManager.canCreateTab();
-    this.newTabButtonEl.toggleClass('claudian-hidden', !canCreateTab);
+    this.newTabButtonEl.toggleClass('octo-hidden', !canCreateTab);
     if (canCreateTab) {
       this.newTabButtonEl.removeAttribute('aria-disabled');
       this.newTabButtonEl.removeAttribute('aria-hidden');

@@ -1,34 +1,34 @@
 /* Model selector */
-.claudian-model-selector {
+.octo-model-selector {
   position: relative;
 }
 
-.claudian-model-btn {
+.octo-model-btn {
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
-  color: var(--claudian-brand);
+  color: var(--octo-brand);
   font-size: 12px;
 }
 
-.claudian-model-label {
+.octo-model-label {
   font-weight: 500;
 }
 
-.claudian-model-chevron {
+.octo-model-chevron {
   display: flex;
   align-items: center;
 }
 
-.claudian-model-chevron svg {
+.octo-model-chevron svg {
   width: 12px;
   height: 12px;
 }
 
-.claudian-model-dropdown {
+.octo-model-dropdown {
   position: absolute;
   bottom: 100%;
   left: 0;
@@ -48,12 +48,12 @@
   transition: opacity 0.15s ease, visibility 0.15s ease;
 }
 
-.claudian-model-selector:hover .claudian-model-dropdown {
+.octo-model-selector:hover .octo-model-dropdown {
   opacity: 1;
   visibility: visible;
 }
 
-.claudian-model-group {
+.octo-model-group {
   padding: 3px 8px;
   font-size: 8px;
   font-weight: 600;
@@ -63,18 +63,18 @@
   pointer-events: none;
 }
 
-.claudian-model-group:not(:first-child) {
+.octo-model-group:not(:first-child) {
   margin-top: 4px;
   border-top: 1px solid var(--background-modifier-border);
   padding-top: 6px;
 }
 
-.claudian-model-provider-icon {
+.octo-model-provider-icon {
   flex-shrink: 0;
   opacity: 0.7;
 }
 
-.claudian-model-option {
+.octo-model-option {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -87,13 +87,13 @@
   white-space: nowrap;
 }
 
-.claudian-model-option:hover {
+.octo-model-option:hover {
   background: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.claudian-model-option.selected {
-  background: rgba(var(--claudian-brand-rgb), 0.15);
-  color: var(--claudian-brand);
+.octo-model-option.selected {
+  background: rgba(var(--octo-brand-rgb), 0.15);
+  color: var(--octo-brand);
   font-weight: 500;
 }

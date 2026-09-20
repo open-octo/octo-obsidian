@@ -64,12 +64,12 @@ describe('octoAgentChatUIConfig', () => {
   });
 
   describe('resolvePermissionMode', () => {
-    it('returns a Claudian value from an octo-agent value', () => {
+    it('returns a Octo value from an octo-agent value', () => {
       expect(octoAgentChatUIConfig.resolvePermissionMode?.({ permissionMode: 'auto' })).toBe('yolo');
       expect(octoAgentChatUIConfig.resolvePermissionMode?.({ permissionMode: 'interactive' })).toBe('normal');
     });
 
-    it('returns the stored Claudian value directly', () => {
+    it('returns the stored Octo value directly', () => {
       expect(octoAgentChatUIConfig.resolvePermissionMode?.({ permissionMode: 'yolo' })).toBe('yolo');
       expect(octoAgentChatUIConfig.resolvePermissionMode?.({ permissionMode: 'normal' })).toBe('normal');
       expect(octoAgentChatUIConfig.resolvePermissionMode?.({ permissionMode: 'plan' })).toBe('plan');
@@ -81,7 +81,7 @@ describe('octoAgentChatUIConfig', () => {
   });
 
   describe('applyPermissionMode', () => {
-    it('normalizes octo-agent values into Claudian values', () => {
+    it('normalizes octo-agent values into Octo values', () => {
       const settings: Record<string, unknown> = {};
       octoAgentChatUIConfig.applyPermissionMode?.('auto', settings);
       expect(settings.permissionMode).toBe('yolo');
@@ -90,7 +90,7 @@ describe('octoAgentChatUIConfig', () => {
       expect(settings.permissionMode).toBe('normal');
     });
 
-    it('stores Claudian values as-is', () => {
+    it('stores Octo values as-is', () => {
       const settings: Record<string, unknown> = {};
       octoAgentChatUIConfig.applyPermissionMode?.('plan', settings);
       expect(settings.permissionMode).toBe('plan');

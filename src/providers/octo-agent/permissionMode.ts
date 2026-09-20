@@ -1,5 +1,5 @@
 /**
- * Claudian uses a generic permission-mode vocabulary for the toggle UI:
+ * Octo uses a generic permission-mode vocabulary for the toggle UI:
  *   yolo  -> tools run automatically
  *   normal-> ask before executing tools
  *   plan  -> plan mode
@@ -10,7 +10,7 @@
  */
 
 export type OctoAgentPermissionMode = 'auto' | 'interactive' | 'plan';
-export type ClaudianPermissionMode = 'yolo' | 'normal' | 'plan';
+export type OctoPermissionMode = 'yolo' | 'normal' | 'plan';
 
 export function toOctoAgentPermissionMode(
   mode: string | undefined,
@@ -29,9 +29,9 @@ export function toOctoAgentPermissionMode(
   }
 }
 
-export function toClaudianPermissionMode(
+export function toOctoPermissionMode(
   mode: string | undefined,
-): ClaudianPermissionMode {
+): OctoPermissionMode {
   switch (mode) {
     case 'auto':
     case 'yolo':
@@ -46,6 +46,6 @@ export function toClaudianPermissionMode(
   }
 }
 
-export function isValidClaudianPermissionMode(mode: string): mode is ClaudianPermissionMode {
+export function isValidOctoPermissionMode(mode: string): mode is OctoPermissionMode {
   return mode === 'yolo' || mode === 'normal' || mode === 'plan';
 }

@@ -41,8 +41,8 @@ function createMockDOMSelection(text: string, anchorNode: any, focusNode?: any, 
 
 function createMockIndicator() {
   const indicator = createMockEl();
-  indicator.addClass('claudian-selection-indicator');
-  indicator.addClass('claudian-hidden');
+  indicator.addClass('octo-selection-indicator');
+  indicator.addClass('octo-hidden');
   return indicator;
 }
 
@@ -72,13 +72,13 @@ function createMockEventTarget() {
 
 function createMockContextRow() {
   const elements: Record<string, any> = {
-    '.claudian-selection-indicator': createMockIndicator(),
-    '.claudian-canvas-indicator': createMockEl(),
-    '.claudian-file-indicator': null,
-    '.claudian-image-preview': null,
+    '.octo-selection-indicator': createMockIndicator(),
+    '.octo-canvas-indicator': createMockEl(),
+    '.octo-file-indicator': null,
+    '.octo-image-preview': null,
   };
-  elements['.claudian-canvas-indicator'].addClass('claudian-canvas-indicator');
-  elements['.claudian-canvas-indicator'].addClass('claudian-hidden');
+  elements['.octo-canvas-indicator'].addClass('octo-canvas-indicator');
+  elements['.octo-canvas-indicator'].addClass('octo-hidden');
   const contextRow = createMockEl();
   const toggle = contextRow.classList.toggle;
   contextRow.classList.toggle = jest.fn((cls: string, force?: boolean) => toggle(cls, force));
@@ -441,7 +441,7 @@ describe('SelectionController', () => {
 
       expect(showSelectionHighlight).not.toHaveBeenCalled();
       expect(mockHighlights.set).toHaveBeenCalledWith(
-        'claudian-selection',
+        'octo-selection',
         expect.any(Object),
       );
     });
@@ -465,7 +465,7 @@ describe('SelectionController', () => {
       controller.showHighlight();
 
       expect(mockHighlights.set).toHaveBeenCalledWith(
-        'claudian-selection',
+        'octo-selection',
         expect.any(Object),
       );
     });
@@ -556,7 +556,7 @@ describe('SelectionController', () => {
       );
       jest.advanceTimersByTime(250);
 
-      expect(mockHighlights.delete).toHaveBeenCalledWith('claudian-selection');
+      expect(mockHighlights.delete).toHaveBeenCalledWith('octo-selection');
     });
 
     it('skips CSS highlight for disconnected DOM ranges', () => {
@@ -611,7 +611,7 @@ describe('SelectionController', () => {
       controller.showHighlight();
 
       expect(mockHighlights.set).toHaveBeenCalledWith(
-        'claudian-selection',
+        'octo-selection',
         { ranges: [secondRange] },
       );
     });
@@ -682,9 +682,9 @@ describe('SelectionController', () => {
 
   it('keeps context row visible when canvas selection indicator is visible', () => {
     const canvasIndicator = createMockEl();
-    canvasIndicator.addClass('claudian-canvas-indicator');
+    canvasIndicator.addClass('octo-canvas-indicator');
     contextRowEl.querySelector.mockImplementation((selector: string) => {
-      if (selector === '.claudian-canvas-indicator') return canvasIndicator;
+      if (selector === '.octo-canvas-indicator') return canvasIndicator;
       return null;
     });
 

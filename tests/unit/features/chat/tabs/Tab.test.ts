@@ -976,7 +976,7 @@ describe('Tab - Service Callbacks', () => {
       const addMessageSpy = jest.spyOn(tab.state, 'addMessage');
       const addMessage = jest.fn(() => {
         const msgEl = createMockEl();
-        msgEl.createDiv({ cls: 'claudian-message-content' });
+        msgEl.createDiv({ cls: 'octo-message-content' });
         return msgEl;
       });
       const scrollToBottom = jest.fn();
